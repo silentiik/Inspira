@@ -4,6 +4,18 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 
 /**
+ * In-request cache shared by get_content() and set_content(), so a
+ * write immediately invalidates any earlier read of the same key
+ * within the same request (redirect-after-POST avoids this in
+ * practice, but nothing should silently return stale data even so).
+ */
+function &content_cache(): array
+{
+    static $cache = [];
+    return $cache;
+}
+
+/**
  * Reads an editable content block, falling back to $default if the key
  * doesn't exist yet (e.g. before any admin has touched it) or the row
  * is missing entirely. Output is escaped for HTML by the caller — this
@@ -11,7 +23,7 @@ require_once __DIR__ . '/db.php';
  */
 function get_content(string $key, string $default = ''): string
 {
-    static $cache = [];
+    $cache = &content_cache();
     if (array_key_exists($key, $cache)) {
         return $cache[$key];
     }
@@ -36,6 +48,9 @@ function set_content(string $key, string $value, int $updatedBy): void
          ON CONFLICT(block_key) DO UPDATE SET value = excluded.value, updated_by = excluded.updated_by, updated_at = excluded.updated_at'
     );
     $stmt->execute([$key, $value, $updatedBy]);
+
+    $cache = &content_cache();
+    $cache[$key] = $value;
 }
 
 /** All content blocks, for the admin/teacher editor list. */
