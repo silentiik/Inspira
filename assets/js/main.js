@@ -24,15 +24,6 @@
     });
   }
 
-  // Mark current page in nav
-  var current = location.pathname.split('/').pop() || 'index.html';
-  document.querySelectorAll('.nav-links a').forEach(function (a) {
-    var href = a.getAttribute('href') || '';
-    if (href.endsWith(current) && current !== '') {
-      a.classList.add('is-active');
-    }
-  });
-
   // Back to top button
   var backToTop = document.querySelector('.back-to-top');
   if (backToTop) {

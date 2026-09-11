@@ -1,48 +1,13 @@
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INSPIRKA — dětský klub | INSPIRA</title>
-<meta name="description" content="Dětský klub INSPIRKA pro děti od 3 do 6 let v Mladé Boleslavi. Laskavý prostor, individuální přístup, denní pobyt venku.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body>
+<?php
+$pageTitle = 'INSPIRKA — dětský klub | INSPIRA';
+$pageDescription = 'Dětský klub INSPIRKA pro děti od 3 do 6 let v Mladé Boleslavi. Laskavý prostor, individuální přístup, denní pobyt venku.';
+$activeNav = 'sluzby';
+require __DIR__ . '/../includes/header.php';
+?>
 
-<header class="site-header">
-  <div class="container nav">
-    <a href="../index.html" class="brand">
-      <span class="brand-mark">✦</span>
-      <span>INSPIRA<span class="brand-sub">Vzdělávací centrum</span></span>
-    </a>
-    <button class="nav-toggle" aria-label="Otevřít menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-    <ul class="nav-links">
-      <li><a href="../index.html">Domů</a></li>
-      <li class="has-dropdown is-open">
-        <a href="#">Služby ▾</a>
-        <ul class="dropdown">
-          <li><a href="inspirka.html" class="is-active">Dětský klub INSPIRKA</a></li>
-          <li><a href="domskolacka-akademie.html">Domškolácká akademie</a></li>
-          <li><a href="volnocasove-aktivity.html">Volnočasové aktivity</a></li>
-        </ul>
-      </li>
-      <li><a href="../rozvrh.html">Rozvrh</a></li>
-      <li><a href="../cenik.html">Ceník</a></li>
-      <li><a href="../o-nas.html">O nás</a></li>
-      <li><a href="../portal.html">Portál pro rodiče</a></li>
-      <li><a href="../kontakt.html">Kontakt</a></li>
-    </ul>
-  </div>
-</header>
-
-<main>
   <section class="page-header">
     <div class="container">
-      <p class="breadcrumbs"><a href="../index.html">Domů</a> / <a href="#">Služby</a> / INSPIRKA</p>
+      <p class="breadcrumbs"><a href="/index.php">Domů</a> / Služby / INSPIRKA</p>
       <h1>INSPIRKA — dětský klub pro děti od 3 let</h1>
       <p class="lead">Laskavý prostor pro děti od 3 let, každý den od 8 do 16 hodin v Mladé Boleslavi.</p>
     </div>
@@ -120,52 +85,11 @@
         <h2>Zajímá vás INSPIRKA víc?</h2>
         <p class="lead">Sídlíme na adrese Českobratrské náměstí 133, Mladá Boleslav. Nabízíme půlden nebo den ZDARMA na zkoušku.</p>
         <div class="banner-actions">
-          <a href="../kontakt.html#prihlaska-inspirka" class="btn btn--accent">Podat přihlášku</a>
-          <a href="../cenik.html" class="btn btn--outline">Spočítat cenu</a>
+          <a href="/kontakt.php#prihlaska-inspirka" class="btn btn--accent">Podat přihlášku</a>
+          <a href="/cenik.php" class="btn btn--outline">Spočítat cenu</a>
         </div>
       </div>
     </div>
   </section>
-</main>
 
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div>
-        <h4>INSPIRA</h4>
-        <p>Vzdělávací centrum v Mladé Boleslavi. Podporujeme růst dítěte vlastním tempem.</p>
-        <div class="footer-social">
-          <a href="https://www.facebook.com/centruminspira" aria-label="Facebook">FB</a>
-          <a href="https://www.instagram.com/centruminspira" aria-label="Instagram">IG</a>
-        </div>
-      </div>
-      <div>
-        <h4>Rychlé odkazy</h4>
-        <ul class="footer-links">
-          <li><a href="domskolacka-akademie.html">Domškolácká akademie</a></li>
-          <li><a href="volnocasove-aktivity.html">Volnočasové aktivity</a></li>
-          <li><a href="../rozvrh.html">Rozvrh</a></li>
-          <li><a href="../cenik.html">Ceník</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Kontakt</h4>
-        <ul class="footer-links">
-          <li>Českobratrské náměstí 133, Mladá Boleslav</li>
-          <li><a href="mailto:centruminspira@gmail.com">centruminspira@gmail.com</a><br>
-          <a href="tel:+420732728012">732 728 012</a></li>
-          <li><a href="../kontakt.html">Kontaktní formulář →</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 Vzdělávací centrum INSPIRA</span>
-      <span>Web inspirovaný centruminspira.cz</span>
-    </div>
-  </div>
-</footer>
-
-<button class="back-to-top" aria-label="Zpět nahoru">↑</button>
-<script src="../assets/js/main.js"></script>
-</body>
-</html>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

@@ -1,7 +1,11 @@
 // Interactive price calculator for INSPIRKA and Domškolácká akademie.
 // Prices match the published ceník (per-month, per child).
 (function () {
-  var PRICING = {
+  // window.INSPIRA_PRICING is injected server-side (cenik.php) from the
+  // live database so admin edits take effect immediately; this literal
+  // is only a fallback for when that hasn't been set (e.g. a static
+  // preview of this file outside the PHP app).
+  var PRICING = window.INSPIRA_PRICING || {
     inspirka: {
       label: 'INSPIRKA — dětský klub (3–6 let)',
       schedule: 'Po–Pá, 8:00–16:00',

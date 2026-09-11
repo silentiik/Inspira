@@ -1,67 +1,33 @@
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INSPIRA — Vzdělávací centrum Mladá Boleslav</title>
-<meta name="description" content="Vzdělávací centrum INSPIRA v Mladé Boleslavi — dětský klub INSPIRKA, Domškolácká akademie a volnočasové aktivity pro děti od 3 do 15 let.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body>
+<?php
+require_once __DIR__ . '/app/content.php';
 
-<header class="site-header">
-  <div class="container nav">
-    <a href="index.html" class="brand">
-      <span class="brand-mark">✦</span>
-      <span>INSPIRA<span class="brand-sub">Vzdělávací centrum</span></span>
-    </a>
-    <button class="nav-toggle" aria-label="Otevřít menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-    <ul class="nav-links">
-      <li><a href="index.html">Domů</a></li>
-      <li class="has-dropdown">
-        <a href="#sluzby">Služby ▾</a>
-        <ul class="dropdown">
-          <li><a href="sluzby/inspirka.html">Dětský klub INSPIRKA</a></li>
-          <li><a href="sluzby/domskolacka-akademie.html">Domškolácká akademie</a></li>
-          <li><a href="sluzby/volnocasove-aktivity.html">Volnočasové aktivity</a></li>
-        </ul>
-      </li>
-      <li><a href="rozvrh.html">Rozvrh</a></li>
-      <li><a href="cenik.html">Ceník</a></li>
-      <li><a href="o-nas.html">O nás</a></li>
-      <li><a href="portal.html">Portál pro rodiče</a></li>
-      <li><a href="kontakt.html">Kontakt</a></li>
-    </ul>
-  </div>
-</header>
-
-<main>
+$pageTitle = 'INSPIRA — Vzdělávací centrum Mladá Boleslav';
+$pageDescription = 'Vzdělávací centrum INSPIRA v Mladé Boleslavi — dětský klub INSPIRKA, Domškolácká akademie a volnočasové aktivity pro děti od 3 do 15 let.';
+$activeNav = 'home';
+require __DIR__ . '/includes/header.php';
+?>
 
   <section class="hero">
     <div class="container hero-grid">
       <div>
         <span class="section-eyebrow">Mladá Boleslav · Českobratrské náměstí 133</span>
-        <h1>Podporujeme růst dítěte<br>vlastním tempem</h1>
-        <p class="lead">Propojujeme moderní pedagogiku s respektujícím přístupem. Rozvíjíme dovednosti, kreativitu i samostatné myšlení — a necháváme se přitom inspirovat pohledem dětí na svět.</p>
+        <h1><?= nl2br(htmlspecialchars(get_content('home.hero.title', "Podporujeme růst dítěte\nvlastním tempem"), ENT_QUOTES, 'UTF-8')) ?></h1>
+        <p class="lead"><?= content_html('home.hero.lead', 'Propojujeme moderní pedagogiku s respektujícím přístupem. Rozvíjíme dovednosti, kreativitu i samostatné myšlení — a necháváme se přitom inspirovat pohledem dětí na svět.') ?></p>
 
         <ul class="hero-quicklinks">
-          <li><a href="sluzby/inspirka.html">Dětský klub INSPIRKA (3–6 let)</a></li>
-          <li><a href="sluzby/domskolacka-akademie.html">Domškolácká akademie (6–15 let)</a></li>
-          <li><a href="sluzby/volnocasove-aktivity.html">Volnočasové aktivity</a></li>
+          <li><a href="/sluzby/inspirka.php">Dětský klub INSPIRKA (3–6 let)</a></li>
+          <li><a href="/sluzby/domskolacka-akademie.php">Domškolácká akademie (6–15 let)</a></li>
+          <li><a href="/sluzby/volnocasove-aktivity.php">Volnočasové aktivity</a></li>
         </ul>
 
         <div class="hero-actions">
-          <a href="kontakt.html#prihlaska" class="btn btn--primary">Podat přihlášku</a>
-          <a href="cenik.html" class="btn btn--outline">Spočítat cenu</a>
+          <a href="/kontakt.php#prihlaska" class="btn btn--primary">Podat přihlášku</a>
+          <a href="/cenik.php" class="btn btn--outline">Spočítat cenu</a>
         </div>
 
         <div class="hero-meta">
           <span class="hero-meta-item">📍 Českobratrské náměstí 133, Mladá Boleslav</span>
-          <span class="hero-meta-item">🎉 Rodinný den v přírodě — 24. 9. 2026, 15–18 h, zdarma</span>
+          <span class="hero-meta-item"><?= content_html('home.event.text', '🎉 Rodinný den v přírodě — 24. 9. 2026, 15–18 h, zdarma') ?></span>
         </div>
       </div>
 
@@ -155,19 +121,19 @@
           <span class="card-icon">🧸</span>
           <h3>INSPIRKA — dětský klub</h3>
           <p>Laskavý prostor pro děti od 3 let. Každý den od 8 do 16 hodin, hravé vzdělávání s individuálním přístupem a denními venkovními aktivitami.</p>
-          <a href="sluzby/inspirka.html" class="btn btn--outline btn--sm">Více informací →</a>
+          <a href="/sluzby/inspirka.php" class="btn btn--outline btn--sm">Více informací →</a>
         </article>
         <article class="card">
           <span class="card-icon">📚</span>
           <h3>Domškolácká akademie</h3>
           <p>Pravidelné vzdělávání domškoláků (1. i 2. stupeň ZŠ), po–st od 9 do 14 hodin, možnost docházky 2–3 dny týdně.</p>
-          <a href="sluzby/domskolacka-akademie.html" class="btn btn--outline btn--sm">Více informací →</a>
+          <a href="/sluzby/domskolacka-akademie.php" class="btn btn--outline btn--sm">Více informací →</a>
         </article>
         <article class="card">
           <span class="card-icon">🎨</span>
           <h3>Volnočasové aktivity</h3>
           <p>Tematické workshopy a kroužky — Hravá angličtina s Miškou, Muzikohrátky, Tanečky a Rodinný den v přírodě.</p>
-          <a href="sluzby/volnocasove-aktivity.html" class="btn btn--outline btn--sm">Více informací →</a>
+          <a href="/sluzby/volnocasove-aktivity.php" class="btn btn--outline btn--sm">Více informací →</a>
         </article>
       </div>
     </div>
@@ -177,13 +143,13 @@
     <div class="container">
       <div class="banner">
         <span class="badge-pill">POSLEDNÍ VOLNÁ MÍSTA</span>
-        <h2>Aktuálně přijímáme přihlášky na září 2026</h2>
-        <p class="lead">Právě probíhá přihlašování na školní rok 2026/2027. Domluvte si s námi schůzku, přijďte se podívat, jak to u nás funguje, a zeptejte se na cokoliv, co vás zajímá.</p>
+        <h2><?= htmlspecialchars(get_content('home.banner.title', 'Aktuálně přijímáme přihlášky na září 2026'), ENT_QUOTES, 'UTF-8') ?></h2>
+        <p class="lead"><?= content_html('home.banner.lead', 'Právě probíhá přihlašování na školní rok 2026/2027. Domluvte si s námi schůzku, přijďte se podívat, jak to u nás funguje, a zeptejte se na cokoliv, co vás zajímá.') ?></p>
         <p>Nabízíme půlden nebo celý den <strong>ZDARMA</strong> na zkoušku. V případě zájmu se můžeme domluvit i na pozvolné adaptaci.</p>
         <div class="banner-actions">
-          <a href="kontakt.html#prihlaska-inspirka" class="btn btn--accent">Přihláška INSPIRKA</a>
-          <a href="kontakt.html#prihlaska-domskolaci" class="btn btn--accent">Přihláška domškoláci</a>
-          <a href="kontakt.html#schuzka" class="btn btn--outline">Domluvit schůzku zdarma</a>
+          <a href="/kontakt.php#prihlaska-inspirka" class="btn btn--accent">Přihláška INSPIRKA</a>
+          <a href="/kontakt.php#prihlaska-domskolaci" class="btn btn--accent">Přihláška domškoláci</a>
+          <a href="/kontakt.php#schuzka" class="btn btn--outline">Domluvit schůzku zdarma</a>
         </div>
       </div>
     </div>
@@ -201,19 +167,19 @@
           <span class="card-icon">🗓️</span>
           <h3>Interaktivní rozvrh</h3>
           <p>Přehledný týdenní rozvrh INSPIRKY, Domškolácké akademie i kroužků s možností filtrování podle programu.</p>
-          <a href="rozvrh.html" class="btn btn--outline btn--sm">Zobrazit rozvrh →</a>
+          <a href="/rozvrh.php" class="btn btn--outline btn--sm">Zobrazit rozvrh →</a>
         </article>
         <article class="card">
           <span class="card-icon">🧮</span>
           <h3>Kalkulačka ceny</h3>
           <p>Vyberte program a počet dní v týdnu a hned uvidíte odhad měsíční platby.</p>
-          <a href="cenik.html" class="btn btn--outline btn--sm">Spočítat cenu →</a>
+          <a href="/cenik.php" class="btn btn--outline btn--sm">Spočítat cenu →</a>
         </article>
         <article class="card">
           <span class="card-icon">👨‍👩‍👧</span>
           <h3>Portál pro rodiče a učitele</h3>
           <p>Novinky z centra a výběr obědů na příští týden na jednom místě.</p>
-          <a href="portal.html" class="btn btn--outline btn--sm">Přihlásit se do portálu →</a>
+          <a href="/dashboard.php" class="btn btn--outline btn--sm">Přihlásit se do portálu →</a>
         </article>
       </div>
     </div>
@@ -227,53 +193,9 @@
       <div class="hero-actions" style="justify-content:center">
         <a href="https://www.facebook.com/centruminspira" class="btn btn--outline">Facebook</a>
         <a href="https://www.instagram.com/centruminspira" class="btn btn--outline">Instagram</a>
-        <a href="kontakt.html" class="btn btn--primary">Napsat nám</a>
+        <a href="/kontakt.php" class="btn btn--primary">Napsat nám</a>
       </div>
     </div>
   </section>
 
-</main>
-
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div>
-        <h4>INSPIRA</h4>
-        <p>Vzdělávací centrum v Mladé Boleslavi. Podporujeme růst dítěte vlastním tempem.</p>
-        <div class="footer-social">
-          <a href="https://www.facebook.com/centruminspira" aria-label="Facebook">FB</a>
-          <a href="https://www.instagram.com/centruminspira" aria-label="Instagram">IG</a>
-        </div>
-      </div>
-      <div>
-        <h4>Rychlé odkazy</h4>
-        <ul class="footer-links">
-          <li><a href="sluzby/inspirka.html">Dětský klub INSPIRKA</a></li>
-          <li><a href="sluzby/domskolacka-akademie.html">Domškolácká akademie</a></li>
-          <li><a href="sluzby/volnocasove-aktivity.html">Volnočasové aktivity</a></li>
-          <li><a href="rozvrh.html">Rozvrh</a></li>
-          <li><a href="cenik.html">Ceník</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Kontakt</h4>
-        <ul class="footer-links">
-          <li>Českobratrské náměstí 133, Mladá Boleslav</li>
-          <li><a href="mailto:centruminspira@gmail.com">centruminspira@gmail.com</a><br>
-          <a href="tel:+420732728012">732 728 012</a></li>
-          <li><a href="kontakt.html">Kontaktní formulář →</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 Vzdělávací centrum INSPIRA</span>
-      <span>Web inspirovaný centruminspira.cz</span>
-    </div>
-  </div>
-</footer>
-
-<button class="back-to-top" aria-label="Zpět nahoru">↑</button>
-
-<script src="assets/js/main.js"></script>
-</body>
-</html>
+<?php require __DIR__ . '/includes/footer.php'; ?>
