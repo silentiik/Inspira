@@ -21,9 +21,11 @@ define('MAIL_FROM_NAME', 'INSPIRA');
 // Base URL used to build links inside emails (no trailing slash).
 // Deliberately not derived from the request's Host header, which a
 // visitor can forge to point password-reset links at a different site.
-// If you're testing on a temporary URL/subdomain first, set THAT here
-// for now — then change it to the real domain before go-live.
-define('SITE_BASE_URL', 'https://centruminspira.cz');
+// TESTING PHASE: pointed at www.silentiik.cz over plain http (its SSL
+// isn't set up yet — https:// currently fails to connect at all).
+// Switch to 'https://centruminspira.cz' once SSL is enabled here and
+// you're ready to move to the real domain.
+define('SITE_BASE_URL', 'http://www.silentiik.cz');
 
 // When true, outgoing emails are written to data/mail.log instead of
 // actually being sent — useful while testing before mail is confirmed
