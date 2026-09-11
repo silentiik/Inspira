@@ -2,7 +2,7 @@
 $pageTitle = 'Rozvrh | INSPIRA';
 $pageDescription = 'Interaktivní týdenní rozvrh INSPIRKY, Domškolácké akademie a kroužků centra INSPIRA.';
 $activeNav = 'rozvrh';
-require __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/header.php';
 ?>
 
   <section class="page-header">
@@ -38,5 +38,5 @@ require __DIR__ . '/includes/header.php';
 
 <?php
 $extraScripts = ['/assets/js/schedule.js'];
-require __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/includes/footer.php';
 ?>

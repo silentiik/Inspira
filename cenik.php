@@ -4,7 +4,7 @@ require_once __DIR__ . '/app/pricing.php';
 $pageTitle = 'Ceník | INSPIRA';
 $pageDescription = 'Ceník a interaktivní kalkulačka ceny pro INSPIRKU a Domškolácku akademii centra INSPIRA.';
 $activeNav = 'cenik';
-require __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/header.php';
 
 $pricingRows = all_pricing();
 $byProgram = ['inspirka' => [], 'domskolaci' => []];
@@ -119,5 +119,5 @@ foreach ($pricingRows as $row) {
 <?php
 echo '<script>window.INSPIRA_PRICING = ' . json_encode(pricing_for_calculator(), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) . ';</script>';
 $extraScripts = ['/assets/js/calculator.js'];
-require __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/includes/footer.php';
 ?>

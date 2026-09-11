@@ -2,7 +2,7 @@
 $pageTitle = 'INSPIRKA — dětský klub | INSPIRA';
 $pageDescription = 'Dětský klub INSPIRKA pro děti od 3 do 6 let v Mladé Boleslavi. Laskavý prostor, individuální přístup, denní pobyt venku.';
 $activeNav = 'sluzby';
-require __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
   <section class="page-header">
@@ -92,4 +92,4 @@ require __DIR__ . '/../includes/header.php';
     </div>
   </section>
 
-<?php require __DIR__ . '/../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

@@ -2,7 +2,7 @@
 $pageTitle = 'Domškolácká akademie | INSPIRA';
 $pageDescription = 'Domškolácká akademie — pravidelné vzdělávání domškoláků 6-15 let v Mladé Boleslavi, po až st od 9 do 14 hodin.';
 $activeNav = 'sluzby';
-require __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
   <section class="page-header">
@@ -79,4 +79,4 @@ require __DIR__ . '/../includes/header.php';
     </div>
   </section>
 
-<?php require __DIR__ . '/../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

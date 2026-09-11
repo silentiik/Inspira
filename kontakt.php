@@ -2,7 +2,7 @@
 $pageTitle = 'Kontakt | INSPIRA';
 $pageDescription = 'Kontaktujte vzdělávací centrum INSPIRA nebo podejte přihlášku do INSPIRKY či Domškolácké akademie.';
 $activeNav = 'kontakt';
-require __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/header.php';
 ?>
 
   <section class="page-header">
@@ -252,5 +252,5 @@ require __DIR__ . '/includes/header.php';
 
 <?php
 $extraScripts = ['/assets/js/form.js'];
-require __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/includes/footer.php';
 ?>

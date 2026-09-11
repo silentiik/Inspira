@@ -4,7 +4,7 @@ require_once __DIR__ . '/app/content.php';
 $pageTitle = 'INSPIRA — Vzdělávací centrum Mladá Boleslav';
 $pageDescription = 'Vzdělávací centrum INSPIRA v Mladé Boleslavi — dětský klub INSPIRKA, Domškolácká akademie a volnočasové aktivity pro děti od 3 do 15 let.';
 $activeNav = 'home';
-require __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/header.php';
 ?>
 
   <section class="hero">
@@ -198,4 +198,4 @@ require __DIR__ . '/includes/header.php';
     </div>
   </section>
 
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

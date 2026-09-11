@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $rows = all_pricing();
 
 $pageTitle = 'Ceník — správa | INSPIRA';
-require __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
   <section class="page-header">
@@ -63,4 +63,4 @@ require __DIR__ . '/../includes/header.php';
     </div>
   </section>
 
-<?php require __DIR__ . '/../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
