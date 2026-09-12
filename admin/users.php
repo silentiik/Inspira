@@ -93,6 +93,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    if ($action === 'delete_user') {
+        $targetId = (int) ($_POST['user_id'] ?? 0);
+        if ($targetId !== (int) $user['id']) {
+            // Cascades (see app/db.php schema) also remove this
+            // account's news posts, children, and lunch selections.
+            db()->prepare('DELETE FROM users WHERE id = ?')->execute([$targetId]);
+            flash_set('success', 'Účet byl trvale smazán.');
+        } else {
+            flash_set('error', 'Nemůžete smazat vlastní účet.');
+        }
+    }
+
     header('Location: /admin/users.php');
     exit;
 }
@@ -179,6 +191,12 @@ require_once __DIR__ . '/../includes/header.php';
                     <input type="hidden" name="action" value="toggle_active">
                     <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
                     <button type="submit" class="btn btn--outline btn--sm"><?= $row['is_active'] ? 'Deaktivovat' : 'Aktivovat' ?></button>
+                  </form>
+                  <form method="post" action="/admin/users.php" onsubmit="return confirm('Opravdu trvale smazat účet <?= htmlspecialchars(addslashes(full_name($row)), ENT_QUOTES, 'UTF-8') ?>? Smažou se i všechny související záznamy (novinky, děti, výběry obědů). Tuto akci nelze vrátit zpět.');">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="action" value="delete_user">
+                    <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
+                    <button type="submit" class="btn btn--danger btn--sm">Smazat účet</button>
                   </form>
                 <?php endif; ?>
               </div>
