@@ -109,7 +109,9 @@ require_once __DIR__ . '/includes/header.php';
   <section class="section">
     <div class="container">
 
+      <?php if ($user['role'] === 'parent'): ?>
       <div class="portal-grid">
+      <?php endif; ?>
         <div class="stack">
           <div class="form-card">
             <h3 class="mt-0">📋 Nástěnka — novinky z centra</h3>
@@ -243,8 +245,8 @@ require_once __DIR__ . '/includes/header.php';
               <button type="submit" class="btn btn--outline">Přidat dítě</button>
             </form>
           </div>
-        <?php endif; ?>
       </div>
+      <?php endif; ?>
     </div>
   </section>
 
