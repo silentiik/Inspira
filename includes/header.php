@@ -84,6 +84,7 @@ function asset_url(string $publicPath): string
             <span aria-hidden="true">▾</span>
           </a>
           <ul class="dropdown">
+            <li><a href="/account-settings.php"<?= nav_class('account-settings', $activeNav) ?>>Nastavení účtu</a></li>
             <li><a href="/dashboard.php"<?= nav_class('dashboard', $activeNav) ?>>Nástěnka</a></li>
             <?php if ($user['role'] === 'admin'): ?>
               <li><a href="/admin/users.php"<?= nav_class('admin-users', $activeNav) ?>>Uživatelé a role</a></li>

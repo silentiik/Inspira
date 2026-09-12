@@ -62,6 +62,7 @@ function migrate(PDO $pdo): void
     // fine on existing accounts: SQLite's CHECK passes on NULL, and the
     // app just treats NULL the same as 'female' when rendering.
     ensure_column($pdo, 'users', 'gender', "gender TEXT CHECK(gender IN ('male','female'))");
+    ensure_column($pdo, 'users', 'phone', 'phone TEXT');
     $unmigrated = $pdo->query("SELECT id, name FROM users WHERE first_name = '' AND name != ''")->fetchAll();
     foreach ($unmigrated as $row) {
         $parts = explode(' ', trim((string) $row['name']), 2);
