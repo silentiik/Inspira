@@ -136,27 +136,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete_user') {
         $targetId = (int) ($_POST['user_id'] ?? 0);
         if ($targetId !== (int) $user['id']) {
-            // children.parent_id is a legacy NOT NULL column (kept only
-            // for old code, real ownership lives in child_guardians) but
-            // it still cascades on delete. If a child has another
-            // guardian, repoint parent_id there first so removing one
-            // guardian doesn't wipe out a child who still has another.
-            $affected = db()->prepare('SELECT id FROM children WHERE parent_id = ?');
-            $affected->execute([$targetId]);
-            foreach ($affected->fetchAll(PDO::FETCH_COLUMN) as $childId) {
-                $other = db()->prepare('SELECT user_id FROM child_guardians WHERE child_id = ? AND user_id != ? LIMIT 1');
-                $other->execute([$childId, $targetId]);
-                $otherId = $other->fetchColumn();
-                if ($otherId !== false) {
-                    db()->prepare('UPDATE children SET parent_id = ? WHERE id = ?')->execute([(int) $otherId, $childId]);
-                }
-            }
+            // A child left with no OTHER guardian becomes orphaned once
+            // this account is gone — children have no direct link to
+            // users any more (only via child_guardians), so nothing
+            // cascades that automatically. Find those children first,
+            // while the about-to-be-deleted guardian link still exists.
+            $orphaned = db()->prepare(
+                'SELECT child_id FROM child_guardians
+                 WHERE user_id = ?
+                 AND child_id NOT IN (SELECT child_id FROM child_guardians WHERE user_id != ?)'
+            );
+            $orphaned->execute([$targetId, $targetId]);
+            $orphanedChildIds = $orphaned->fetchAll(PDO::FETCH_COLUMN);
 
             // Cascades (see app/db.php schema) also remove this
-            // account's news posts, guardian links, and (for any child
-            // with no other guardian left) the child and its lunch
-            // selections.
+            // account's news posts and guardian links.
             db()->prepare('DELETE FROM users WHERE id = ?')->execute([$targetId]);
+
+            foreach ($orphanedChildIds as $childId) {
+                delete_child((int) $childId);
+            }
+
             flash_set('success', 'Účet byl trvale smazán.');
         } else {
             flash_set('error', 'Nemůžete smazat vlastní účet.');
@@ -182,11 +182,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash_set('error', 'Zadejte prosím jméno, příjmení a program dítěte.');
         } elseif ($childDob !== '' && !DateTime::createFromFormat('Y-m-d', $childDob)) {
             flash_set('error', 'Zadejte prosím platné datum narození.');
-        } elseif (empty($validGuardianIds)) {
-            flash_set('error', 'Vyberte prosím alespoň jeden účet, ke kterému dítě patří.');
         } elseif ($action === 'add_child') {
             add_child($validGuardianIds, $childFirstName, $childLastName, $childProgram, $childDob ?: null);
-            flash_set('success', 'Dítě bylo přidáno.');
+            flash_set('success', 'Dítě bylo přidáno.' . (empty($validGuardianIds) ? ' Účet k němu můžete přiřadit později v jeho úpravě.' : ''));
         } else {
             $childId = (int) ($_POST['child_id'] ?? 0);
             update_child($childId, $validGuardianIds, $childFirstName, $childLastName, $childProgram, $childDob ?: null);

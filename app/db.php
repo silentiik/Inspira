@@ -77,7 +77,6 @@ function migrate(PDO $pdo): void
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS children (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        parent_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         name TEXT NOT NULL,
         program TEXT NOT NULL CHECK(program IN ('inspirka','domskolaci')),
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -97,18 +96,58 @@ function migrate(PDO $pdo): void
     }
 
     // Many-to-many: a child can have more than one guardian account
-    // (mother and father, say). `children.parent_id` predates this and
-    // is kept populated (first guardian) only for any old code reading
-    // it directly — new code always goes through this join table.
+    // (mother and father, say) — or none at all yet, if it's created
+    // before anyone decides who it belongs to.
     $pdo->exec("CREATE TABLE IF NOT EXISTS child_guardians (
         child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         PRIMARY KEY (child_id, user_id)
     )");
-    $pdo->exec(
-        'INSERT OR IGNORE INTO child_guardians (child_id, user_id)
-         SELECT id, parent_id FROM children'
-    );
+
+    // `children.parent_id` predates child_guardians and required every
+    // child to have exactly one (NOT NULL, foreign-keyed) owner. SQLite
+    // can't just ALTER that constraint away, so on any install that
+    // still has the column: backfill child_guardians from it (in case
+    // this install never got the earlier migration that did the same),
+    // then rebuild the table without it, following SQLite's documented
+    // procedure for schema changes ALTER TABLE can't express directly.
+    $childrenColumns = $pdo->query('PRAGMA table_info(children)')->fetchAll(PDO::FETCH_COLUMN, 1);
+    if (in_array('parent_id', $childrenColumns, true)) {
+        $pdo->exec(
+            'INSERT OR IGNORE INTO child_guardians (child_id, user_id)
+             SELECT id, parent_id FROM children'
+        );
+
+        $pdo->exec('PRAGMA foreign_keys = OFF');
+        $pdo->beginTransaction();
+        try {
+            $pdo->exec("CREATE TABLE children_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                program TEXT NOT NULL CHECK(program IN ('inspirka','domskolaci')),
+                first_name TEXT NOT NULL DEFAULT '',
+                last_name TEXT NOT NULL DEFAULT '',
+                date_of_birth TEXT,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )");
+            $pdo->exec(
+                'INSERT INTO children_new (id, name, program, first_name, last_name, date_of_birth, created_at)
+                 SELECT id, name, program, first_name, last_name, date_of_birth, created_at FROM children'
+            );
+            $pdo->exec('DROP TABLE children');
+            $pdo->exec('ALTER TABLE children_new RENAME TO children');
+            $fkErrors = $pdo->query('PRAGMA foreign_key_check')->fetchAll();
+            if ($fkErrors) {
+                throw new RuntimeException('foreign_key_check failed after dropping children.parent_id');
+            }
+            $pdo->commit();
+        } catch (Throwable $e) {
+            $pdo->rollBack();
+            $pdo->exec('PRAGMA foreign_keys = ON');
+            throw $e;
+        }
+        $pdo->exec('PRAGMA foreign_keys = ON');
+    }
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS lunch_selections (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
