@@ -714,7 +714,7 @@ img { max-width: 100%; display: block; }
   flex-shrink: 0;
 }
 .user-row[open] .user-summary-chevron { transform: rotate(180deg); }
-.user-row[open] .user-summary { border-bottom: 1px solid var(--color-border); }
+.user-row[open] .user-summary { background: var(--color-primary-light); border-bottom: 1px solid var(--color-border); }
 
 .user-edit-body { padding: 24px 20px; }
 
