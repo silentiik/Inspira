@@ -59,6 +59,7 @@
   document.querySelectorAll('.list-toolbar').forEach(function (toolbar) {
     var input = toolbar.querySelector('[data-list-search]');
     var chipsWrap = toolbar.querySelector('[data-list-filter]');
+    var countEl = toolbar.querySelector('[data-list-count]');
     var list = toolbar.nextElementSibling;
     if (!input || !list) return;
     var rows = list.querySelectorAll('.user-row');
@@ -67,12 +68,16 @@
       var query = input.value.trim().toLowerCase();
       var activeChip = chipsWrap ? chipsWrap.querySelector('.filter-chip.is-active') : null;
       var filterValue = activeChip ? activeChip.getAttribute('data-filter-value') : '';
+      var visible = 0;
       rows.forEach(function (row) {
         var name = (row.getAttribute('data-name') || '');
         var matchesSearch = name.indexOf(query) !== -1;
         var matchesFilter = !filterValue || row.getAttribute('data-filter') === filterValue;
-        row.classList.toggle('is-hidden', !(matchesSearch && matchesFilter));
+        var show = matchesSearch && matchesFilter;
+        row.classList.toggle('is-hidden', !show);
+        if (show) visible++;
       });
+      if (countEl) countEl.textContent = visible + '/' + rows.length;
     }
 
     input.addEventListener('input', applyFilters);
@@ -88,5 +93,7 @@
         });
       });
     }
+
+    applyFilters();
   });
 })();

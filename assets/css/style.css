@@ -649,7 +649,20 @@ img { max-width: 100%; display: block; }
   border-radius: var(--radius-sm);
   font: inherit;
 }
-.filter-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+.list-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+.list-count {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.filter-chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .filter-chip {
   padding: 7px 16px;
   border-radius: 999px;

@@ -310,11 +310,14 @@ require_once __DIR__ . '/../includes/header.php';
       <h2>Všechny účty</h2>
       <div class="list-toolbar">
         <input type="text" class="list-search" placeholder="Hledat podle jména…" data-list-search autocomplete="off">
-        <div class="filter-chips" data-list-filter>
-          <button type="button" class="filter-chip is-active" data-filter-value="">Vše</button>
-          <button type="button" class="filter-chip" data-filter-value="parent">Rodič</button>
-          <button type="button" class="filter-chip" data-filter-value="admin">Administrátor</button>
-          <button type="button" class="filter-chip" data-filter-value="teacher">Učitel/ka</button>
+        <div class="list-controls">
+          <span class="list-count" data-list-count></span>
+          <div class="filter-chips" data-list-filter>
+            <button type="button" class="filter-chip is-active" data-filter-value="">Vše</button>
+            <button type="button" class="filter-chip" data-filter-value="parent">Rodič</button>
+            <button type="button" class="filter-chip" data-filter-value="admin">Administrátor</button>
+            <button type="button" class="filter-chip" data-filter-value="teacher">Učitel/ka</button>
+          </div>
         </div>
       </div>
       <div class="user-list">
@@ -405,11 +408,14 @@ require_once __DIR__ . '/../includes/header.php';
       <h2>Děti</h2>
       <div class="list-toolbar">
         <input type="text" class="list-search" placeholder="Hledat podle jména…" data-list-search autocomplete="off">
-        <div class="filter-chips" data-list-filter>
-          <button type="button" class="filter-chip is-active" data-filter-value="">Vše</button>
-          <?php foreach (CHILD_PROGRAMS as $value => $label): ?>
-            <button type="button" class="filter-chip" data-filter-value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></button>
-          <?php endforeach; ?>
+        <div class="list-controls">
+          <span class="list-count" data-list-count></span>
+          <div class="filter-chips" data-list-filter>
+            <button type="button" class="filter-chip is-active" data-filter-value="">Vše</button>
+            <?php foreach (CHILD_PROGRAMS as $value => $label): ?>
+              <button type="button" class="filter-chip" data-filter-value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></button>
+            <?php endforeach; ?>
+          </div>
         </div>
       </div>
       <div class="user-list">
