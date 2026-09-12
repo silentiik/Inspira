@@ -63,32 +63,75 @@
   });
 
   // Accounts / children overview toolbars (admin/users.php): search by
-  // name plus a role/program filter chip, combined.
+  // name plus a role/program filter chip, paginated 10 rows at a time.
+  // Rows are already sorted A-Z by surname server-side, and slicing
+  // them in their existing DOM order keeps that order on every page.
   document.querySelectorAll('.list-toolbar').forEach(function (toolbar) {
     var input = toolbar.querySelector('[data-list-search]');
     var chipsWrap = toolbar.querySelector('[data-list-filter]');
     var countEl = toolbar.querySelector('[data-list-count]');
     var list = toolbar.nextElementSibling;
     if (!input || !list) return;
-    var rows = list.querySelectorAll('.user-row');
+    var paginationEl = list.nextElementSibling;
+    var rows = Array.prototype.slice.call(list.querySelectorAll('.user-row'));
+    var pageSize = 10;
+    var currentPage = 1;
 
-    function applyFilters() {
+    function getFiltered() {
       var query = input.value.trim().toLowerCase();
       var activeChip = chipsWrap ? chipsWrap.querySelector('.filter-chip.is-active') : null;
       var filterValue = activeChip ? activeChip.getAttribute('data-filter-value') : '';
-      var visible = 0;
-      rows.forEach(function (row) {
-        var name = (row.getAttribute('data-name') || '');
+      return rows.filter(function (row) {
+        var name = row.getAttribute('data-name') || '';
         var matchesSearch = name.indexOf(query) !== -1;
         var matchesFilter = !filterValue || row.getAttribute('data-filter') === filterValue;
-        var show = matchesSearch && matchesFilter;
-        row.classList.toggle('is-hidden', !show);
-        if (show) visible++;
+        return matchesSearch && matchesFilter;
       });
-      if (countEl) countEl.textContent = visible + '/' + rows.length;
     }
 
-    input.addEventListener('input', applyFilters);
+    function makePageBtn(label, page, opts) {
+      opts = opts || {};
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'page-btn' + (opts.active ? ' is-active' : '');
+      btn.textContent = label;
+      if (opts.disabled) btn.disabled = true;
+      if (!opts.disabled && !opts.active) {
+        btn.addEventListener('click', function () {
+          currentPage = page;
+          render();
+        });
+      }
+      return btn;
+    }
+
+    function render() {
+      var filtered = getFiltered();
+      var totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+      currentPage = Math.min(currentPage, totalPages);
+      var pageStart = (currentPage - 1) * pageSize;
+      var pageRows = filtered.slice(pageStart, pageStart + pageSize);
+
+      rows.forEach(function (row) {
+        row.classList.toggle('is-hidden', pageRows.indexOf(row) === -1);
+      });
+      if (countEl) countEl.textContent = filtered.length + '/' + rows.length;
+
+      if (!paginationEl || !paginationEl.classList.contains('pagination')) return;
+      paginationEl.innerHTML = '';
+      if (totalPages <= 1) return;
+
+      paginationEl.appendChild(makePageBtn('‹', currentPage - 1, { disabled: currentPage === 1 }));
+      for (var p = 1; p <= totalPages; p++) {
+        paginationEl.appendChild(makePageBtn(String(p), p, { active: p === currentPage }));
+      }
+      paginationEl.appendChild(makePageBtn('›', currentPage + 1, { disabled: currentPage === totalPages }));
+    }
+
+    input.addEventListener('input', function () {
+      currentPage = 1;
+      render();
+    });
 
     if (chipsWrap) {
       chipsWrap.querySelectorAll('.filter-chip').forEach(function (chip) {
@@ -97,11 +140,12 @@
             c.classList.remove('is-active');
           });
           chip.classList.add('is-active');
-          applyFilters();
+          currentPage = 1;
+          render();
         });
       });
     }
 
-    applyFilters();
+    render();
   });
 })();

@@ -447,6 +447,7 @@ require_once __DIR__ . '/../includes/header.php';
           </details>
         <?php endforeach; ?>
       </div>
+      <div class="pagination"></div>
 
       <h2>Děti</h2>
       <div class="list-toolbar">
@@ -532,6 +533,7 @@ require_once __DIR__ . '/../includes/header.php';
           </details>
         <?php endforeach; ?>
       </div>
+      <div class="pagination"></div>
     </div>
   </section>
 
