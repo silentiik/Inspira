@@ -362,7 +362,7 @@ require_once __DIR__ . '/../includes/header.php';
                 default => 'Rodič',
               }, ENT_QUOTES, 'UTF-8') ?></span>
               <span class="user-summary-meta">
-                <?= $row['is_active'] ? 'Aktivní' : 'Deaktivovaný' ?><?= $isSelf ? ' · toto jste vy' : '' ?>
+                <span class="status-label<?= $row['is_active'] ? ' status-label--active' : ' status-label--inactive' ?>"><?= $row['is_active'] ? 'Aktivní' : 'Deaktivovaný' ?></span><?= $isSelf ? ' · toto jste vy' : '' ?>
                 <?php if (!empty($childrenByGuardian[(int) $row['id']])): ?>
                   · <?= htmlspecialchars(implode(', ', $childrenByGuardian[(int) $row['id']]), ENT_QUOTES, 'UTF-8') ?>
                 <?php endif; ?>

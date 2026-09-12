@@ -741,6 +741,9 @@ img { max-width: 100%; display: block; }
   font-size: 0.85rem;
   margin-left: auto;
 }
+.status-label { font-weight: 700; }
+.status-label--active { color: var(--color-success); }
+.status-label--inactive { color: var(--color-error); }
 .user-summary-chevron {
   color: var(--color-text-muted);
   transition: transform 0.15s ease;
