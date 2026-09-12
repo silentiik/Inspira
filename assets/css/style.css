@@ -1110,3 +1110,26 @@ img { max-width: 100%; display: block; }
   z-index: 90;
 }
 .back-to-top.is-visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+/* ---------- Confirm dialog (replaces the browser's native confirm()) ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(58, 44, 46, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 200;
+}
+.modal-overlay[hidden] { display: none; }
+.modal-box {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 28px;
+  max-width: 420px;
+  width: 100%;
+}
+.modal-message { margin: 0 0 24px; font-weight: 600; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }

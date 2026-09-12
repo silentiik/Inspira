@@ -379,13 +379,13 @@ require_once __DIR__ . '/../includes/header.php';
                   <button type="submit" class="btn btn--outline btn--sm">Poslat odkaz pro obnovení hesla</button>
                 </form>
                 <?php if (!$isSelf): ?>
-                  <form method="post" action="/admin/users.php" onsubmit="return confirm('Opravdu změnit stav tohoto účtu?');">
+                  <form method="post" action="/admin/users.php" data-confirm="Opravdu změnit stav tohoto účtu?">
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="toggle_active">
                     <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
                     <button type="submit" class="btn btn--outline btn--sm"><?= $row['is_active'] ? 'Deaktivovat' : 'Aktivovat' ?></button>
                   </form>
-                  <form method="post" action="/admin/users.php" onsubmit="return confirm('Opravdu trvale smazat účet <?= htmlspecialchars(addslashes(full_name($row)), ENT_QUOTES, 'UTF-8') ?>? Smažou se i všechny související záznamy (novinky, děti, výběry obědů). Tuto akci nelze vrátit zpět.');">
+                  <form method="post" action="/admin/users.php" data-confirm="Opravdu trvale smazat účet <?= htmlspecialchars(full_name($row), ENT_QUOTES, 'UTF-8') ?>? Smažou se i všechny související záznamy (novinky, děti, výběry obědů). Tuto akci nelze vrátit zpět.">
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="delete_user">
                     <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
@@ -481,7 +481,7 @@ require_once __DIR__ . '/../includes/header.php';
 
             <div class="user-edit-body">
               <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
-                <form method="post" action="/admin/users.php" onsubmit="return confirm('Opravdu trvale smazat dítě <?= htmlspecialchars(addslashes(full_child_name($child)), ENT_QUOTES, 'UTF-8') ?>? Smažou se i jeho výběry obědů. Tuto akci nelze vrátit zpět.');">
+                <form method="post" action="/admin/users.php" data-confirm="Opravdu trvale smazat dítě <?= htmlspecialchars(full_child_name($child), ENT_QUOTES, 'UTF-8') ?>? Smažou se i jeho výběry obědů. Tuto akci nelze vrátit zpět.">
                   <?= csrf_field() ?>
                   <input type="hidden" name="action" value="delete_child">
                   <input type="hidden" name="child_id" value="<?= (int) $child['id'] ?>">

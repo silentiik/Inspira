@@ -8,6 +8,48 @@
     });
   });
 
+  // Styled confirm dialog for destructive form submits — replaces the
+  // browser's native confirm() popup. A form opts in with
+  // data-confirm="message shown in the dialog".
+  var confirmModal = document.querySelector('[data-confirm-modal]');
+  if (confirmModal) {
+    var confirmMessage = confirmModal.querySelector('[data-confirm-message]');
+    var confirmOk = confirmModal.querySelector('[data-confirm-ok]');
+    var confirmCancel = confirmModal.querySelector('[data-confirm-cancel]');
+    var pendingForm = null;
+
+    function closeConfirmModal() {
+      confirmModal.hidden = true;
+      pendingForm = null;
+    }
+
+    document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+      form.addEventListener('submit', function (e) {
+        if (form.dataset.confirmed === 'true') return; // already confirmed below — let it through
+        e.preventDefault();
+        pendingForm = form;
+        confirmMessage.textContent = form.getAttribute('data-confirm');
+        confirmModal.hidden = false;
+        confirmOk.focus();
+      });
+    });
+
+    confirmOk.addEventListener('click', function () {
+      if (pendingForm) {
+        pendingForm.dataset.confirmed = 'true';
+        pendingForm.submit();
+      }
+      closeConfirmModal();
+    });
+    confirmCancel.addEventListener('click', closeConfirmModal);
+    confirmModal.addEventListener('click', function (e) {
+      if (e.target === confirmModal) closeConfirmModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !confirmModal.hidden) closeConfirmModal();
+    });
+  }
+
   var toggle = document.querySelector('.nav-toggle');
   var navLinks = document.querySelector('.nav-links');
 

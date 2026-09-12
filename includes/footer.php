@@ -39,6 +39,17 @@
 </footer>
 
 <button class="back-to-top" aria-label="Zpět nahoru">↑</button>
+
+<div class="modal-overlay" data-confirm-modal hidden>
+  <div class="modal-box" role="alertdialog" aria-modal="true">
+    <p class="modal-message" data-confirm-message></p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn--outline btn--sm" data-confirm-cancel>Zrušit</button>
+      <button type="button" class="btn btn--danger btn--sm" data-confirm-ok>Potvrdit</button>
+    </div>
+  </div>
+</div>
+
 <script src="<?= htmlspecialchars(asset_url('/assets/js/main.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 <?php foreach ($extraScripts ?? [] as $script): ?>
 <script src="<?= htmlspecialchars(asset_url($script), ENT_QUOTES, 'UTF-8') ?>"></script>

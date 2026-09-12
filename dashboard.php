@@ -131,7 +131,7 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="news-meta"><?= htmlspecialchars($item['author_name'], ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars(date('j. n. Y', strtotime($item['created_at'])), ENT_QUOTES, 'UTF-8') ?></div>
                 <p style="margin:0;"><?= nl2br(htmlspecialchars($item['body'], ENT_QUOTES, 'UTF-8')) ?></p>
                 <?php if ($canPost): ?>
-                  <form method="post" action="/dashboard.php" style="margin-top:8px;" onsubmit="return confirm('Opravdu smazat tuto novinku?');">
+                  <form method="post" action="/dashboard.php" style="margin-top:8px;" data-confirm="Opravdu smazat tuto novinku?">
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="delete_news">
                     <input type="hidden" name="news_id" value="<?= (int) $item['id'] ?>">
