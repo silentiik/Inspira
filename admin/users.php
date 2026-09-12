@@ -28,14 +28,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
     }
 
-    if ($action === 'change_role') {
+    if ($action === 'update_user') {
         $targetId = (int) ($_POST['user_id'] ?? 0);
+        $newName = trim((string) ($_POST['name'] ?? ''));
+        $newEmail = strtolower(trim((string) ($_POST['email'] ?? '')));
         $newRole = (string) ($_POST['role'] ?? '');
-        if ($targetId !== (int) $user['id'] && in_array($newRole, ['admin', 'teacher', 'parent'], true)) {
-            db()->prepare('UPDATE users SET role = ? WHERE id = ?')->execute([$newRole, $targetId]);
-            flash_set('success', 'Role byla změněna.');
+        $isSelf = $targetId === (int) $user['id'];
+
+        if ($newName === '' || !filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
+            flash_set('error', 'Zadejte prosím platné jméno a e-mail.');
+        } elseif (!$isSelf && !in_array($newRole, ['admin', 'teacher', 'parent'], true)) {
+            flash_set('error', 'Neplatná role.');
         } else {
-            flash_set('error', 'Nemůžete změnit vlastní roli.');
+            $existing = db()->prepare('SELECT id FROM users WHERE email = ? AND id != ?');
+            $existing->execute([$newEmail, $targetId]);
+            if ($existing->fetch()) {
+                flash_set('error', 'Tento e-mail už používá jiný účet.');
+            } else {
+                if ($isSelf) {
+                    // Role is intentionally left out here — changing your
+                    // own role could lock you out of this very page.
+                    db()->prepare('UPDATE users SET name = ?, email = ? WHERE id = ?')
+                        ->execute([$newName, $newEmail, $targetId]);
+                } else {
+                    db()->prepare('UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?')
+                        ->execute([$newName, $newEmail, $newRole, $targetId]);
+                }
+                flash_set('success', 'Účet byl uložen.');
+            }
         }
     }
 
@@ -95,45 +115,60 @@ require_once __DIR__ . '/../includes/header.php';
         </form>
       </div>
 
-      <div class="schedule-table-wrap">
-        <table class="price-table" style="min-width:600px;">
-          <thead><tr><th>Jméno</th><th>E-mail</th><th>Role</th><th>Stav</th><th></th></tr></thead>
-          <tbody>
-            <?php foreach ($allUsers as $row): ?>
-              <tr>
-                <td><?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?></td>
-                <td><?= htmlspecialchars($row['email'], ENT_QUOTES, 'UTF-8') ?></td>
-                <td>
-                  <?php if ((int) $row['id'] === (int) $user['id']): ?>
-                    <?= htmlspecialchars($row['role'], ENT_QUOTES, 'UTF-8') ?>
-                  <?php else: ?>
-                    <form method="post" action="/admin/users.php" style="display:flex; gap:6px; align-items:center;">
-                      <?= csrf_field() ?>
-                      <input type="hidden" name="action" value="change_role">
-                      <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
-                      <select name="role" onchange="this.form.submit()">
-                        <option value="parent"<?= $row['role'] === 'parent' ? ' selected' : '' ?>>Rodič</option>
-                        <option value="teacher"<?= $row['role'] === 'teacher' ? ' selected' : '' ?>>Učitel/ka</option>
-                        <option value="admin"<?= $row['role'] === 'admin' ? ' selected' : '' ?>>Administrátor</option>
-                      </select>
-                    </form>
-                  <?php endif; ?>
-                </td>
-                <td><?= $row['is_active'] ? 'Aktivní' : 'Deaktivovaný' ?></td>
-                <td>
-                  <?php if ((int) $row['id'] !== (int) $user['id']): ?>
-                    <form method="post" action="/admin/users.php" onsubmit="return confirm('Opravdu změnit stav tohoto účtu?');">
-                      <?= csrf_field() ?>
-                      <input type="hidden" name="action" value="toggle_active">
-                      <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
-                      <button type="submit" class="btn btn--outline btn--sm"><?= $row['is_active'] ? 'Deaktivovat' : 'Aktivovat' ?></button>
-                    </form>
-                  <?php endif; ?>
-                </td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
+      <h2>Všechny účty</h2>
+      <div class="stack">
+        <?php foreach ($allUsers as $row): $isSelf = (int) $row['id'] === (int) $user['id']; ?>
+          <div class="form-card">
+            <div class="portal-topbar" style="margin-bottom:16px;">
+              <div class="portal-user">
+                <div class="portal-avatar"><?= htmlspecialchars(mb_strtoupper(mb_substr($row['name'], 0, 1)), ENT_QUOTES, 'UTF-8') ?></div>
+                <div>
+                  <span class="role-badge"><?= htmlspecialchars(match ($row['role']) {
+                    'admin' => 'Administrátor',
+                    'teacher' => 'Učitel/ka',
+                    default => 'Rodič',
+                  }, ENT_QUOTES, 'UTF-8') ?></span>
+                  <span class="hint-text"><?= $row['is_active'] ? 'Aktivní' : 'Deaktivovaný' ?><?= $isSelf ? ' · toto jste vy' : '' ?></span>
+                </div>
+              </div>
+              <?php if (!$isSelf): ?>
+                <form method="post" action="/admin/users.php" onsubmit="return confirm('Opravdu změnit stav tohoto účtu?');">
+                  <?= csrf_field() ?>
+                  <input type="hidden" name="action" value="toggle_active">
+                  <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
+                  <button type="submit" class="btn btn--outline btn--sm"><?= $row['is_active'] ? 'Deaktivovat' : 'Aktivovat' ?></button>
+                </form>
+              <?php endif; ?>
+            </div>
+
+            <form method="post" action="/admin/users.php">
+              <?= csrf_field() ?>
+              <input type="hidden" name="action" value="update_user">
+              <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
+              <div class="field-row">
+                <div class="field">
+                  <label for="name-<?= (int) $row['id'] ?>">Jméno</label>
+                  <input type="text" id="name-<?= (int) $row['id'] ?>" name="name" value="<?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?>" required>
+                </div>
+                <div class="field">
+                  <label for="email-<?= (int) $row['id'] ?>">E-mail</label>
+                  <input type="email" id="email-<?= (int) $row['id'] ?>" name="email" value="<?= htmlspecialchars($row['email'], ENT_QUOTES, 'UTF-8') ?>" required>
+                </div>
+                <?php if (!$isSelf): ?>
+                  <div class="field">
+                    <label for="role-<?= (int) $row['id'] ?>">Role</label>
+                    <select id="role-<?= (int) $row['id'] ?>" name="role">
+                      <option value="parent"<?= $row['role'] === 'parent' ? ' selected' : '' ?>>Rodič</option>
+                      <option value="teacher"<?= $row['role'] === 'teacher' ? ' selected' : '' ?>>Učitel/ka</option>
+                      <option value="admin"<?= $row['role'] === 'admin' ? ' selected' : '' ?>>Administrátor</option>
+                    </select>
+                  </div>
+                <?php endif; ?>
+              </div>
+              <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
+            </form>
+          </div>
+        <?php endforeach; ?>
       </div>
     </div>
   </section>
