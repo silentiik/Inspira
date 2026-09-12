@@ -26,6 +26,18 @@ function initials(array $user): string
     $letters = mb_strtoupper(mb_substr($user['first_name'] ?? '', 0, 1)) . mb_strtoupper(mb_substr($user['last_name'] ?? '', 0, 1));
     return $letters !== '' ? $letters : '?';
 }
+
+/**
+ * Appends the file's last-modified time as a query string, so browsers
+ * fetch a fresh copy whenever the file actually changes instead of
+ * serving a stale cached version after a deploy.
+ */
+function asset_url(string $publicPath): string
+{
+    $diskPath = __DIR__ . '/..' . $publicPath;
+    $version = @filemtime($diskPath);
+    return $publicPath . ($version ? '?v=' . $version : '');
+}
 ?>
 <!DOCTYPE html>
 <html lang="cs">
@@ -36,7 +48,7 @@ function initials(array $user): string
 <meta name="description" content="<?= htmlspecialchars($pageDescription, ENT_QUOTES, 'UTF-8') ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="<?= htmlspecialchars(asset_url('/assets/css/style.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 <body>
 

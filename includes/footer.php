@@ -39,9 +39,9 @@
 </footer>
 
 <button class="back-to-top" aria-label="Zpět nahoru">↑</button>
-<script src="/assets/js/main.js"></script>
+<script src="<?= htmlspecialchars(asset_url('/assets/js/main.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 <?php foreach ($extraScripts ?? [] as $script): ?>
-<script src="<?= htmlspecialchars($script, ENT_QUOTES, 'UTF-8') ?>"></script>
+<script src="<?= htmlspecialchars(asset_url($script), ENT_QUOTES, 'UTF-8') ?>"></script>
 <?php endforeach; ?>
 </body>
 </html>
