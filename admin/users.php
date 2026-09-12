@@ -58,7 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             (string) ($_POST['last_name'] ?? ''),
             (string) ($_POST['role'] ?? ''),
             $directPassword !== '' ? $directPassword : null,
-            (string) ($_POST['gender'] ?? '')
+            (string) ($_POST['gender'] ?? ''),
+            (string) ($_POST['phone'] ?? '')
         );
         $linkNote = $result['link'] ? ' Odkaz pro nastavení hesla: ' . $result['link'] : '';
         flash_set(
@@ -67,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'ok' => $directPassword !== '' ? 'Účet byl vytvořen se zadaným heslem.' : 'Pozvánka byla odeslána.' . $linkNote,
                 'exists' => 'Tento e-mail už má vytvořený účet.',
                 'mail_failed' => 'Účet byl vytvořen, ale e-mail se nepodařilo odeslat.' . $linkNote,
-                default => 'Zkontrolujte prosím zadané údaje (heslo musí mít alespoň 8 znaků).',
+                default => 'Zkontrolujte prosím zadané údaje (heslo musí mít alespoň 8 znaků, telefon musí být platný).',
             }
         );
     }
@@ -81,12 +82,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $newPassword = (string) ($_POST['new_password'] ?? '');
         $newGender = (string) ($_POST['gender'] ?? '');
         $newGender = in_array($newGender, ['male', 'female'], true) ? $newGender : null;
+        $newPhone = trim((string) ($_POST['phone'] ?? ''));
         $isSelf = $targetId === (int) $user['id'];
 
         if ($firstName === '' || $lastName === '' || !filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
             flash_set('error', 'Zadejte prosím platné jméno, příjmení a e-mail.');
         } elseif (!$isSelf && !in_array($newRole, ['admin', 'teacher', 'parent'], true)) {
             flash_set('error', 'Neplatná role.');
+        } elseif ($newPhone !== '' && !preg_match('/^[0-9+\-\s()]{6,20}$/', $newPhone)) {
+            flash_set('error', 'Zadejte prosím platné telefonní číslo.');
         } elseif ($newPassword !== '' && mb_strlen($newPassword) < 8) {
             flash_set('error', 'Nové heslo musí mít alespoň 8 znaků.');
         } else {
@@ -96,14 +100,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 flash_set('error', 'Tento e-mail už používá jiný účet.');
             } else {
                 $fullName = trim("$firstName $lastName");
+                $newPhone = $newPhone !== '' ? $newPhone : null;
                 if ($isSelf) {
                     // Role is intentionally left out here — changing your
                     // own role could lock you out of this very page.
-                    db()->prepare('UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, gender = ? WHERE id = ?')
-                        ->execute([$fullName, $firstName, $lastName, $newEmail, $newGender, $targetId]);
+                    db()->prepare('UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, gender = ?, phone = ? WHERE id = ?')
+                        ->execute([$fullName, $firstName, $lastName, $newEmail, $newGender, $newPhone, $targetId]);
                 } else {
-                    db()->prepare('UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, role = ?, gender = ? WHERE id = ?')
-                        ->execute([$fullName, $firstName, $lastName, $newEmail, $newRole, $newGender, $targetId]);
+                    db()->prepare('UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, role = ?, gender = ?, phone = ? WHERE id = ?')
+                        ->execute([$fullName, $firstName, $lastName, $newEmail, $newRole, $newGender, $newPhone, $targetId]);
                 }
                 if ($newPassword !== '') {
                     set_password($targetId, $newPassword);
@@ -263,12 +268,18 @@ require_once __DIR__ . '/../includes/header.php';
                   </select>
                 </div>
               </div>
-              <div class="field">
-                <label for="gender">Pohlaví</label>
-                <select id="gender" name="gender">
-                  <option value="female">Žena</option>
-                  <option value="male">Muž</option>
-                </select>
+              <div class="field-row">
+                <div class="field">
+                  <label for="phone">Telefon</label>
+                  <input type="tel" id="phone" name="phone" placeholder="+420 123 456 789">
+                </div>
+                <div class="field">
+                  <label for="gender">Pohlaví</label>
+                  <select id="gender" name="gender">
+                    <option value="female">Žena</option>
+                    <option value="male">Muž</option>
+                  </select>
+                </div>
               </div>
               <div class="field">
                 <label for="password">Heslo (nepovinné)</label>
@@ -413,12 +424,18 @@ require_once __DIR__ . '/../includes/header.php';
                     </div>
                   <?php endif; ?>
                 </div>
-                <div class="field">
-                  <label for="gender-<?= (int) $row['id'] ?>">Pohlaví</label>
-                  <select id="gender-<?= (int) $row['id'] ?>" name="gender">
-                    <option value="female"<?= $row['gender'] !== 'male' ? ' selected' : '' ?>>Žena</option>
-                    <option value="male"<?= $row['gender'] === 'male' ? ' selected' : '' ?>>Muž</option>
-                  </select>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="phone-<?= (int) $row['id'] ?>">Telefon</label>
+                    <input type="tel" id="phone-<?= (int) $row['id'] ?>" name="phone" value="<?= htmlspecialchars((string) $row['phone'], ENT_QUOTES, 'UTF-8') ?>" placeholder="+420 123 456 789">
+                  </div>
+                  <div class="field">
+                    <label for="gender-<?= (int) $row['id'] ?>">Pohlaví</label>
+                    <select id="gender-<?= (int) $row['id'] ?>" name="gender">
+                      <option value="female"<?= $row['gender'] !== 'male' ? ' selected' : '' ?>>Žena</option>
+                      <option value="male"<?= $row['gender'] === 'male' ? ' selected' : '' ?>>Muž</option>
+                    </select>
+                  </div>
                 </div>
                 <div class="field">
                   <label for="new_password-<?= (int) $row['id'] ?>">Nastavit nové heslo (nepovinné)</label>

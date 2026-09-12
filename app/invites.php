@@ -22,8 +22,9 @@ require_once __DIR__ . '/config.php';
  *   log. 'link' is always null when $password was set directly.
  *
  * @param ?string $gender 'male' or 'female', or null to leave unset.
+ * @param ?string $phone Free-form phone number, or null to leave unset.
  */
-function invite_user(string $email, string $firstName, string $lastName, string $role, ?string $password = null, ?string $gender = null): array
+function invite_user(string $email, string $firstName, string $lastName, string $role, ?string $password = null, ?string $gender = null, ?string $phone = null): array
 {
     $email = strtolower(trim($email));
     $firstName = trim($firstName);
@@ -38,6 +39,11 @@ function invite_user(string $email, string $firstName, string $lastName, string 
         return ['status' => 'invalid', 'link' => null];
     }
     $gender = in_array($gender, ['male', 'female'], true) ? $gender : null;
+    $phone = trim((string) $phone);
+    if ($phone !== '' && !preg_match('/^[0-9+\-\s()]{6,20}$/', $phone)) {
+        return ['status' => 'invalid', 'link' => null];
+    }
+    $phone = $phone !== '' ? $phone : null;
 
     $existing = db()->prepare('SELECT id FROM users WHERE email = ?');
     $existing->execute([$email]);
@@ -50,9 +56,9 @@ function invite_user(string $email, string $firstName, string $lastName, string 
     $passwordHash = hash_password($password ?? bin2hex(random_bytes(32)));
 
     $stmt = db()->prepare(
-        'INSERT INTO users (email, password_hash, name, first_name, last_name, role, gender) VALUES (?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO users (email, password_hash, name, first_name, last_name, role, gender, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
     );
-    $stmt->execute([$email, $passwordHash, trim("$firstName $lastName"), $firstName, $lastName, $role, $gender]);
+    $stmt->execute([$email, $passwordHash, trim("$firstName $lastName"), $firstName, $lastName, $role, $gender, $phone]);
     $userId = (int) db()->lastInsertId();
 
     if ($password !== null) {
