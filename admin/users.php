@@ -163,22 +163,23 @@ require_once __DIR__ . '/../includes/header.php';
       </div>
 
       <h2>Všechny účty</h2>
-      <div class="stack">
+      <div class="user-list">
         <?php foreach ($allUsers as $row): $isSelf = (int) $row['id'] === (int) $user['id']; ?>
-          <div class="form-card">
-            <div class="portal-topbar" style="margin-bottom:16px;">
-              <div class="portal-user">
-                <div class="portal-avatar"><?= htmlspecialchars(initials($row), ENT_QUOTES, 'UTF-8') ?></div>
-                <div>
-                  <span class="role-badge"><?= htmlspecialchars(match ($row['role']) {
-                    'admin' => 'Administrátor',
-                    'teacher' => 'Učitel/ka',
-                    default => 'Rodič',
-                  }, ENT_QUOTES, 'UTF-8') ?></span>
-                  <span class="hint-text"><?= $row['is_active'] ? 'Aktivní' : 'Deaktivovaný' ?><?= $isSelf ? ' · toto jste vy' : '' ?></span>
-                </div>
-              </div>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <details class="user-row" name="user-edit">
+            <summary class="user-summary">
+              <div class="portal-avatar"><?= htmlspecialchars(initials($row), ENT_QUOTES, 'UTF-8') ?></div>
+              <span class="user-summary-name"><?= htmlspecialchars(full_name($row), ENT_QUOTES, 'UTF-8') ?></span>
+              <span class="role-badge"><?= htmlspecialchars(match ($row['role']) {
+                'admin' => 'Administrátor',
+                'teacher' => 'Učitel/ka',
+                default => 'Rodič',
+              }, ENT_QUOTES, 'UTF-8') ?></span>
+              <span class="user-summary-meta"><?= $row['is_active'] ? 'Aktivní' : 'Deaktivovaný' ?><?= $isSelf ? ' · toto jste vy' : '' ?></span>
+              <span class="user-summary-chevron" aria-hidden="true">▾</span>
+            </summary>
+
+            <div class="user-edit-body">
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
                 <form method="post" action="/admin/users.php">
                   <?= csrf_field() ?>
                   <input type="hidden" name="action" value="send_reset">
@@ -200,45 +201,45 @@ require_once __DIR__ . '/../includes/header.php';
                   </form>
                 <?php endif; ?>
               </div>
-            </div>
 
-            <form method="post" action="/admin/users.php">
-              <?= csrf_field() ?>
-              <input type="hidden" name="action" value="update_user">
-              <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
-              <div class="field-row">
-                <div class="field">
-                  <label for="first_name-<?= (int) $row['id'] ?>">Jméno</label>
-                  <input type="text" id="first_name-<?= (int) $row['id'] ?>" name="first_name" value="<?= htmlspecialchars($row['first_name'], ENT_QUOTES, 'UTF-8') ?>" required>
-                </div>
-                <div class="field">
-                  <label for="last_name-<?= (int) $row['id'] ?>">Příjmení</label>
-                  <input type="text" id="last_name-<?= (int) $row['id'] ?>" name="last_name" value="<?= htmlspecialchars($row['last_name'], ENT_QUOTES, 'UTF-8') ?>" required>
-                </div>
-              </div>
-              <div class="field-row">
-                <div class="field">
-                  <label for="email-<?= (int) $row['id'] ?>">E-mail</label>
-                  <input type="email" id="email-<?= (int) $row['id'] ?>" name="email" value="<?= htmlspecialchars($row['email'], ENT_QUOTES, 'UTF-8') ?>" required>
-                </div>
-                <?php if (!$isSelf): ?>
+              <form method="post" action="/admin/users.php">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="update_user">
+                <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
+                <div class="field-row">
                   <div class="field">
-                    <label for="role-<?= (int) $row['id'] ?>">Role</label>
-                    <select id="role-<?= (int) $row['id'] ?>" name="role">
-                      <option value="parent"<?= $row['role'] === 'parent' ? ' selected' : '' ?>>Rodič</option>
-                      <option value="teacher"<?= $row['role'] === 'teacher' ? ' selected' : '' ?>>Učitel/ka</option>
-                      <option value="admin"<?= $row['role'] === 'admin' ? ' selected' : '' ?>>Administrátor</option>
-                    </select>
+                    <label for="first_name-<?= (int) $row['id'] ?>">Jméno</label>
+                    <input type="text" id="first_name-<?= (int) $row['id'] ?>" name="first_name" value="<?= htmlspecialchars($row['first_name'], ENT_QUOTES, 'UTF-8') ?>" required>
                   </div>
-                <?php endif; ?>
-              </div>
-              <div class="field">
-                <label for="new_password-<?= (int) $row['id'] ?>">Nastavit nové heslo (nepovinné)</label>
-                <input type="password" id="new_password-<?= (int) $row['id'] ?>" name="new_password" minlength="8" placeholder="Ponechte prázdné, pokud heslo neměnit">
-              </div>
-              <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
-            </form>
-          </div>
+                  <div class="field">
+                    <label for="last_name-<?= (int) $row['id'] ?>">Příjmení</label>
+                    <input type="text" id="last_name-<?= (int) $row['id'] ?>" name="last_name" value="<?= htmlspecialchars($row['last_name'], ENT_QUOTES, 'UTF-8') ?>" required>
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="email-<?= (int) $row['id'] ?>">E-mail</label>
+                    <input type="email" id="email-<?= (int) $row['id'] ?>" name="email" value="<?= htmlspecialchars($row['email'], ENT_QUOTES, 'UTF-8') ?>" required>
+                  </div>
+                  <?php if (!$isSelf): ?>
+                    <div class="field">
+                      <label for="role-<?= (int) $row['id'] ?>">Role</label>
+                      <select id="role-<?= (int) $row['id'] ?>" name="role">
+                        <option value="parent"<?= $row['role'] === 'parent' ? ' selected' : '' ?>>Rodič</option>
+                        <option value="teacher"<?= $row['role'] === 'teacher' ? ' selected' : '' ?>>Učitel/ka</option>
+                        <option value="admin"<?= $row['role'] === 'admin' ? ' selected' : '' ?>>Administrátor</option>
+                      </select>
+                    </div>
+                  <?php endif; ?>
+                </div>
+                <div class="field">
+                  <label for="new_password-<?= (int) $row['id'] ?>">Nastavit nové heslo (nepovinné)</label>
+                  <input type="password" id="new_password-<?= (int) $row['id'] ?>" name="new_password" minlength="8" placeholder="Ponechte prázdné, pokud heslo neměnit">
+                </div>
+                <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
+              </form>
+            </div>
+          </details>
         <?php endforeach; ?>
       </div>
     </div>
