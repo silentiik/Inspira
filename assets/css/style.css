@@ -1042,6 +1042,21 @@ img { max-width: 100%; display: block; }
 .news-item h4 { margin-bottom: 4px; }
 .news-meta { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 8px; }
 .news-item.is-pinned { background: var(--color-bg-alt); border-radius: var(--radius-sm); padding: 16px; border-bottom: none; margin-bottom: 10px; }
+.news-image {
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  margin-top: 10px;
+  box-shadow: var(--shadow-sm);
+}
+.news-attachments {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.news-attachments a { font-weight: 600; }
 
 .lunch-week { display: flex; flex-direction: column; gap: 10px; }
 .lunch-day {

@@ -17,8 +17,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $body = trim((string) ($_POST['body'] ?? ''));
         $pinned = !empty($_POST['pinned']);
         if ($title !== '' && $body !== '') {
-            create_news((int) $user['id'], $title, $body, $pinned);
-            flash_set('success', 'Novinka byla zveřejněna.');
+            $newsId = create_news((int) $user['id'], $title, $body, $pinned);
+
+            $uploadErrors = [];
+            $uploaded = $_FILES['attachments'] ?? null;
+            if ($uploaded && is_array($uploaded['name'])) {
+                $fileCount = min(count($uploaded['name']), NEWS_MAX_ATTACHMENTS);
+                for ($i = 0; $i < $fileCount; $i++) {
+                    if ($uploaded['error'][$i] === UPLOAD_ERR_NO_FILE) {
+                        continue;
+                    }
+                    if ($uploaded['error'][$i] !== UPLOAD_ERR_OK) {
+                        $uploadErrors[] = 'Soubor ' . $uploaded['name'][$i] . ' se nepodařilo nahrát.';
+                        continue;
+                    }
+                    $error = add_news_attachment($newsId, $uploaded['tmp_name'][$i], $uploaded['name'][$i], (int) $uploaded['size'][$i]);
+                    if ($error !== null) {
+                        $uploadErrors[] = $error;
+                    }
+                }
+            }
+
+            flash_set(
+                empty($uploadErrors) ? 'success' : 'error',
+                empty($uploadErrors)
+                    ? 'Novinka byla zveřejněna.'
+                    : 'Novinka byla zveřejněna, ale: ' . implode(' ', $uploadErrors)
+            );
         }
         header('Location: /dashboard.php');
         exit;
@@ -91,16 +116,59 @@ require_once __DIR__ . '/includes/header.php';
       <div class="portal-grid">
       <?php endif; ?>
         <div class="stack">
+          <?php if ($canPost): ?>
+            <div class="form-card">
+              <h3 class="mt-0">Přidat novinku</h3>
+              <form method="post" action="/dashboard.php" enctype="multipart/form-data">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="post_news">
+                <div class="field">
+                  <label for="title">Titulek</label>
+                  <input type="text" id="title" name="title" required>
+                </div>
+                <div class="field">
+                  <label for="body">Text</label>
+                  <textarea id="body" name="body" required></textarea>
+                </div>
+                <div class="field">
+                  <label for="attachments">Přílohy a obrázky (nepovinné)</label>
+                  <input type="file" id="attachments" name="attachments[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
+                  <span class="hint-text">Max. <?= NEWS_MAX_ATTACHMENTS ?> souborů, každý do <?= (int) (NEWS_MAX_FILE_SIZE / 1024 / 1024) ?> MB. Obrázky se zobrazí přímo v novince, ostatní soubory jako odkaz ke stažení.</span>
+                </div>
+                <div class="field checkbox-field">
+                  <input type="checkbox" id="pinned" name="pinned">
+                  <label for="pinned" style="margin:0;">Připnout nahoru</label>
+                </div>
+                <button type="submit" class="btn btn--accent">Zveřejnit novinku</button>
+              </form>
+            </div>
+          <?php endif; ?>
+
           <div class="form-card">
             <h3 class="mt-0">📋 Nástěnka — novinky z centra</h3>
             <?php if (empty($newsItems)): ?>
               <p class="hint-text">Zatím tu nejsou žádné novinky.</p>
             <?php endif; ?>
             <?php foreach ($newsItems as $item): ?>
+              <?php
+                $attachments = attachments_for_news((int) $item['id']);
+                $images = array_filter($attachments, fn ($a) => str_starts_with($a['mime_type'], 'image/'));
+                $files = array_filter($attachments, fn ($a) => !str_starts_with($a['mime_type'], 'image/'));
+              ?>
               <div class="news-item<?= $item['pinned'] ? ' is-pinned' : '' ?>">
                 <h4><?= $item['pinned'] ? '📌 ' : '' ?><?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?></h4>
                 <div class="news-meta"><?= htmlspecialchars($item['author_name'], ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars(date('j. n. Y', strtotime($item['created_at'])), ENT_QUOTES, 'UTF-8') ?></div>
                 <p style="margin:0;"><?= nl2br(htmlspecialchars($item['body'], ENT_QUOTES, 'UTF-8')) ?></p>
+                <?php foreach ($images as $image): ?>
+                  <img class="news-image" src="/attachment.php?id=<?= (int) $image['id'] ?>" alt="<?= htmlspecialchars($image['original_name'], ENT_QUOTES, 'UTF-8') ?>">
+                <?php endforeach; ?>
+                <?php if ($files): ?>
+                  <ul class="news-attachments">
+                    <?php foreach ($files as $file): ?>
+                      <li><a href="/attachment.php?id=<?= (int) $file['id'] ?>">📎 <?= htmlspecialchars($file['original_name'], ENT_QUOTES, 'UTF-8') ?></a></li>
+                    <?php endforeach; ?>
+                  </ul>
+                <?php endif; ?>
                 <?php if ($canPost): ?>
                   <form method="post" action="/dashboard.php" style="margin-top:8px;" data-confirm="Opravdu smazat tuto novinku?">
                     <?= csrf_field() ?>
@@ -112,29 +180,6 @@ require_once __DIR__ . '/includes/header.php';
               </div>
             <?php endforeach; ?>
           </div>
-
-          <?php if ($canPost): ?>
-            <div class="form-card">
-              <h3 class="mt-0">Přidat novinku</h3>
-              <form method="post" action="/dashboard.php">
-                <?= csrf_field() ?>
-                <input type="hidden" name="action" value="post_news">
-                <div class="field">
-                  <label for="title">Titulek</label>
-                  <input type="text" id="title" name="title" required>
-                </div>
-                <div class="field">
-                  <label for="body">Text</label>
-                  <textarea id="body" name="body" required></textarea>
-                </div>
-                <div class="field checkbox-field">
-                  <input type="checkbox" id="pinned" name="pinned">
-                  <label for="pinned" style="margin:0;">Připnout nahoru</label>
-                </div>
-                <button type="submit" class="btn btn--accent">Zveřejnit novinku</button>
-              </form>
-            </div>
-          <?php endif; ?>
         </div>
 
         <?php if ($user['role'] === 'parent'): ?>

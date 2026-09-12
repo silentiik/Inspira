@@ -176,6 +176,20 @@ function migrate(PDO $pdo): void
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
     )");
 
+    // Files (photos or documents) attached to a news post. The actual
+    // bytes live on disk under DATA_DIR/news-uploads, named randomly —
+    // this row is what maps a safe random filename back to the
+    // original name and lets attachment.php authorize + serve it.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS news_attachments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        news_id INTEGER NOT NULL REFERENCES news(id) ON DELETE CASCADE,
+        original_name TEXT NOT NULL,
+        stored_name TEXT NOT NULL,
+        mime_type TEXT NOT NULL,
+        size_bytes INTEGER NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )");
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS content_blocks (
         block_key TEXT PRIMARY KEY,
         value TEXT NOT NULL,
