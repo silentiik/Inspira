@@ -1062,8 +1062,6 @@ img { max-width: 100%; display: block; }
 }
 .icon-btn--edit:hover { border-color: var(--color-primary); color: var(--color-primary-dark); }
 .icon-btn--pin:hover { border-color: var(--color-primary); color: var(--color-primary-dark); }
-.icon-btn--pin.is-active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
-.icon-btn--pin.is-active:hover { background: var(--color-primary-dark); border-color: var(--color-primary-dark); }
 .icon-btn--delete {
   background: var(--color-error);
   border-color: var(--color-error);

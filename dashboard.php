@@ -199,7 +199,7 @@ require_once __DIR__ . '/includes/header.php';
                         <?= csrf_field() ?>
                         <input type="hidden" name="action" value="toggle_pin">
                         <input type="hidden" name="news_id" value="<?= (int) $item['id'] ?>">
-                        <button type="submit" class="icon-btn icon-btn--pin<?= $item['pinned'] ? ' is-active' : '' ?>" aria-label="<?= $item['pinned'] ? 'Odepnout novinku' : 'Připnout novinku nahoru' ?>">📌</button>
+                        <button type="submit" class="icon-btn icon-btn--pin" aria-label="<?= $item['pinned'] ? 'Odepnout novinku' : 'Připnout novinku nahoru' ?>">📌</button>
                       </form>
                       <button type="button" class="icon-btn icon-btn--edit" data-toggle-edit="edit-news-<?= (int) $item['id'] ?>" aria-label="Upravit novinku">✎</button>
                       <form method="post" action="/dashboard.php" data-confirm="Opravdu smazat tuto novinku?">
