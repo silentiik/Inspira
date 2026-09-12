@@ -456,7 +456,7 @@ require_once __DIR__ . '/../includes/header.php';
               <span class="role-badge"><?= htmlspecialchars(CHILD_PROGRAMS[$child['program']] ?? $child['program'], ENT_QUOTES, 'UTF-8') ?></span>
               <span class="user-summary-meta">
                 <?= $child['date_of_birth'] ? htmlspecialchars(date('j. n. Y', strtotime($child['date_of_birth'])), ENT_QUOTES, 'UTF-8') . ' · ' : '' ?>
-                <?= htmlspecialchars(!empty($child['guardian_names']) ? implode(', ', $child['guardian_names']) : '(bez účtu)', ENT_QUOTES, 'UTF-8') ?>
+                <?= htmlspecialchars(!empty($child['guardian_names']) ? implode(', ', $child['guardian_names']) : 'bez přiřazeného rodiče', ENT_QUOTES, 'UTF-8') ?>
               </span>
               <span class="user-summary-chevron" aria-hidden="true">▾</span>
             </summary>
