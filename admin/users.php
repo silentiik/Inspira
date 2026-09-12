@@ -57,7 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             (string) ($_POST['first_name'] ?? ''),
             (string) ($_POST['last_name'] ?? ''),
             (string) ($_POST['role'] ?? ''),
-            $directPassword !== '' ? $directPassword : null
+            $directPassword !== '' ? $directPassword : null,
+            (string) ($_POST['gender'] ?? '')
         );
         $linkNote = $result['link'] ? ' Odkaz pro nastavení hesla: ' . $result['link'] : '';
         flash_set(
@@ -78,6 +79,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $newEmail = strtolower(trim((string) ($_POST['email'] ?? '')));
         $newRole = (string) ($_POST['role'] ?? '');
         $newPassword = (string) ($_POST['new_password'] ?? '');
+        $newGender = (string) ($_POST['gender'] ?? '');
+        $newGender = in_array($newGender, ['male', 'female'], true) ? $newGender : null;
         $isSelf = $targetId === (int) $user['id'];
 
         if ($firstName === '' || $lastName === '' || !filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
@@ -96,11 +99,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($isSelf) {
                     // Role is intentionally left out here — changing your
                     // own role could lock you out of this very page.
-                    db()->prepare('UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ? WHERE id = ?')
-                        ->execute([$fullName, $firstName, $lastName, $newEmail, $targetId]);
+                    db()->prepare('UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, gender = ? WHERE id = ?')
+                        ->execute([$fullName, $firstName, $lastName, $newEmail, $newGender, $targetId]);
                 } else {
-                    db()->prepare('UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, role = ? WHERE id = ?')
-                        ->execute([$fullName, $firstName, $lastName, $newEmail, $newRole, $targetId]);
+                    db()->prepare('UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, role = ?, gender = ? WHERE id = ?')
+                        ->execute([$fullName, $firstName, $lastName, $newEmail, $newRole, $newGender, $targetId]);
                 }
                 if ($newPassword !== '') {
                     set_password($targetId, $newPassword);
@@ -168,6 +171,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $childLastName = trim((string) ($_POST['child_last_name'] ?? ''));
         $childProgram = (string) ($_POST['child_program'] ?? '');
         $childDob = trim((string) ($_POST['child_date_of_birth'] ?? ''));
+        $childGender = (string) ($_POST['child_gender'] ?? '');
+        $childGender = in_array($childGender, ['male', 'female'], true) ? $childGender : null;
         $guardianIds = array_map('intval', (array) ($_POST['child_guardian_ids'] ?? []));
 
         $validGuardianIds = [];
@@ -183,11 +188,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($childDob !== '' && !DateTime::createFromFormat('Y-m-d', $childDob)) {
             flash_set('error', 'Zadejte prosím platné datum narození.');
         } elseif ($action === 'add_child') {
-            add_child($validGuardianIds, $childFirstName, $childLastName, $childProgram, $childDob ?: null);
+            add_child($validGuardianIds, $childFirstName, $childLastName, $childProgram, $childDob ?: null, $childGender);
             flash_set('success', 'Dítě bylo přidáno.' . (empty($validGuardianIds) ? ' Účet k němu můžete přiřadit později v jeho úpravě.' : ''));
         } else {
             $childId = (int) ($_POST['child_id'] ?? 0);
-            update_child($childId, $validGuardianIds, $childFirstName, $childLastName, $childProgram, $childDob ?: null);
+            update_child($childId, $validGuardianIds, $childFirstName, $childLastName, $childProgram, $childDob ?: null, $childGender);
             flash_set('success', 'Dítě bylo uloženo.');
         }
     }
@@ -259,6 +264,13 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
               </div>
               <div class="field">
+                <label for="gender">Pohlaví</label>
+                <select id="gender" name="gender">
+                  <option value="female">Žena</option>
+                  <option value="male">Muž</option>
+                </select>
+              </div>
+              <div class="field">
                 <label for="password">Heslo (nepovinné)</label>
                 <input type="password" id="password" name="password" minlength="8" placeholder="Ponechte prázdné pro pozvánku e-mailem">
                 <span class="hint-text">Necháte-li pole prázdné, účet dostane e-mail s odkazem pro nastavení vlastního hesla. Vyplníte-li heslo, účet se vytvoří rovnou s ním a e-mail se neposílá.</span>
@@ -299,6 +311,13 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
               </div>
               <div class="field">
+                <label for="child_gender">Pohlaví</label>
+                <select id="child_gender" name="child_gender">
+                  <option value="female">Dívka</option>
+                  <option value="male">Chlapec</option>
+                </select>
+              </div>
+              <div class="field">
                 <?= render_guardian_checkboxes($allUsers, [], 'new-child-guardian') ?>
               </div>
               <button type="submit" class="btn btn--primary">Přidat dítě</button>
@@ -324,7 +343,7 @@ require_once __DIR__ . '/../includes/header.php';
         <?php foreach ($allUsers as $row): $isSelf = (int) $row['id'] === (int) $user['id']; ?>
           <details class="user-row" name="user-edit" data-name="<?= htmlspecialchars(mb_strtolower(surname_first($row) . ' ' . full_name($row)), ENT_QUOTES, 'UTF-8') ?>" data-filter="<?= htmlspecialchars($row['role'], ENT_QUOTES, 'UTF-8') ?>">
             <summary class="user-summary">
-              <div class="portal-avatar"><?= htmlspecialchars(initials($row), ENT_QUOTES, 'UTF-8') ?></div>
+              <div class="portal-avatar<?= $row['gender'] === 'male' ? ' portal-avatar--male' : '' ?>"><?= htmlspecialchars(initials($row), ENT_QUOTES, 'UTF-8') ?></div>
               <span class="user-summary-name"><?= htmlspecialchars(surname_first($row), ENT_QUOTES, 'UTF-8') ?></span>
               <span class="role-badge"><?= htmlspecialchars(match ($row['role']) {
                 'admin' => 'Administrátor',
@@ -395,6 +414,13 @@ require_once __DIR__ . '/../includes/header.php';
                   <?php endif; ?>
                 </div>
                 <div class="field">
+                  <label for="gender-<?= (int) $row['id'] ?>">Pohlaví</label>
+                  <select id="gender-<?= (int) $row['id'] ?>" name="gender">
+                    <option value="female"<?= $row['gender'] !== 'male' ? ' selected' : '' ?>>Žena</option>
+                    <option value="male"<?= $row['gender'] === 'male' ? ' selected' : '' ?>>Muž</option>
+                  </select>
+                </div>
+                <div class="field">
                   <label for="new_password-<?= (int) $row['id'] ?>">Nastavit nové heslo (nepovinné)</label>
                   <input type="password" id="new_password-<?= (int) $row['id'] ?>" name="new_password" minlength="8" placeholder="Ponechte prázdné, pokud heslo neměnit">
                 </div>
@@ -425,7 +451,7 @@ require_once __DIR__ . '/../includes/header.php';
         <?php foreach ($allChildren as $child): ?>
           <details class="user-row" name="child-edit" data-name="<?= htmlspecialchars(mb_strtolower(surname_first($child) . ' ' . full_child_name($child)), ENT_QUOTES, 'UTF-8') ?>" data-filter="<?= htmlspecialchars($child['program'], ENT_QUOTES, 'UTF-8') ?>">
             <summary class="user-summary">
-              <div class="portal-avatar"><?= htmlspecialchars(mb_strtoupper(mb_substr($child['first_name'], 0, 1) . mb_substr($child['last_name'], 0, 1)), ENT_QUOTES, 'UTF-8') ?></div>
+              <div class="portal-avatar<?= $child['gender'] === 'male' ? ' portal-avatar--male' : '' ?>"><?= htmlspecialchars(mb_strtoupper(mb_substr($child['first_name'], 0, 1) . mb_substr($child['last_name'], 0, 1)), ENT_QUOTES, 'UTF-8') ?></div>
               <span class="user-summary-name"><?= htmlspecialchars(surname_first($child), ENT_QUOTES, 'UTF-8') ?></span>
               <span class="role-badge"><?= htmlspecialchars(CHILD_PROGRAMS[$child['program']] ?? $child['program'], ENT_QUOTES, 'UTF-8') ?></span>
               <span class="user-summary-meta">
@@ -463,6 +489,13 @@ require_once __DIR__ . '/../includes/header.php';
                       <?php endforeach; ?>
                     </select>
                   </div>
+                </div>
+                <div class="field">
+                  <label for="child_gender-<?= (int) $child['id'] ?>">Pohlaví</label>
+                  <select id="child_gender-<?= (int) $child['id'] ?>" name="child_gender">
+                    <option value="female"<?= $child['gender'] !== 'male' ? ' selected' : '' ?>>Dívka</option>
+                    <option value="male"<?= $child['gender'] === 'male' ? ' selected' : '' ?>>Chlapec</option>
+                  </select>
                 </div>
                 <div class="field">
                   <?= render_guardian_checkboxes($allUsers, $child['guardian_ids'] ?? [], 'child-' . (int) $child['id'] . '-guardian') ?>

@@ -57,6 +57,11 @@ function migrate(PDO $pdo): void
     // upgrade in place instead of losing their one admin account.
     ensure_column($pdo, 'users', 'first_name', "first_name TEXT NOT NULL DEFAULT ''");
     ensure_column($pdo, 'users', 'last_name', "last_name TEXT NOT NULL DEFAULT ''");
+    // Optional — drives the avatar colour (unset/female keeps the
+    // site's usual palette, male switches it to light blue). NULL is
+    // fine on existing accounts: SQLite's CHECK passes on NULL, and the
+    // app just treats NULL the same as 'female' when rendering.
+    ensure_column($pdo, 'users', 'gender', "gender TEXT CHECK(gender IN ('male','female'))");
     $unmigrated = $pdo->query("SELECT id, name FROM users WHERE first_name = '' AND name != ''")->fetchAll();
     foreach ($unmigrated as $row) {
         $parts = explode(' ', trim((string) $row['name']), 2);
@@ -88,6 +93,7 @@ function migrate(PDO $pdo): void
     ensure_column($pdo, 'children', 'first_name', "first_name TEXT NOT NULL DEFAULT ''");
     ensure_column($pdo, 'children', 'last_name', "last_name TEXT NOT NULL DEFAULT ''");
     ensure_column($pdo, 'children', 'date_of_birth', 'date_of_birth TEXT');
+    ensure_column($pdo, 'children', 'gender', "gender TEXT CHECK(gender IN ('male','female'))");
     $unmigratedChildren = $pdo->query("SELECT id, name FROM children WHERE first_name = '' AND name != ''")->fetchAll();
     foreach ($unmigratedChildren as $row) {
         $parts = explode(' ', trim((string) $row['name']), 2);
@@ -128,11 +134,12 @@ function migrate(PDO $pdo): void
                 first_name TEXT NOT NULL DEFAULT '',
                 last_name TEXT NOT NULL DEFAULT '',
                 date_of_birth TEXT,
+                gender TEXT CHECK(gender IN ('male','female')),
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
             )");
             $pdo->exec(
-                'INSERT INTO children_new (id, name, program, first_name, last_name, date_of_birth, created_at)
-                 SELECT id, name, program, first_name, last_name, date_of_birth, created_at FROM children'
+                'INSERT INTO children_new (id, name, program, first_name, last_name, date_of_birth, gender, created_at)
+                 SELECT id, name, program, first_name, last_name, date_of_birth, gender, created_at FROM children'
             );
             $pdo->exec('DROP TABLE children');
             $pdo->exec('ALTER TABLE children_new RENAME TO children');

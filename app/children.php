@@ -73,27 +73,35 @@ function full_child_name(array $child): string
     return trim(($child['first_name'] ?? '') . ' ' . ($child['last_name'] ?? ''));
 }
 
-/** @param int[] $guardianIds Guardian accounts this child belongs to — may be empty; assign later via update_child(). */
-function add_child(array $guardianIds, string $firstName, string $lastName, string $program, ?string $dateOfBirth = null): int
+/**
+ * @param int[] $guardianIds Guardian accounts this child belongs to — may be empty; assign later via update_child().
+ * @param ?string $gender 'male' or 'female', or null to leave unset.
+ */
+function add_child(array $guardianIds, string $firstName, string $lastName, string $program, ?string $dateOfBirth = null, ?string $gender = null): int
 {
     $guardianIds = array_values(array_unique(array_filter(array_map('intval', $guardianIds))));
+    $gender = in_array($gender, ['male', 'female'], true) ? $gender : null;
     $stmt = db()->prepare(
-        'INSERT INTO children (name, first_name, last_name, program, date_of_birth) VALUES (?, ?, ?, ?, ?)'
+        'INSERT INTO children (name, first_name, last_name, program, date_of_birth, gender) VALUES (?, ?, ?, ?, ?, ?)'
     );
-    $stmt->execute([trim("$firstName $lastName"), $firstName, $lastName, $program, $dateOfBirth ?: null]);
+    $stmt->execute([trim("$firstName $lastName"), $firstName, $lastName, $program, $dateOfBirth ?: null, $gender]);
     $childId = (int) db()->lastInsertId();
     set_child_guardians($childId, $guardianIds);
     return $childId;
 }
 
-/** @param int[] $guardianIds Replaces the full guardian set for this child — may be empty. */
-function update_child(int $childId, array $guardianIds, string $firstName, string $lastName, string $program, ?string $dateOfBirth): void
+/**
+ * @param int[] $guardianIds Replaces the full guardian set for this child — may be empty.
+ * @param ?string $gender 'male' or 'female', or null to leave unset.
+ */
+function update_child(int $childId, array $guardianIds, string $firstName, string $lastName, string $program, ?string $dateOfBirth, ?string $gender = null): void
 {
     $guardianIds = array_values(array_unique(array_filter(array_map('intval', $guardianIds))));
+    $gender = in_array($gender, ['male', 'female'], true) ? $gender : null;
     $stmt = db()->prepare(
-        'UPDATE children SET name = ?, first_name = ?, last_name = ?, program = ?, date_of_birth = ? WHERE id = ?'
+        'UPDATE children SET name = ?, first_name = ?, last_name = ?, program = ?, date_of_birth = ?, gender = ? WHERE id = ?'
     );
-    $stmt->execute([trim("$firstName $lastName"), $firstName, $lastName, $program, $dateOfBirth ?: null, $childId]);
+    $stmt->execute([trim("$firstName $lastName"), $firstName, $lastName, $program, $dateOfBirth ?: null, $gender, $childId]);
     set_child_guardians($childId, $guardianIds);
 }
 

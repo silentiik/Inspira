@@ -984,6 +984,7 @@ img { max-width: 100%; display: block; }
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-family: var(--font-heading);
 }
+.portal-avatar--male { background: #6fa8d8; }
 .role-badge {
   display: inline-block;
   font-size: 0.72rem;
