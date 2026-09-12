@@ -69,13 +69,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $newsId = (int) ($_POST['news_id'] ?? 0);
         $title = trim((string) ($_POST['title'] ?? ''));
         $body = trim((string) ($_POST['body'] ?? ''));
-        $pinned = !empty($_POST['pinned']);
         if ($title === '') {
             flash_set('error', 'Zadejte prosím titulek novinky.');
         } else {
-            update_news($newsId, $title, $body, $pinned);
+            update_news($newsId, $title, $body);
             flash_set('success', 'Novinka byla upravena.');
         }
+        header('Location: /dashboard.php');
+        exit;
+    }
+
+    if ($action === 'toggle_pin' && $canPost) {
+        toggle_news_pin((int) ($_POST['news_id'] ?? 0));
         header('Location: /dashboard.php');
         exit;
     }
@@ -190,6 +195,12 @@ require_once __DIR__ . '/includes/header.php';
                   <h4><?= $item['pinned'] ? '📌 ' : '' ?><?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?></h4>
                   <?php if ($canPost): ?>
                     <div class="news-item-actions">
+                      <form method="post" action="/dashboard.php">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="action" value="toggle_pin">
+                        <input type="hidden" name="news_id" value="<?= (int) $item['id'] ?>">
+                        <button type="submit" class="icon-btn icon-btn--pin<?= $item['pinned'] ? ' is-active' : '' ?>" aria-label="<?= $item['pinned'] ? 'Odepnout novinku' : 'Připnout novinku nahoru' ?>">📌</button>
+                      </form>
                       <button type="button" class="icon-btn icon-btn--edit" data-toggle-edit="edit-news-<?= (int) $item['id'] ?>" aria-label="Upravit novinku">✎</button>
                       <form method="post" action="/dashboard.php" data-confirm="Opravdu smazat tuto novinku?">
                         <?= csrf_field() ?>
@@ -226,10 +237,6 @@ require_once __DIR__ . '/includes/header.php';
                     <div class="field">
                       <label for="edit_body_<?= (int) $item['id'] ?>">Text</label>
                       <textarea id="edit_body_<?= (int) $item['id'] ?>" name="body"><?= htmlspecialchars($item['body'], ENT_QUOTES, 'UTF-8') ?></textarea>
-                    </div>
-                    <div class="field checkbox-field">
-                      <input type="checkbox" id="edit_pinned_<?= (int) $item['id'] ?>" name="pinned"<?= $item['pinned'] ? ' checked' : '' ?>>
-                      <label for="edit_pinned_<?= (int) $item['id'] ?>" style="margin:0;">Připnout nahoru</label>
                     </div>
                     <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
                   </form>

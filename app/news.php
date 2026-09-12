@@ -32,11 +32,16 @@ function create_news(int $authorId, string $title, string $body, bool $pinned): 
     return (int) db()->lastInsertId();
 }
 
-/** Edits a post's text/pinned state. Attachments are untouched — this doesn't manage those. */
-function update_news(int $id, string $title, string $body, bool $pinned): void
+/** Edits a post's title/text. Pinning is its own toggle_news_pin() action; attachments are untouched. */
+function update_news(int $id, string $title, string $body): void
 {
-    db()->prepare('UPDATE news SET title = ?, body = ?, pinned = ? WHERE id = ?')
-        ->execute([$title, $body, $pinned ? 1 : 0, $id]);
+    db()->prepare('UPDATE news SET title = ?, body = ? WHERE id = ?')
+        ->execute([$title, $body, $id]);
+}
+
+function toggle_news_pin(int $id): void
+{
+    db()->prepare('UPDATE news SET pinned = 1 - pinned WHERE id = ?')->execute([$id]);
 }
 
 /** Attachment rows also get deleted via ON DELETE CASCADE, but their files on disk need an explicit unlink. */
