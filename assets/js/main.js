@@ -34,4 +34,23 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
+
+  // Guardian picker: search-as-you-type filter over the checkbox list
+  // of accounts a child can be linked to (admin/users.php).
+  document.querySelectorAll('[data-guardian-search]').forEach(function (input) {
+    var list = input.parentElement.querySelector('.checkbox-list');
+    if (!list) return;
+    var items = list.querySelectorAll('.checkbox-list-item');
+    input.addEventListener('input', function () {
+      var query = input.value.trim().toLowerCase();
+      items.forEach(function (item) {
+        var matches = item.textContent.toLowerCase().indexOf(query) !== -1;
+        item.classList.toggle('is-hidden', !matches);
+      });
+    });
+    // Enter shouldn't submit the surrounding form — it's just a filter.
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') e.preventDefault();
+    });
+  });
 })();

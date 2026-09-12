@@ -5,10 +5,22 @@ require_once __DIR__ . '/../app/flash.php';
 require_once __DIR__ . '/../app/invites.php';
 require_once __DIR__ . '/../app/children.php';
 
-/** @param int[] $selectedIds */
+/**
+ * Collapsible, search-filterable checkbox list of every account a
+ * child can be linked to. Starts expanded when the child already has
+ * guardians (so an admin editing a child sees them immediately), and
+ * collapsed for a brand new child.
+ *
+ * @param int[] $selectedIds
+ */
 function render_guardian_checkboxes(array $allUsers, array $selectedIds, string $namePrefix): string
 {
-    $html = '<div class="checkbox-list">';
+    $count = count($selectedIds);
+    $html = '<details class="guardian-picker"' . ($count > 0 ? ' open' : '') . '>';
+    $html .= '<summary>Rodiče' . ($count > 0 ? ' <span class="guardian-picker-count">(' . $count . ' vybráno)</span>' : '') . '</summary>';
+    $html .= '<div class="guardian-picker-body">';
+    $html .= '<input type="text" class="guardian-search" placeholder="Hledat rodiče podle jména…" data-guardian-search autocomplete="off">';
+    $html .= '<div class="checkbox-list">';
     foreach ($allUsers as $u) {
         $id = (int) $u['id'];
         $inputId = $namePrefix . '-' . $id;
@@ -23,7 +35,7 @@ function render_guardian_checkboxes(array $allUsers, array $selectedIds, string 
             . htmlspecialchars(full_name($u), ENT_QUOTES, 'UTF-8') . ' <span class="hint-text">(' . htmlspecialchars($roleLabel, ENT_QUOTES, 'UTF-8') . ')</span>'
             . '</label>';
     }
-    $html .= '</div>';
+    $html .= '</div></div></details>';
     return $html;
 }
 
@@ -274,7 +286,6 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
               </div>
               <div class="field">
-                <label>Patří k účtům (lze vybrat víc, např. matka i otec)</label>
                 <?= render_guardian_checkboxes($allUsers, [], 'new-child-guardian') ?>
               </div>
               <button type="submit" class="btn btn--primary">Přidat dítě</button>
@@ -412,7 +423,6 @@ require_once __DIR__ . '/../includes/header.php';
                   </div>
                 </div>
                 <div class="field">
-                  <label>Patří k účtům (lze vybrat víc, např. matka i otec)</label>
                   <?= render_guardian_checkboxes($allUsers, $child['guardian_ids'] ?? [], 'child-' . (int) $child['id'] . '-guardian') ?>
                 </div>
                 <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
