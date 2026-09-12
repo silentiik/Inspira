@@ -7,16 +7,15 @@ require_once __DIR__ . '/../app/children.php';
 
 /**
  * Collapsible, search-filterable checkbox list of every account a
- * child can be linked to. Starts expanded when the child already has
- * guardians (so an admin editing a child sees them immediately), and
- * collapsed for a brand new child.
+ * child can be linked to. Always starts collapsed — the selected
+ * count in the summary shows what's picked without needing to open it.
  *
  * @param int[] $selectedIds
  */
 function render_guardian_checkboxes(array $allUsers, array $selectedIds, string $namePrefix): string
 {
     $count = count($selectedIds);
-    $html = '<details class="guardian-picker"' . ($count > 0 ? ' open' : '') . '>';
+    $html = '<details class="guardian-picker">';
     $html .= '<summary>Rodiče' . ($count > 0 ? ' <span class="guardian-picker-count">(' . $count . ' vybráno)</span>' : '') . '</summary>';
     $html .= '<div class="guardian-picker-body">';
     $html .= '<input type="text" class="guardian-search" placeholder="Hledat rodiče podle jména…" data-guardian-search autocomplete="off">';
