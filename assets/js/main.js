@@ -53,4 +53,40 @@
       if (e.key === 'Enter') e.preventDefault();
     });
   });
+
+  // Accounts / children overview toolbars (admin/users.php): search by
+  // name plus a role/program filter chip, combined.
+  document.querySelectorAll('.list-toolbar').forEach(function (toolbar) {
+    var input = toolbar.querySelector('[data-list-search]');
+    var chipsWrap = toolbar.querySelector('[data-list-filter]');
+    var list = toolbar.nextElementSibling;
+    if (!input || !list) return;
+    var rows = list.querySelectorAll('.user-row');
+
+    function applyFilters() {
+      var query = input.value.trim().toLowerCase();
+      var activeChip = chipsWrap ? chipsWrap.querySelector('.filter-chip.is-active') : null;
+      var filterValue = activeChip ? activeChip.getAttribute('data-filter-value') : '';
+      rows.forEach(function (row) {
+        var name = (row.getAttribute('data-name') || '');
+        var matchesSearch = name.indexOf(query) !== -1;
+        var matchesFilter = !filterValue || row.getAttribute('data-filter') === filterValue;
+        row.classList.toggle('is-hidden', !(matchesSearch && matchesFilter));
+      });
+    }
+
+    input.addEventListener('input', applyFilters);
+
+    if (chipsWrap) {
+      chipsWrap.querySelectorAll('.filter-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          chipsWrap.querySelectorAll('.filter-chip').forEach(function (c) {
+            c.classList.remove('is-active');
+          });
+          chip.classList.add('is-active');
+          applyFilters();
+        });
+      });
+    }
+  });
 })();

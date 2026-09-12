@@ -310,9 +310,18 @@ require_once __DIR__ . '/../includes/header.php';
       </div>
 
       <h2>Všechny účty</h2>
+      <div class="list-toolbar">
+        <input type="text" class="list-search" placeholder="Hledat podle jména…" data-list-search autocomplete="off">
+        <div class="filter-chips" data-list-filter>
+          <button type="button" class="filter-chip is-active" data-filter-value="">Vše</button>
+          <button type="button" class="filter-chip" data-filter-value="parent">Rodič</button>
+          <button type="button" class="filter-chip" data-filter-value="admin">Administrátor</button>
+          <button type="button" class="filter-chip" data-filter-value="teacher">Učitel/ka</button>
+        </div>
+      </div>
       <div class="user-list">
         <?php foreach ($allUsers as $row): $isSelf = (int) $row['id'] === (int) $user['id']; ?>
-          <details class="user-row" name="user-edit">
+          <details class="user-row" name="user-edit" data-name="<?= htmlspecialchars(mb_strtolower(surname_first($row) . ' ' . full_name($row)), ENT_QUOTES, 'UTF-8') ?>" data-filter="<?= htmlspecialchars($row['role'], ENT_QUOTES, 'UTF-8') ?>">
             <summary class="user-summary">
               <div class="portal-avatar"><?= htmlspecialchars(initials($row), ENT_QUOTES, 'UTF-8') ?></div>
               <span class="user-summary-name"><?= htmlspecialchars(surname_first($row), ENT_QUOTES, 'UTF-8') ?></span>
@@ -396,12 +405,21 @@ require_once __DIR__ . '/../includes/header.php';
       </div>
 
       <h2>Děti</h2>
+      <div class="list-toolbar">
+        <input type="text" class="list-search" placeholder="Hledat podle jména…" data-list-search autocomplete="off">
+        <div class="filter-chips" data-list-filter>
+          <button type="button" class="filter-chip is-active" data-filter-value="">Vše</button>
+          <?php foreach (CHILD_PROGRAMS as $value => $label): ?>
+            <button type="button" class="filter-chip" data-filter-value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></button>
+          <?php endforeach; ?>
+        </div>
+      </div>
       <div class="user-list">
         <?php if (empty($allChildren)): ?>
           <p class="hint-text">Zatím nejsou přidané žádné děti.</p>
         <?php endif; ?>
         <?php foreach ($allChildren as $child): ?>
-          <details class="user-row" name="child-edit">
+          <details class="user-row" name="child-edit" data-name="<?= htmlspecialchars(mb_strtolower(surname_first($child) . ' ' . full_child_name($child)), ENT_QUOTES, 'UTF-8') ?>" data-filter="<?= htmlspecialchars($child['program'], ENT_QUOTES, 'UTF-8') ?>">
             <summary class="user-summary">
               <div class="portal-avatar"><?= htmlspecialchars(mb_strtoupper(mb_substr($child['first_name'], 0, 1) . mb_substr($child['last_name'], 0, 1)), ENT_QUOTES, 'UTF-8') ?></div>
               <span class="user-summary-name"><?= htmlspecialchars(surname_first($child), ENT_QUOTES, 'UTF-8') ?></span>
