@@ -96,6 +96,20 @@ function migrate(PDO $pdo): void
             ->execute([$parts[0], $parts[1] ?? '', $row['id']]);
     }
 
+    // Many-to-many: a child can have more than one guardian account
+    // (mother and father, say). `children.parent_id` predates this and
+    // is kept populated (first guardian) only for any old code reading
+    // it directly — new code always goes through this join table.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS child_guardians (
+        child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        PRIMARY KEY (child_id, user_id)
+    )");
+    $pdo->exec(
+        'INSERT OR IGNORE INTO child_guardians (child_id, user_id)
+         SELECT id, parent_id FROM children'
+    );
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS lunch_selections (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,

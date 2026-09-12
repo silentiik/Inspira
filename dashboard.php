@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $program = (string) ($_POST['child_program'] ?? '');
         $dateOfBirth = (string) ($_POST['child_date_of_birth'] ?? '');
         if ($firstName !== '' && $lastName !== '' && in_array($program, ['inspirka', 'domskolaci'], true)) {
-            add_child((int) $user['id'], $firstName, $lastName, $program, $dateOfBirth ?: null);
+            add_child([(int) $user['id']], $firstName, $lastName, $program, $dateOfBirth ?: null);
             flash_set('success', 'Dítě bylo přidáno.');
         } else {
             flash_set('error', 'Zadejte prosím jméno, příjmení a program dítěte.');

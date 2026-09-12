@@ -575,6 +575,26 @@ img { max-width: 100%; display: block; }
 .checkbox-field { display: flex; align-items: flex-start; gap: 10px; }
 .checkbox-field input { width: auto; margin-top: 4px; }
 
+.checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+}
+.checkbox-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-weight: 600;
+  cursor: pointer;
+}
+.checkbox-list-item input { width: auto; flex-shrink: 0; }
+
 .form-card {
   background: var(--color-surface);
   border-radius: var(--radius-md);

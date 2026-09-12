@@ -13,24 +13,59 @@ const LUNCH_OPTIONS = [
 
 const CHILD_PROGRAMS = ['inspirka' => 'INSPIRKA', 'domskolaci' => 'Domškolák'];
 
-function children_for_parent(int $parentId): array
+/** All children linked to this account as any one of (possibly several) guardians. */
+function children_for_parent(int $userId): array
 {
-    $stmt = db()->prepare('SELECT * FROM children WHERE parent_id = ? ORDER BY name');
-    $stmt->execute([$parentId]);
+    $stmt = db()->prepare(
+        'SELECT children.* FROM children
+         JOIN child_guardians ON child_guardians.child_id = children.id
+         WHERE child_guardians.user_id = ?
+         ORDER BY children.first_name, children.last_name'
+    );
+    $stmt->execute([$userId]);
     return $stmt->fetchAll();
 }
 
-/** All children with their linked account's name/role, for the admin list. */
+/** All children with their guardians' names/ids joined in, for the admin list. */
 function all_children_with_parent(): array
 {
-    return db()->query(
+    $rows = db()->query(
         "SELECT children.*,
-                trim(users.first_name || ' ' || users.last_name) AS parent_name,
-                users.role AS parent_role
+                child_guardians.user_id AS guardian_id,
+                trim(users.first_name || ' ' || users.last_name) AS guardian_name
          FROM children
-         LEFT JOIN users ON users.id = children.parent_id
-         ORDER BY children.last_name, children.first_name"
+         LEFT JOIN child_guardians ON child_guardians.child_id = children.id
+         LEFT JOIN users ON users.id = child_guardians.user_id
+         ORDER BY children.last_name, children.first_name, guardian_name"
     )->fetchAll();
+
+    $byChild = [];
+    foreach ($rows as $row) {
+        $id = (int) $row['id'];
+        if (!isset($byChild[$id])) {
+            $byChild[$id] = $row;
+            $byChild[$id]['guardian_ids'] = [];
+            $byChild[$id]['guardian_names'] = [];
+        }
+        if ($row['guardian_id'] !== null) {
+            $byChild[$id]['guardian_ids'][] = (int) $row['guardian_id'];
+            $byChild[$id]['guardian_names'][] = $row['guardian_name'];
+        }
+    }
+    return array_values($byChild);
+}
+
+/** The guardian accounts (user rows) linked to one child. */
+function guardians_for_child(int $childId): array
+{
+    $stmt = db()->prepare(
+        'SELECT users.* FROM users
+         JOIN child_guardians ON child_guardians.user_id = users.id
+         WHERE child_guardians.child_id = ?
+         ORDER BY users.first_name, users.last_name'
+    );
+    $stmt->execute([$childId]);
+    return $stmt->fetchAll();
 }
 
 function full_child_name(array $child): string
@@ -38,21 +73,38 @@ function full_child_name(array $child): string
     return trim(($child['first_name'] ?? '') . ' ' . ($child['last_name'] ?? ''));
 }
 
-function add_child(int $parentId, string $firstName, string $lastName, string $program, ?string $dateOfBirth = null): int
+/** @param int[] $guardianIds At least one account this child belongs to. */
+function add_child(array $guardianIds, string $firstName, string $lastName, string $program, ?string $dateOfBirth = null): int
 {
+    $guardianIds = array_values(array_unique(array_filter(array_map('intval', $guardianIds))));
     $stmt = db()->prepare(
         'INSERT INTO children (parent_id, name, first_name, last_name, program, date_of_birth) VALUES (?, ?, ?, ?, ?, ?)'
     );
-    $stmt->execute([$parentId, trim("$firstName $lastName"), $firstName, $lastName, $program, $dateOfBirth ?: null]);
-    return (int) db()->lastInsertId();
+    $stmt->execute([$guardianIds[0] ?? 0, trim("$firstName $lastName"), $firstName, $lastName, $program, $dateOfBirth ?: null]);
+    $childId = (int) db()->lastInsertId();
+    set_child_guardians($childId, $guardianIds);
+    return $childId;
 }
 
-function update_child(int $childId, int $parentId, string $firstName, string $lastName, string $program, ?string $dateOfBirth): void
+/** @param int[] $guardianIds Replaces the full guardian set for this child. */
+function update_child(int $childId, array $guardianIds, string $firstName, string $lastName, string $program, ?string $dateOfBirth): void
 {
+    $guardianIds = array_values(array_unique(array_filter(array_map('intval', $guardianIds))));
     $stmt = db()->prepare(
         'UPDATE children SET parent_id = ?, name = ?, first_name = ?, last_name = ?, program = ?, date_of_birth = ? WHERE id = ?'
     );
-    $stmt->execute([$parentId, trim("$firstName $lastName"), $firstName, $lastName, $program, $dateOfBirth ?: null, $childId]);
+    $stmt->execute([$guardianIds[0] ?? 0, trim("$firstName $lastName"), $firstName, $lastName, $program, $dateOfBirth ?: null, $childId]);
+    set_child_guardians($childId, $guardianIds);
+}
+
+/** @param int[] $guardianIds */
+function set_child_guardians(int $childId, array $guardianIds): void
+{
+    db()->prepare('DELETE FROM child_guardians WHERE child_id = ?')->execute([$childId]);
+    $stmt = db()->prepare('INSERT OR IGNORE INTO child_guardians (child_id, user_id) VALUES (?, ?)');
+    foreach ($guardianIds as $userId) {
+        $stmt->execute([$childId, $userId]);
+    }
 }
 
 function delete_child(int $childId): void
@@ -60,11 +112,11 @@ function delete_child(int $childId): void
     db()->prepare('DELETE FROM children WHERE id = ?')->execute([$childId]);
 }
 
-/** Verifies the child belongs to this parent before any lunch write. */
-function child_belongs_to(int $childId, int $parentId): bool
+/** Verifies the child belongs to this account as one of its guardians before any lunch write. */
+function child_belongs_to(int $childId, int $userId): bool
 {
-    $stmt = db()->prepare('SELECT 1 FROM children WHERE id = ? AND parent_id = ?');
-    $stmt->execute([$childId, $parentId]);
+    $stmt = db()->prepare('SELECT 1 FROM child_guardians WHERE child_id = ? AND user_id = ?');
+    $stmt->execute([$childId, $userId]);
     return (bool) $stmt->fetchColumn();
 }
 

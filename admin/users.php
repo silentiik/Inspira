@@ -5,6 +5,28 @@ require_once __DIR__ . '/../app/flash.php';
 require_once __DIR__ . '/../app/invites.php';
 require_once __DIR__ . '/../app/children.php';
 
+/** @param int[] $selectedIds */
+function render_guardian_checkboxes(array $allUsers, array $selectedIds, string $namePrefix): string
+{
+    $html = '<div class="checkbox-list">';
+    foreach ($allUsers as $u) {
+        $id = (int) $u['id'];
+        $inputId = $namePrefix . '-' . $id;
+        $roleLabel = match ($u['role']) {
+            'admin' => 'administrátor',
+            'teacher' => 'učitel/ka',
+            default => 'rodič',
+        };
+        $html .= '<label class="checkbox-list-item" for="' . htmlspecialchars($inputId, ENT_QUOTES, 'UTF-8') . '">'
+            . '<input type="checkbox" id="' . htmlspecialchars($inputId, ENT_QUOTES, 'UTF-8') . '" name="child_guardian_ids[]" value="' . $id . '"'
+            . (in_array($id, $selectedIds, true) ? ' checked' : '') . '>'
+            . htmlspecialchars(full_name($u), ENT_QUOTES, 'UTF-8') . ' <span class="hint-text">(' . htmlspecialchars($roleLabel, ENT_QUOTES, 'UTF-8') . ')</span>'
+            . '</label>';
+    }
+    $html .= '</div>';
+    return $html;
+}
+
 $user = require_role(['admin']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -97,8 +119,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete_user') {
         $targetId = (int) ($_POST['user_id'] ?? 0);
         if ($targetId !== (int) $user['id']) {
+            // children.parent_id is a legacy NOT NULL column (kept only
+            // for old code, real ownership lives in child_guardians) but
+            // it still cascades on delete. If a child has another
+            // guardian, repoint parent_id there first so removing one
+            // guardian doesn't wipe out a child who still has another.
+            $affected = db()->prepare('SELECT id FROM children WHERE parent_id = ?');
+            $affected->execute([$targetId]);
+            foreach ($affected->fetchAll(PDO::FETCH_COLUMN) as $childId) {
+                $other = db()->prepare('SELECT user_id FROM child_guardians WHERE child_id = ? AND user_id != ? LIMIT 1');
+                $other->execute([$childId, $targetId]);
+                $otherId = $other->fetchColumn();
+                if ($otherId !== false) {
+                    db()->prepare('UPDATE children SET parent_id = ? WHERE id = ?')->execute([(int) $otherId, $childId]);
+                }
+            }
+
             // Cascades (see app/db.php schema) also remove this
-            // account's news posts, children, and lunch selections.
+            // account's news posts, guardian links, and (for any child
+            // with no other guardian left) the child and its lunch
+            // selections.
             db()->prepare('DELETE FROM users WHERE id = ?')->execute([$targetId]);
             flash_set('success', 'Účet byl trvale smazán.');
         } else {
@@ -111,24 +151,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $childLastName = trim((string) ($_POST['child_last_name'] ?? ''));
         $childProgram = (string) ($_POST['child_program'] ?? '');
         $childDob = trim((string) ($_POST['child_date_of_birth'] ?? ''));
-        $childParentId = (int) ($_POST['child_parent_id'] ?? 0);
+        $guardianIds = array_map('intval', (array) ($_POST['child_guardian_ids'] ?? []));
 
-        $parentCheck = db()->prepare('SELECT 1 FROM users WHERE id = ?');
-        $parentCheck->execute([$childParentId]);
-        $parentExists = (bool) $parentCheck->fetchColumn();
+        $validGuardianIds = [];
+        if (!empty($guardianIds)) {
+            $placeholders = implode(',', array_fill(0, count($guardianIds), '?'));
+            $stmt = db()->prepare("SELECT id FROM users WHERE id IN ($placeholders)");
+            $stmt->execute($guardianIds);
+            $validGuardianIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+        }
 
         if ($childFirstName === '' || $childLastName === '' || !in_array($childProgram, ['inspirka', 'domskolaci'], true)) {
             flash_set('error', 'Zadejte prosím jméno, příjmení a program dítěte.');
         } elseif ($childDob !== '' && !DateTime::createFromFormat('Y-m-d', $childDob)) {
             flash_set('error', 'Zadejte prosím platné datum narození.');
-        } elseif (!$parentExists) {
-            flash_set('error', 'Vyberte prosím účet, ke kterému dítě patří.');
+        } elseif (empty($validGuardianIds)) {
+            flash_set('error', 'Vyberte prosím alespoň jeden účet, ke kterému dítě patří.');
         } elseif ($action === 'add_child') {
-            add_child($childParentId, $childFirstName, $childLastName, $childProgram, $childDob ?: null);
+            add_child($validGuardianIds, $childFirstName, $childLastName, $childProgram, $childDob ?: null);
             flash_set('success', 'Dítě bylo přidáno.');
         } else {
             $childId = (int) ($_POST['child_id'] ?? 0);
-            update_child($childId, $childParentId, $childFirstName, $childLastName, $childProgram, $childDob ?: null);
+            update_child($childId, $validGuardianIds, $childFirstName, $childLastName, $childProgram, $childDob ?: null);
             flash_set('success', 'Dítě bylo uloženo.');
         }
     }
@@ -230,17 +274,8 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
               </div>
               <div class="field">
-                <label for="child_parent_id">Patří k účtu</label>
-                <select id="child_parent_id" name="child_parent_id" required>
-                  <option value="">Vyberte</option>
-                  <?php foreach ($allUsers as $u): ?>
-                    <option value="<?= (int) $u['id'] ?>"><?= htmlspecialchars(full_name($u), ENT_QUOTES, 'UTF-8') ?> (<?= htmlspecialchars(match ($u['role']) {
-                      'admin' => 'administrátor',
-                      'teacher' => 'učitel/ka',
-                      default => 'rodič',
-                    }, ENT_QUOTES, 'UTF-8') ?>)</option>
-                  <?php endforeach; ?>
-                </select>
+                <label>Patří k účtům (lze vybrat víc, např. matka i otec)</label>
+                <?= render_guardian_checkboxes($allUsers, [], 'new-child-guardian') ?>
               </div>
               <button type="submit" class="btn btn--primary">Přidat dítě</button>
             </form>
@@ -342,7 +377,7 @@ require_once __DIR__ . '/../includes/header.php';
               <span class="role-badge"><?= htmlspecialchars(CHILD_PROGRAMS[$child['program']] ?? $child['program'], ENT_QUOTES, 'UTF-8') ?></span>
               <span class="user-summary-meta">
                 <?= $child['date_of_birth'] ? htmlspecialchars(date('j. n. Y', strtotime($child['date_of_birth'])), ENT_QUOTES, 'UTF-8') . ' · ' : '' ?>
-                <?= htmlspecialchars($child['parent_name'] ?: '(bez účtu)', ENT_QUOTES, 'UTF-8') ?>
+                <?= htmlspecialchars(!empty($child['guardian_names']) ? implode(', ', $child['guardian_names']) : '(bez účtu)', ENT_QUOTES, 'UTF-8') ?>
               </span>
               <span class="user-summary-chevron" aria-hidden="true">▾</span>
             </summary>
@@ -377,16 +412,8 @@ require_once __DIR__ . '/../includes/header.php';
                   </div>
                 </div>
                 <div class="field">
-                  <label for="child_parent_id-<?= (int) $child['id'] ?>">Patří k účtu</label>
-                  <select id="child_parent_id-<?= (int) $child['id'] ?>" name="child_parent_id" required>
-                    <?php foreach ($allUsers as $u): ?>
-                      <option value="<?= (int) $u['id'] ?>"<?= (int) $child['parent_id'] === (int) $u['id'] ? ' selected' : '' ?>><?= htmlspecialchars(full_name($u), ENT_QUOTES, 'UTF-8') ?> (<?= htmlspecialchars(match ($u['role']) {
-                        'admin' => 'administrátor',
-                        'teacher' => 'učitel/ka',
-                        default => 'rodič',
-                      }, ENT_QUOTES, 'UTF-8') ?>)</option>
-                    <?php endforeach; ?>
-                  </select>
+                  <label>Patří k účtům (lze vybrat víc, např. matka i otec)</label>
+                  <?= render_guardian_checkboxes($allUsers, $child['guardian_ids'] ?? [], 'child-' . (int) $child['id'] . '-guardian') ?>
                 </div>
                 <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
               </form>
