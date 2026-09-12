@@ -5,8 +5,9 @@ require_once __DIR__ . '/db.php';
 
 const NEWS_UPLOAD_DIR = DATA_DIR . '/news-uploads';
 const NEWS_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB per file
-const NEWS_MAX_ATTACHMENTS = 6; // per post
+const NEWS_MAX_ATTACHMENTS = 6; // per post, images and documents combined
 const NEWS_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+const NEWS_DOCUMENT_EXTENSIONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'];
 const NEWS_ALLOWED_EXTENSIONS = [
     'jpg', 'jpeg', 'png', 'gif', 'webp',
     'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt',
@@ -61,16 +62,23 @@ function find_attachment(int $attachmentId): ?array
  * records it against $newsId. Returns a user-facing error message on
  * failure, or null on success — callers collect these into a flash
  * message instead of failing the whole post.
+ *
+ * @param string $kind 'image' or 'document' — restricts which
+ *   extensions are accepted to match the upload field the file came
+ *   from (the two are shown as separate fields in the form).
  */
-function add_news_attachment(int $newsId, string $tmpName, string $originalName, int $reportedSize): ?string
+function add_news_attachment(int $newsId, string $tmpName, string $originalName, int $reportedSize, string $kind): ?string
 {
     $originalName = trim($originalName);
     if ($originalName === '') {
         return null;
     }
     $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-    if (!in_array($ext, NEWS_ALLOWED_EXTENSIONS, true)) {
-        return "Nepodporovaný typ souboru: $originalName";
+    $allowedExtensions = $kind === 'image' ? NEWS_IMAGE_EXTENSIONS : NEWS_DOCUMENT_EXTENSIONS;
+    if (!in_array($ext, $allowedExtensions, true)) {
+        return $kind === 'image'
+            ? "Soubor $originalName není podporovaný typ obrázku."
+            : "Soubor $originalName není podporovaný typ přílohy.";
     }
     if ($reportedSize <= 0 || $reportedSize > NEWS_MAX_FILE_SIZE) {
         return "Soubor $originalName je příliš velký (max " . (int) (NEWS_MAX_FILE_SIZE / 1024 / 1024) . " MB).";

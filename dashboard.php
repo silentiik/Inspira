@@ -20,10 +20,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newsId = create_news((int) $user['id'], $title, $body, $pinned);
 
             $uploadErrors = [];
-            $uploaded = $_FILES['attachments'] ?? null;
-            if ($uploaded && is_array($uploaded['name'])) {
-                $fileCount = min(count($uploaded['name']), NEWS_MAX_ATTACHMENTS);
-                for ($i = 0; $i < $fileCount; $i++) {
+            $remainingSlots = NEWS_MAX_ATTACHMENTS;
+            foreach (['images' => 'image', 'attachments' => 'document'] as $fieldName => $kind) {
+                $uploaded = $_FILES[$fieldName] ?? null;
+                if (!$uploaded || !is_array($uploaded['name'])) {
+                    continue;
+                }
+                for ($i = 0; $i < count($uploaded['name']) && $remainingSlots > 0; $i++) {
                     if ($uploaded['error'][$i] === UPLOAD_ERR_NO_FILE) {
                         continue;
                     }
@@ -31,9 +34,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $uploadErrors[] = 'Soubor ' . $uploaded['name'][$i] . ' se nepodařilo nahrát.';
                         continue;
                     }
-                    $error = add_news_attachment($newsId, $uploaded['tmp_name'][$i], $uploaded['name'][$i], (int) $uploaded['size'][$i]);
+                    $error = add_news_attachment($newsId, $uploaded['tmp_name'][$i], $uploaded['name'][$i], (int) $uploaded['size'][$i], $kind);
                     if ($error !== null) {
                         $uploadErrors[] = $error;
+                    } else {
+                        $remainingSlots--;
                     }
                 }
             }
@@ -130,11 +135,17 @@ require_once __DIR__ . '/includes/header.php';
                   <label for="body">Text</label>
                   <textarea id="body" name="body" required></textarea>
                 </div>
-                <div class="field">
-                  <label for="attachments">Přílohy a obrázky (nepovinné)</label>
-                  <input type="file" id="attachments" name="attachments[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
-                  <span class="hint-text">Max. <?= NEWS_MAX_ATTACHMENTS ?> souborů, každý do <?= (int) (NEWS_MAX_FILE_SIZE / 1024 / 1024) ?> MB. Obrázky se zobrazí přímo v novince, ostatní soubory jako odkaz ke stažení.</span>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="images">🖼️ Obrázky (nepovinné)</label>
+                    <input type="file" id="images" name="images[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp">
+                  </div>
+                  <div class="field">
+                    <label for="attachments">📎 Přílohy (nepovinné)</label>
+                    <input type="file" id="attachments" name="attachments[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
+                  </div>
                 </div>
+                <span class="hint-text">Max. <?= NEWS_MAX_ATTACHMENTS ?> souborů celkem, každý do <?= (int) (NEWS_MAX_FILE_SIZE / 1024 / 1024) ?> MB. Obrázky se zobrazí přímo v novince, přílohy jako odkaz ke stažení.</span>
                 <div class="field checkbox-field">
                   <input type="checkbox" id="pinned" name="pinned">
                   <label for="pinned" style="margin:0;">Připnout nahoru</label>
