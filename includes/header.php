@@ -79,7 +79,7 @@ function asset_url(string $publicPath): string
         <li class="nav-divider" aria-hidden="true"></li>
         <li class="has-dropdown nav-account">
           <a href="#account" class="nav-account-trigger">
-            <span class="nav-avatar"><?= htmlspecialchars(initials($user), ENT_QUOTES, 'UTF-8') ?></span>
+            <span class="nav-avatar<?= $user['gender'] === 'male' ? ' nav-avatar--male' : '' ?>"><?= htmlspecialchars(initials($user), ENT_QUOTES, 'UTF-8') ?></span>
             <span class="nav-account-name"><?= htmlspecialchars(full_name($user), ENT_QUOTES, 'UTF-8') ?></span>
             <span aria-hidden="true">▾</span>
           </a>

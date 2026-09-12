@@ -341,7 +341,7 @@ require_once __DIR__ . '/../includes/header.php';
       </div>
       <div class="user-list">
         <?php foreach ($allUsers as $row): $isSelf = (int) $row['id'] === (int) $user['id']; ?>
-          <details class="user-row" name="user-edit" data-name="<?= htmlspecialchars(mb_strtolower(surname_first($row) . ' ' . full_name($row)), ENT_QUOTES, 'UTF-8') ?>" data-filter="<?= htmlspecialchars($row['role'], ENT_QUOTES, 'UTF-8') ?>">
+          <details class="user-row<?= $row['gender'] === 'male' ? ' user-row--male' : '' ?>" name="user-edit" data-name="<?= htmlspecialchars(mb_strtolower(surname_first($row) . ' ' . full_name($row)), ENT_QUOTES, 'UTF-8') ?>" data-filter="<?= htmlspecialchars($row['role'], ENT_QUOTES, 'UTF-8') ?>">
             <summary class="user-summary">
               <div class="portal-avatar<?= $row['gender'] === 'male' ? ' portal-avatar--male' : '' ?>"><?= htmlspecialchars(initials($row), ENT_QUOTES, 'UTF-8') ?></div>
               <span class="user-summary-name"><?= htmlspecialchars(surname_first($row), ENT_QUOTES, 'UTF-8') ?></span>
@@ -449,7 +449,7 @@ require_once __DIR__ . '/../includes/header.php';
           <p class="hint-text">Zatím nejsou přidané žádné děti.</p>
         <?php endif; ?>
         <?php foreach ($allChildren as $child): ?>
-          <details class="user-row" name="child-edit" data-name="<?= htmlspecialchars(mb_strtolower(surname_first($child) . ' ' . full_child_name($child)), ENT_QUOTES, 'UTF-8') ?>" data-filter="<?= htmlspecialchars($child['program'], ENT_QUOTES, 'UTF-8') ?>">
+          <details class="user-row<?= $child['gender'] === 'male' ? ' user-row--male' : '' ?>" name="child-edit" data-name="<?= htmlspecialchars(mb_strtolower(surname_first($child) . ' ' . full_child_name($child)), ENT_QUOTES, 'UTF-8') ?>" data-filter="<?= htmlspecialchars($child['program'], ENT_QUOTES, 'UTF-8') ?>">
             <summary class="user-summary">
               <div class="portal-avatar<?= $child['gender'] === 'male' ? ' portal-avatar--male' : '' ?>"><?= htmlspecialchars(mb_strtoupper(mb_substr($child['first_name'], 0, 1) . mb_substr($child['last_name'], 0, 1)), ENT_QUOTES, 'UTF-8') ?></div>
               <span class="user-summary-name"><?= htmlspecialchars(surname_first($child), ENT_QUOTES, 'UTF-8') ?></span>

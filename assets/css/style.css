@@ -6,6 +6,8 @@
   --color-primary: #d88a95;
   --color-primary-dark: #b96877;
   --color-primary-light: #f7dee1;
+  --color-blue: #6fa8d8;
+  --color-blue-light: #dcebf7;
   --color-accent: #f2b872;
   --color-accent-dark: #dd9c4f;
   --color-bg: #fffaf8;
@@ -262,6 +264,7 @@ img { max-width: 100%; display: block; }
   font-weight: 700;
   font-size: 0.65rem;
 }
+.nav-avatar--male { background: var(--color-blue); }
 
 .nav-account-name {
   font-weight: 700;
@@ -716,6 +719,7 @@ img { max-width: 100%; display: block; }
 }
 .user-row[open] .user-summary-chevron { transform: rotate(180deg); }
 .user-row[open] .user-summary { background: var(--color-primary-light); border-bottom: 1px solid var(--color-border); }
+.user-row--male[open] .user-summary { background: var(--color-blue-light); }
 
 .user-edit-body { padding: 24px 20px; }
 
@@ -984,7 +988,7 @@ img { max-width: 100%; display: block; }
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-family: var(--font-heading);
 }
-.portal-avatar--male { background: #6fa8d8; }
+.portal-avatar--male { background: var(--color-blue); }
 .role-badge {
   display: inline-block;
   font-size: 0.72rem;
