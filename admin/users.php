@@ -462,7 +462,16 @@ require_once __DIR__ . '/../includes/header.php';
             </summary>
 
             <div class="user-edit-body">
-              <form method="post" action="/admin/users.php" style="margin-bottom:20px;">
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
+                <form method="post" action="/admin/users.php" onsubmit="return confirm('Opravdu trvale smazat dítě <?= htmlspecialchars(addslashes(full_child_name($child)), ENT_QUOTES, 'UTF-8') ?>? Smažou se i jeho výběry obědů. Tuto akci nelze vrátit zpět.');">
+                  <?= csrf_field() ?>
+                  <input type="hidden" name="action" value="delete_child">
+                  <input type="hidden" name="child_id" value="<?= (int) $child['id'] ?>">
+                  <button type="submit" class="btn btn--danger btn--sm">Smazat dítě</button>
+                </form>
+              </div>
+
+              <form method="post" action="/admin/users.php">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="update_child">
                 <input type="hidden" name="child_id" value="<?= (int) $child['id'] ?>">
@@ -501,13 +510,6 @@ require_once __DIR__ . '/../includes/header.php';
                   <?= render_guardian_checkboxes($allUsers, $child['guardian_ids'] ?? [], 'child-' . (int) $child['id'] . '-guardian') ?>
                 </div>
                 <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
-              </form>
-
-              <form method="post" action="/admin/users.php" onsubmit="return confirm('Opravdu trvale smazat dítě <?= htmlspecialchars(addslashes(full_child_name($child)), ENT_QUOTES, 'UTF-8') ?>? Smažou se i jeho výběry obědů. Tuto akci nelze vrátit zpět.');">
-                <?= csrf_field() ?>
-                <input type="hidden" name="action" value="delete_child">
-                <input type="hidden" name="child_id" value="<?= (int) $child['id'] ?>">
-                <button type="submit" class="btn btn--danger btn--sm">Smazat dítě</button>
               </form>
             </div>
           </details>
