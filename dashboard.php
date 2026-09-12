@@ -4,7 +4,6 @@ require_once __DIR__ . '/app/csrf.php';
 require_once __DIR__ . '/app/flash.php';
 require_once __DIR__ . '/app/news.php';
 require_once __DIR__ . '/app/children.php';
-require_once __DIR__ . '/app/invites.php';
 
 $user = require_login();
 $canPost = in_array($user['role'], ['admin', 'teacher'], true);
@@ -28,27 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete_news' && $canPost) {
         delete_news((int) ($_POST['news_id'] ?? 0));
         flash_set('success', 'Novinka byla smazána.');
-        header('Location: /dashboard.php');
-        exit;
-    }
-
-    if ($action === 'invite_parent' && $canPost) {
-        $result = invite_user(
-            (string) ($_POST['invite_email'] ?? ''),
-            (string) ($_POST['invite_first_name'] ?? ''),
-            (string) ($_POST['invite_last_name'] ?? ''),
-            'parent'
-        );
-        $linkNote = $result['link'] ? ' Odkaz pro nastavení hesla: ' . $result['link'] : '';
-        flash_set(
-            $result['status'] === 'ok' ? 'success' : 'error',
-            match ($result['status']) {
-                'ok' => 'Pozvánka byla odeslána na e-mail rodiče.' . $linkNote,
-                'exists' => 'Tento e-mail už má vytvořený účet.',
-                'mail_failed' => 'Účet byl vytvořen, ale e-mail se nepodařilo odeslat.' . $linkNote,
-                default => 'Zkontrolujte prosím jméno a e-mail.',
-            }
-        );
         header('Location: /dashboard.php');
         exit;
     }
@@ -154,30 +132,6 @@ require_once __DIR__ . '/includes/header.php';
                   <label for="pinned" style="margin:0;">Připnout nahoru</label>
                 </div>
                 <button type="submit" class="btn btn--accent">Zveřejnit novinku</button>
-              </form>
-            </div>
-
-            <div class="form-card">
-              <h3 class="mt-0">Pozvat rodiče do portálu</h3>
-              <p class="hint-text">Vytvoří rodiči účet a pošle mu e-mail s odkazem pro nastavení hesla.</p>
-              <form method="post" action="/dashboard.php">
-                <?= csrf_field() ?>
-                <input type="hidden" name="action" value="invite_parent">
-                <div class="field-row">
-                  <div class="field">
-                    <label for="invite_first_name">Jméno rodiče</label>
-                    <input type="text" id="invite_first_name" name="invite_first_name" required>
-                  </div>
-                  <div class="field">
-                    <label for="invite_last_name">Příjmení rodiče</label>
-                    <input type="text" id="invite_last_name" name="invite_last_name" required>
-                  </div>
-                </div>
-                <div class="field">
-                  <label for="invite_email">E-mail rodiče</label>
-                  <input type="email" id="invite_email" name="invite_email" required>
-                </div>
-                <button type="submit" class="btn btn--primary">Odeslat pozvánku</button>
               </form>
             </div>
           <?php endif; ?>

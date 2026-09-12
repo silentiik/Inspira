@@ -48,7 +48,7 @@ data/                        SQLite soubor + mail.log (mimo git, chráněno .hta
 |---|---|---|---|
 | Vidět nástěnku s novinkami | ✅ | ✅ | ✅ |
 | Přidat/smazat novinku | ✅ | ✅ | ❌ |
-| Pozvat rodiče do portálu | ✅ | ✅ | ❌ |
+| Pozvat rodiče do portálu (přes Uživatelé a role) | ✅ | ❌ | ❌ |
 | Spravovat všechny účty a role | ✅ | ❌ | ❌ |
 | Upravovat texty na webu | ✅ (vše) | ✅ (jen vybrané) | ❌ |
 | Upravovat ceník | ✅ | ❌ | ❌ |
