@@ -158,42 +158,94 @@ require_once __DIR__ . '/../includes/header.php';
 
   <section class="section">
     <div class="container">
-      <div class="form-card" style="margin-bottom:28px;">
-        <h3 class="mt-0">Přidat nový účet</h3>
-        <form method="post" action="/admin/users.php">
-          <?= csrf_field() ?>
-          <input type="hidden" name="action" value="invite">
-          <div class="field-row">
-            <div class="field">
-              <label for="first_name">Jméno</label>
-              <input type="text" id="first_name" name="first_name" required>
-            </div>
-            <div class="field">
-              <label for="last_name">Příjmení</label>
-              <input type="text" id="last_name" name="last_name" required>
-            </div>
+      <div class="toggle-row">
+        <details class="section-toggle">
+          <summary><span class="toggle-icon" aria-hidden="true">+</span> Přidat nový účet</summary>
+          <div class="form-card">
+            <form method="post" action="/admin/users.php">
+              <?= csrf_field() ?>
+              <input type="hidden" name="action" value="invite">
+              <div class="field-row">
+                <div class="field">
+                  <label for="first_name">Jméno</label>
+                  <input type="text" id="first_name" name="first_name" required>
+                </div>
+                <div class="field">
+                  <label for="last_name">Příjmení</label>
+                  <input type="text" id="last_name" name="last_name" required>
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label for="email">E-mail</label>
+                  <input type="email" id="email" name="email" required>
+                </div>
+                <div class="field">
+                  <label for="role">Role</label>
+                  <select id="role" name="role" required>
+                    <option value="parent">Rodič</option>
+                    <option value="teacher">Učitel/ka</option>
+                    <option value="admin">Administrátor</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="password">Heslo (nepovinné)</label>
+                <input type="password" id="password" name="password" minlength="8" placeholder="Ponechte prázdné pro pozvánku e-mailem">
+                <span class="hint-text">Necháte-li pole prázdné, účet dostane e-mail s odkazem pro nastavení vlastního hesla. Vyplníte-li heslo, účet se vytvoří rovnou s ním a e-mail se neposílá.</span>
+              </div>
+              <button type="submit" class="btn btn--primary">Vytvořit účet</button>
+            </form>
           </div>
-          <div class="field-row">
-            <div class="field">
-              <label for="email">E-mail</label>
-              <input type="email" id="email" name="email" required>
-            </div>
-            <div class="field">
-              <label for="role">Role</label>
-              <select id="role" name="role" required>
-                <option value="parent">Rodič</option>
-                <option value="teacher">Učitel/ka</option>
-                <option value="admin">Administrátor</option>
-              </select>
-            </div>
+        </details>
+
+        <details class="section-toggle">
+          <summary><span class="toggle-icon" aria-hidden="true">+</span> Přidat dítě</summary>
+          <div class="form-card">
+            <form method="post" action="/admin/users.php">
+              <?= csrf_field() ?>
+              <input type="hidden" name="action" value="add_child">
+              <div class="field-row">
+                <div class="field">
+                  <label for="child_first_name">Jméno</label>
+                  <input type="text" id="child_first_name" name="child_first_name" required>
+                </div>
+                <div class="field">
+                  <label for="child_last_name">Příjmení</label>
+                  <input type="text" id="child_last_name" name="child_last_name" required>
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label for="child_date_of_birth">Datum narození</label>
+                  <input type="date" id="child_date_of_birth" name="child_date_of_birth">
+                </div>
+                <div class="field">
+                  <label for="child_program">Kategorie</label>
+                  <select id="child_program" name="child_program" required>
+                    <?php foreach (CHILD_PROGRAMS as $value => $label): ?>
+                      <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="child_parent_id">Patří k účtu</label>
+                <select id="child_parent_id" name="child_parent_id" required>
+                  <option value="">Vyberte</option>
+                  <?php foreach ($allUsers as $u): ?>
+                    <option value="<?= (int) $u['id'] ?>"><?= htmlspecialchars(full_name($u), ENT_QUOTES, 'UTF-8') ?> (<?= htmlspecialchars(match ($u['role']) {
+                      'admin' => 'administrátor',
+                      'teacher' => 'učitel/ka',
+                      default => 'rodič',
+                    }, ENT_QUOTES, 'UTF-8') ?>)</option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <button type="submit" class="btn btn--primary">Přidat dítě</button>
+            </form>
           </div>
-          <div class="field">
-            <label for="password">Heslo (nepovinné)</label>
-            <input type="password" id="password" name="password" minlength="8" placeholder="Ponechte prázdné pro pozvánku e-mailem">
-            <span class="hint-text">Necháte-li pole prázdné, účet dostane e-mail s odkazem pro nastavení vlastního hesla. Vyplníte-li heslo, účet se vytvoří rovnou s ním a e-mail se neposílá.</span>
-          </div>
-          <button type="submit" class="btn btn--primary">Vytvořit účet</button>
-        </form>
+        </details>
       </div>
 
       <h2>Všechny účty</h2>
@@ -275,52 +327,6 @@ require_once __DIR__ . '/../includes/header.php';
             </div>
           </details>
         <?php endforeach; ?>
-      </div>
-
-      <div class="form-card" style="margin: 32px 0 28px;">
-        <h3 class="mt-0">Přidat dítě</h3>
-        <form method="post" action="/admin/users.php">
-          <?= csrf_field() ?>
-          <input type="hidden" name="action" value="add_child">
-          <div class="field-row">
-            <div class="field">
-              <label for="child_first_name">Jméno</label>
-              <input type="text" id="child_first_name" name="child_first_name" required>
-            </div>
-            <div class="field">
-              <label for="child_last_name">Příjmení</label>
-              <input type="text" id="child_last_name" name="child_last_name" required>
-            </div>
-          </div>
-          <div class="field-row">
-            <div class="field">
-              <label for="child_date_of_birth">Datum narození</label>
-              <input type="date" id="child_date_of_birth" name="child_date_of_birth">
-            </div>
-            <div class="field">
-              <label for="child_program">Kategorie</label>
-              <select id="child_program" name="child_program" required>
-                <?php foreach (CHILD_PROGRAMS as $value => $label): ?>
-                  <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
-                <?php endforeach; ?>
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <label for="child_parent_id">Patří k účtu</label>
-            <select id="child_parent_id" name="child_parent_id" required>
-              <option value="">Vyberte</option>
-              <?php foreach ($allUsers as $u): ?>
-                <option value="<?= (int) $u['id'] ?>"><?= htmlspecialchars(full_name($u), ENT_QUOTES, 'UTF-8') ?> (<?= htmlspecialchars(match ($u['role']) {
-                  'admin' => 'administrátor',
-                  'teacher' => 'učitel/ka',
-                  default => 'rodič',
-                }, ENT_QUOTES, 'UTF-8') ?>)</option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-          <button type="submit" class="btn btn--primary">Přidat dítě</button>
-        </form>
       </div>
 
       <h2>Děti</h2>
