@@ -224,6 +224,51 @@ img { max-width: 100%; display: block; }
 }
 .dropdown a { border-radius: 8px; }
 
+.nav-divider {
+  width: 1px;
+  height: 26px;
+  background: var(--color-border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.nav-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 6px;
+  border-radius: 999px;
+  background: var(--color-bg-alt);
+}
+
+.nav-avatar {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.68rem;
+}
+
+.nav-account-name {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--color-primary-dark);
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-account a { padding: 7px 14px; font-size: 0.85rem; }
+.nav-logout.btn--outline { flex-shrink: 0; }
+
 .nav-toggle {
   display: none;
   background: none;
@@ -268,6 +313,18 @@ img { max-width: 100%; display: block; }
   }
   .has-dropdown.is-open .dropdown { display: block; }
   body.nav-is-open { overflow: hidden; }
+
+  .nav-divider {
+    width: auto;
+    height: 1px;
+    margin: 10px 4px;
+  }
+  .nav-account {
+    flex-wrap: wrap;
+    padding: 12px 14px;
+  }
+  .nav-account-name { max-width: none; }
+  .nav-account a { padding: 8px 14px; }
 }
 
 /* ---------- Hero ---------- */

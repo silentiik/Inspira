@@ -19,6 +19,14 @@ function nav_class(string $key, string $active): string
 {
     return $key === $active ? ' class="is-active"' : '';
 }
+
+/** First letter of up to the first two words, e.g. "Petra Nováková" -> "PN". */
+function initials(string $name): string
+{
+    $parts = preg_split('/\s+/', trim($name), -1, PREG_SPLIT_NO_EMPTY);
+    $letters = array_map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)), array_slice($parts, 0, 2));
+    return implode('', $letters) ?: '?';
+}
 ?>
 <!DOCTYPE html>
 <html lang="cs">
@@ -56,8 +64,13 @@ function nav_class(string $key, string $active): string
       <li><a href="/cenik.php"<?= nav_class('cenik', $activeNav) ?>>Ceník</a></li>
       <li><a href="/o-nas.php"<?= nav_class('o-nas', $activeNav) ?>>O nás</a></li>
       <?php if ($user): ?>
-        <li><a href="/dashboard.php"<?= nav_class('dashboard', $activeNav) ?>>Nástěnka</a></li>
-        <li><a href="/auth/logout.php">Odhlásit (<?= htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8') ?>)</a></li>
+        <li class="nav-divider" aria-hidden="true"></li>
+        <li class="nav-account">
+          <span class="nav-avatar"><?= htmlspecialchars(initials($user['name']), ENT_QUOTES, 'UTF-8') ?></span>
+          <span class="nav-account-name"><?= htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8') ?></span>
+          <a href="/dashboard.php"<?= nav_class('dashboard', $activeNav) ?>>Nástěnka</a>
+          <a href="/auth/logout.php" class="btn btn--outline btn--sm nav-logout">Odhlásit</a>
+        </li>
       <?php else: ?>
         <li><a href="/auth/login.php"<?= nav_class('login', $activeNav) ?>>Přihlásit se</a></li>
       <?php endif; ?>
