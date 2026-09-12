@@ -109,15 +109,6 @@ require_once __DIR__ . '/includes/header.php';
   <section class="section">
     <div class="container">
 
-      <?php if ($user['role'] === 'admin'): ?>
-        <div class="notice-box" style="margin-bottom:28px;">
-          <strong>Administrátorský přístup.</strong>
-          <a href="/admin/users.php">Uživatelé a role</a> ·
-          <a href="/admin/content.php">Texty na webu</a> ·
-          <a href="/admin/pricing.php">Ceník</a>
-        </div>
-      <?php endif; ?>
-
       <div class="portal-grid">
         <div class="stack">
           <div class="form-card">
