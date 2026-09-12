@@ -634,7 +634,7 @@ img { max-width: 100%; display: block; }
 }
 
 /* ---------- Collapsible user list (admin/users.php) ---------- */
-.user-list { display: flex; flex-direction: column; gap: 10px; }
+.user-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 40px; }
 
 .user-row {
   background: var(--color-surface);
