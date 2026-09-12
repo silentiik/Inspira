@@ -85,6 +85,9 @@ function asset_url(string $publicPath): string
           </a>
           <ul class="dropdown">
             <li><a href="/dashboard.php"<?= nav_class('dashboard', $activeNav) ?>>Nástěnka</a></li>
+            <?php if ($user['role'] === 'admin'): ?>
+              <li><a href="/admin/users.php"<?= nav_class('admin-users', $activeNav) ?>>Uživatelé a role</a></li>
+            <?php endif; ?>
             <li><a href="/auth/logout.php">Odhlásit</a></li>
           </ul>
         </li>
