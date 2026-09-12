@@ -317,6 +317,11 @@ img { max-width: 100%; display: block; }
   }
   .nav-account-name { max-width: none; }
   .nav-account .dropdown { right: auto; left: 0; }
+  /* The pill shape (999px radius) only reads well as a single row; once
+     expanded on mobile the static dropdown sits flush below it, so use
+     a normal rounded rect instead to avoid an odd pill-into-box seam. */
+  .nav-links a.nav-account-trigger { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+  .nav-account:not(.is-open) .nav-links a.nav-account-trigger { border-radius: var(--radius-sm); }
 }
 
 /* ---------- Hero ---------- */
