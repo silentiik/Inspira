@@ -16,7 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $title = trim((string) ($_POST['title'] ?? ''));
         $body = trim((string) ($_POST['body'] ?? ''));
         $pinned = !empty($_POST['pinned']);
-        if ($title !== '' && $body !== '') {
+        $hasFiles = !empty(array_filter(array_merge($_FILES['images']['name'] ?? [], $_FILES['attachments']['name'] ?? [])));
+
+        if ($title === '' || ($body === '' && !$hasFiles)) {
+            flash_set('error', 'Zadejte prosím titulek a text novinky, nebo k ní alespoň přiložte obrázek či soubor.');
+        } else {
             $newsId = create_news((int) $user['id'], $title, $body, $pinned);
 
             $uploadErrors = [];
@@ -133,15 +137,15 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
                 <div class="field">
                   <label for="body">Text</label>
-                  <textarea id="body" name="body" required></textarea>
+                  <textarea id="body" name="body"></textarea>
                 </div>
                 <div class="field-row">
                   <div class="field">
-                    <label for="images">🖼️ Obrázky (nepovinné)</label>
+                    <label for="images">🖼️ Obrázky</label>
                     <input type="file" id="images" name="images[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp">
                   </div>
                   <div class="field">
-                    <label for="attachments">📎 Přílohy (nepovinné)</label>
+                    <label for="attachments">📎 Přílohy</label>
                     <input type="file" id="attachments" name="attachments[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
                   </div>
                 </div>
@@ -169,7 +173,9 @@ require_once __DIR__ . '/includes/header.php';
               <div class="news-item<?= $item['pinned'] ? ' is-pinned' : '' ?>">
                 <h4><?= $item['pinned'] ? '📌 ' : '' ?><?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?></h4>
                 <div class="news-meta"><?= htmlspecialchars($item['author_name'], ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars(date('j. n. Y', strtotime($item['created_at'])), ENT_QUOTES, 'UTF-8') ?></div>
-                <p style="margin:0;"><?= nl2br(htmlspecialchars($item['body'], ENT_QUOTES, 'UTF-8')) ?></p>
+                <?php if ($item['body'] !== ''): ?>
+                  <p style="margin:0;"><?= nl2br(htmlspecialchars($item['body'], ENT_QUOTES, 'UTF-8')) ?></p>
+                <?php endif; ?>
                 <?php foreach ($images as $image): ?>
                   <img class="news-image" src="/attachment.php?id=<?= (int) $image['id'] ?>" alt="<?= htmlspecialchars($image['original_name'], ENT_QUOTES, 'UTF-8') ?>">
                 <?php endforeach; ?>
