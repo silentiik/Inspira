@@ -3,6 +3,7 @@ require_once __DIR__ . '/../app/auth.php';
 require_once __DIR__ . '/../app/csrf.php';
 require_once __DIR__ . '/../app/flash.php';
 require_once __DIR__ . '/../app/invites.php';
+require_once __DIR__ . '/../app/children.php';
 
 $user = require_role(['admin']);
 
@@ -105,11 +106,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    if ($action === 'add_child' || $action === 'update_child') {
+        $childFirstName = trim((string) ($_POST['child_first_name'] ?? ''));
+        $childLastName = trim((string) ($_POST['child_last_name'] ?? ''));
+        $childProgram = (string) ($_POST['child_program'] ?? '');
+        $childDob = trim((string) ($_POST['child_date_of_birth'] ?? ''));
+        $childParentId = (int) ($_POST['child_parent_id'] ?? 0);
+
+        $parentCheck = db()->prepare('SELECT 1 FROM users WHERE id = ?');
+        $parentCheck->execute([$childParentId]);
+        $parentExists = (bool) $parentCheck->fetchColumn();
+
+        if ($childFirstName === '' || $childLastName === '' || !in_array($childProgram, ['inspirka', 'domskolaci'], true)) {
+            flash_set('error', 'Zadejte prosím jméno, příjmení a program dítěte.');
+        } elseif ($childDob !== '' && !DateTime::createFromFormat('Y-m-d', $childDob)) {
+            flash_set('error', 'Zadejte prosím platné datum narození.');
+        } elseif (!$parentExists) {
+            flash_set('error', 'Vyberte prosím účet, ke kterému dítě patří.');
+        } elseif ($action === 'add_child') {
+            add_child($childParentId, $childFirstName, $childLastName, $childProgram, $childDob ?: null);
+            flash_set('success', 'Dítě bylo přidáno.');
+        } else {
+            $childId = (int) ($_POST['child_id'] ?? 0);
+            update_child($childId, $childParentId, $childFirstName, $childLastName, $childProgram, $childDob ?: null);
+            flash_set('success', 'Dítě bylo uloženo.');
+        }
+    }
+
+    if ($action === 'delete_child') {
+        delete_child((int) ($_POST['child_id'] ?? 0));
+        flash_set('success', 'Dítě bylo smazáno.');
+    }
+
     header('Location: /admin/users.php');
     exit;
 }
 
 $allUsers = db()->query('SELECT * FROM users ORDER BY role, first_name, last_name')->fetchAll();
+$allChildren = all_children_with_parent();
 
 $pageTitle = 'Uživatelé | INSPIRA';
 require_once __DIR__ . '/../includes/header.php';
@@ -237,6 +271,125 @@ require_once __DIR__ . '/../includes/header.php';
                   <input type="password" id="new_password-<?= (int) $row['id'] ?>" name="new_password" minlength="8" placeholder="Ponechte prázdné, pokud heslo neměnit">
                 </div>
                 <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
+              </form>
+            </div>
+          </details>
+        <?php endforeach; ?>
+      </div>
+
+      <div class="form-card" style="margin: 32px 0 28px;">
+        <h3 class="mt-0">Přidat dítě</h3>
+        <form method="post" action="/admin/users.php">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="add_child">
+          <div class="field-row">
+            <div class="field">
+              <label for="child_first_name">Jméno</label>
+              <input type="text" id="child_first_name" name="child_first_name" required>
+            </div>
+            <div class="field">
+              <label for="child_last_name">Příjmení</label>
+              <input type="text" id="child_last_name" name="child_last_name" required>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="child_date_of_birth">Datum narození</label>
+              <input type="date" id="child_date_of_birth" name="child_date_of_birth">
+            </div>
+            <div class="field">
+              <label for="child_program">Kategorie</label>
+              <select id="child_program" name="child_program" required>
+                <?php foreach (CHILD_PROGRAMS as $value => $label): ?>
+                  <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="child_parent_id">Patří k účtu</label>
+            <select id="child_parent_id" name="child_parent_id" required>
+              <option value="">Vyberte</option>
+              <?php foreach ($allUsers as $u): ?>
+                <option value="<?= (int) $u['id'] ?>"><?= htmlspecialchars(full_name($u), ENT_QUOTES, 'UTF-8') ?> (<?= htmlspecialchars(match ($u['role']) {
+                  'admin' => 'administrátor',
+                  'teacher' => 'učitel/ka',
+                  default => 'rodič',
+                }, ENT_QUOTES, 'UTF-8') ?>)</option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <button type="submit" class="btn btn--primary">Přidat dítě</button>
+        </form>
+      </div>
+
+      <h2>Děti</h2>
+      <div class="user-list">
+        <?php if (empty($allChildren)): ?>
+          <p class="hint-text">Zatím nejsou přidané žádné děti.</p>
+        <?php endif; ?>
+        <?php foreach ($allChildren as $child): ?>
+          <details class="user-row" name="child-edit">
+            <summary class="user-summary">
+              <div class="portal-avatar"><?= htmlspecialchars(mb_strtoupper(mb_substr($child['first_name'], 0, 1) . mb_substr($child['last_name'], 0, 1)), ENT_QUOTES, 'UTF-8') ?></div>
+              <span class="user-summary-name"><?= htmlspecialchars(full_child_name($child), ENT_QUOTES, 'UTF-8') ?></span>
+              <span class="role-badge"><?= htmlspecialchars(CHILD_PROGRAMS[$child['program']] ?? $child['program'], ENT_QUOTES, 'UTF-8') ?></span>
+              <span class="user-summary-meta">
+                <?= $child['date_of_birth'] ? htmlspecialchars(date('j. n. Y', strtotime($child['date_of_birth'])), ENT_QUOTES, 'UTF-8') . ' · ' : '' ?>
+                <?= htmlspecialchars($child['parent_name'] ?: '(bez účtu)', ENT_QUOTES, 'UTF-8') ?>
+              </span>
+              <span class="user-summary-chevron" aria-hidden="true">▾</span>
+            </summary>
+
+            <div class="user-edit-body">
+              <form method="post" action="/admin/users.php" style="margin-bottom:20px;">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="update_child">
+                <input type="hidden" name="child_id" value="<?= (int) $child['id'] ?>">
+                <div class="field-row">
+                  <div class="field">
+                    <label for="child_first_name-<?= (int) $child['id'] ?>">Jméno</label>
+                    <input type="text" id="child_first_name-<?= (int) $child['id'] ?>" name="child_first_name" value="<?= htmlspecialchars($child['first_name'], ENT_QUOTES, 'UTF-8') ?>" required>
+                  </div>
+                  <div class="field">
+                    <label for="child_last_name-<?= (int) $child['id'] ?>">Příjmení</label>
+                    <input type="text" id="child_last_name-<?= (int) $child['id'] ?>" name="child_last_name" value="<?= htmlspecialchars($child['last_name'], ENT_QUOTES, 'UTF-8') ?>" required>
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="child_date_of_birth-<?= (int) $child['id'] ?>">Datum narození</label>
+                    <input type="date" id="child_date_of_birth-<?= (int) $child['id'] ?>" name="child_date_of_birth" value="<?= htmlspecialchars((string) $child['date_of_birth'], ENT_QUOTES, 'UTF-8') ?>">
+                  </div>
+                  <div class="field">
+                    <label for="child_program-<?= (int) $child['id'] ?>">Kategorie</label>
+                    <select id="child_program-<?= (int) $child['id'] ?>" name="child_program" required>
+                      <?php foreach (CHILD_PROGRAMS as $value => $label): ?>
+                        <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>"<?= $child['program'] === $value ? ' selected' : '' ?>><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
+                      <?php endforeach; ?>
+                    </select>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="child_parent_id-<?= (int) $child['id'] ?>">Patří k účtu</label>
+                  <select id="child_parent_id-<?= (int) $child['id'] ?>" name="child_parent_id" required>
+                    <?php foreach ($allUsers as $u): ?>
+                      <option value="<?= (int) $u['id'] ?>"<?= (int) $child['parent_id'] === (int) $u['id'] ? ' selected' : '' ?>><?= htmlspecialchars(full_name($u), ENT_QUOTES, 'UTF-8') ?> (<?= htmlspecialchars(match ($u['role']) {
+                        'admin' => 'administrátor',
+                        'teacher' => 'učitel/ka',
+                        default => 'rodič',
+                      }, ENT_QUOTES, 'UTF-8') ?>)</option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
+              </form>
+
+              <form method="post" action="/admin/users.php" onsubmit="return confirm('Opravdu trvale smazat dítě <?= htmlspecialchars(addslashes(full_child_name($child)), ENT_QUOTES, 'UTF-8') ?>? Smažou se i jeho výběry obědů. Tuto akci nelze vrátit zpět.');">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="delete_child">
+                <input type="hidden" name="child_id" value="<?= (int) $child['id'] ?>">
+                <button type="submit" class="btn btn--danger btn--sm">Smazat dítě</button>
               </form>
             </div>
           </details>

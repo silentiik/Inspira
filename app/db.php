@@ -83,6 +83,19 @@ function migrate(PDO $pdo): void
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
     )");
 
+    // Same first_name/last_name split as users, plus date of birth —
+    // added via ALTER TABLE so any child rows created before this
+    // upgrade in place instead of disappearing.
+    ensure_column($pdo, 'children', 'first_name', "first_name TEXT NOT NULL DEFAULT ''");
+    ensure_column($pdo, 'children', 'last_name', "last_name TEXT NOT NULL DEFAULT ''");
+    ensure_column($pdo, 'children', 'date_of_birth', 'date_of_birth TEXT');
+    $unmigratedChildren = $pdo->query("SELECT id, name FROM children WHERE first_name = '' AND name != ''")->fetchAll();
+    foreach ($unmigratedChildren as $row) {
+        $parts = explode(' ', trim((string) $row['name']), 2);
+        $pdo->prepare('UPDATE children SET first_name = ?, last_name = ? WHERE id = ?')
+            ->execute([$parts[0], $parts[1] ?? '', $row['id']]);
+    }
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS lunch_selections (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,

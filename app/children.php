@@ -11,6 +11,8 @@ const LUNCH_OPTIONS = [
     'Bez oběda',
 ];
 
+const CHILD_PROGRAMS = ['inspirka' => 'INSPIRKA', 'domskolaci' => 'Domškolák'];
+
 function children_for_parent(int $parentId): array
 {
     $stmt = db()->prepare('SELECT * FROM children WHERE parent_id = ? ORDER BY name');
@@ -18,11 +20,44 @@ function children_for_parent(int $parentId): array
     return $stmt->fetchAll();
 }
 
-function add_child(int $parentId, string $name, string $program): int
+/** All children with their linked account's name/role, for the admin list. */
+function all_children_with_parent(): array
 {
-    $stmt = db()->prepare('INSERT INTO children (parent_id, name, program) VALUES (?, ?, ?)');
-    $stmt->execute([$parentId, $name, $program]);
+    return db()->query(
+        "SELECT children.*,
+                trim(users.first_name || ' ' || users.last_name) AS parent_name,
+                users.role AS parent_role
+         FROM children
+         LEFT JOIN users ON users.id = children.parent_id
+         ORDER BY children.last_name, children.first_name"
+    )->fetchAll();
+}
+
+function full_child_name(array $child): string
+{
+    return trim(($child['first_name'] ?? '') . ' ' . ($child['last_name'] ?? ''));
+}
+
+function add_child(int $parentId, string $firstName, string $lastName, string $program, ?string $dateOfBirth = null): int
+{
+    $stmt = db()->prepare(
+        'INSERT INTO children (parent_id, name, first_name, last_name, program, date_of_birth) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    $stmt->execute([$parentId, trim("$firstName $lastName"), $firstName, $lastName, $program, $dateOfBirth ?: null]);
     return (int) db()->lastInsertId();
+}
+
+function update_child(int $childId, int $parentId, string $firstName, string $lastName, string $program, ?string $dateOfBirth): void
+{
+    $stmt = db()->prepare(
+        'UPDATE children SET parent_id = ?, name = ?, first_name = ?, last_name = ?, program = ?, date_of_birth = ? WHERE id = ?'
+    );
+    $stmt->execute([$parentId, trim("$firstName $lastName"), $firstName, $lastName, $program, $dateOfBirth ?: null, $childId]);
+}
+
+function delete_child(int $childId): void
+{
+    db()->prepare('DELETE FROM children WHERE id = ?')->execute([$childId]);
 }
 
 /** Verifies the child belongs to this parent before any lunch write. */

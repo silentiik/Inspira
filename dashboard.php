@@ -54,11 +54,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'add_child' && $user['role'] === 'parent') {
-        $name = trim((string) ($_POST['child_name'] ?? ''));
+        $firstName = trim((string) ($_POST['child_first_name'] ?? ''));
+        $lastName = trim((string) ($_POST['child_last_name'] ?? ''));
         $program = (string) ($_POST['child_program'] ?? '');
-        if ($name !== '' && in_array($program, ['inspirka', 'domskolaci'], true)) {
-            add_child((int) $user['id'], $name, $program);
+        $dateOfBirth = (string) ($_POST['child_date_of_birth'] ?? '');
+        if ($firstName !== '' && $lastName !== '' && in_array($program, ['inspirka', 'domskolaci'], true)) {
+            add_child((int) $user['id'], $firstName, $lastName, $program, $dateOfBirth ?: null);
             flash_set('success', 'Dítě bylo přidáno.');
+        } else {
+            flash_set('error', 'Zadejte prosím jméno, příjmení a program dítěte.');
         }
         header('Location: /dashboard.php');
         exit;
@@ -222,16 +226,28 @@ require_once __DIR__ . '/includes/header.php';
             <form method="post" action="/dashboard.php">
               <?= csrf_field() ?>
               <input type="hidden" name="action" value="add_child">
-              <div class="field">
-                <label for="child_name">Jméno dítěte</label>
-                <input type="text" id="child_name" name="child_name" required>
+              <div class="field-row">
+                <div class="field">
+                  <label for="child_first_name">Jméno dítěte</label>
+                  <input type="text" id="child_first_name" name="child_first_name" required>
+                </div>
+                <div class="field">
+                  <label for="child_last_name">Příjmení dítěte</label>
+                  <input type="text" id="child_last_name" name="child_last_name" required>
+                </div>
               </div>
-              <div class="field">
-                <label for="child_program">Program</label>
-                <select id="child_program" name="child_program" required>
-                  <option value="inspirka">INSPIRKA</option>
-                  <option value="domskolaci">Domškolácká akademie</option>
-                </select>
+              <div class="field-row">
+                <div class="field">
+                  <label for="child_date_of_birth">Datum narození</label>
+                  <input type="date" id="child_date_of_birth" name="child_date_of_birth">
+                </div>
+                <div class="field">
+                  <label for="child_program">Program</label>
+                  <select id="child_program" name="child_program" required>
+                    <option value="inspirka">INSPIRKA</option>
+                    <option value="domskolaci">Domškolácká akademie</option>
+                  </select>
+                </div>
               </div>
               <button type="submit" class="btn btn--outline">Přidat dítě</button>
             </form>
