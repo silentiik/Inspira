@@ -5,6 +5,12 @@ require_once __DIR__ . '/../app/flash.php';
 require_once __DIR__ . '/../app/invites.php';
 require_once __DIR__ . '/../app/children.php';
 
+/** "Špringl Hynek" — surname first, for lists sorted by surname. */
+function surname_first(array $person): string
+{
+    return trim(($person['last_name'] ?? '') . ' ' . ($person['first_name'] ?? ''));
+}
+
 /**
  * Collapsible, search-filterable checkbox list of every account a
  * child can be linked to. Always starts collapsed — the selected
@@ -197,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$allUsers = db()->query('SELECT * FROM users ORDER BY role, first_name, last_name')->fetchAll();
+$allUsers = db()->query('SELECT * FROM users ORDER BY last_name, first_name')->fetchAll();
 $allChildren = all_children_with_parent();
 
 // For the accounts list: which children (by name) are linked to each
@@ -309,7 +315,7 @@ require_once __DIR__ . '/../includes/header.php';
           <details class="user-row" name="user-edit">
             <summary class="user-summary">
               <div class="portal-avatar"><?= htmlspecialchars(initials($row), ENT_QUOTES, 'UTF-8') ?></div>
-              <span class="user-summary-name"><?= htmlspecialchars(full_name($row), ENT_QUOTES, 'UTF-8') ?></span>
+              <span class="user-summary-name"><?= htmlspecialchars(surname_first($row), ENT_QUOTES, 'UTF-8') ?></span>
               <span class="role-badge"><?= htmlspecialchars(match ($row['role']) {
                 'admin' => 'Administrátor',
                 'teacher' => 'Učitel/ka',
@@ -398,7 +404,7 @@ require_once __DIR__ . '/../includes/header.php';
           <details class="user-row" name="child-edit">
             <summary class="user-summary">
               <div class="portal-avatar"><?= htmlspecialchars(mb_strtoupper(mb_substr($child['first_name'], 0, 1) . mb_substr($child['last_name'], 0, 1)), ENT_QUOTES, 'UTF-8') ?></div>
-              <span class="user-summary-name"><?= htmlspecialchars(full_child_name($child), ENT_QUOTES, 'UTF-8') ?></span>
+              <span class="user-summary-name"><?= htmlspecialchars(surname_first($child), ENT_QUOTES, 'UTF-8') ?></span>
               <span class="role-badge"><?= htmlspecialchars(CHILD_PROGRAMS[$child['program']] ?? $child['program'], ENT_QUOTES, 'UTF-8') ?></span>
               <span class="user-summary-meta">
                 <?= $child['date_of_birth'] ? htmlspecialchars(date('j. n. Y', strtotime($child['date_of_birth'])), ENT_QUOTES, 'UTF-8') . ' · ' : '' ?>
