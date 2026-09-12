@@ -184,13 +184,14 @@ require_once __DIR__ . '/includes/header.php';
             <?php if (empty($newsItems)): ?>
               <p class="hint-text">Zatím tu nejsou žádné novinky.</p>
             <?php endif; ?>
-            <?php foreach ($newsItems as $item): ?>
-              <?php
-                $attachments = attachments_for_news((int) $item['id']);
-                $images = array_filter($attachments, fn ($a) => str_starts_with($a['mime_type'], 'image/'));
-                $files = array_filter($attachments, fn ($a) => !str_starts_with($a['mime_type'], 'image/'));
-              ?>
-              <div class="news-item<?= $item['pinned'] ? ' is-pinned' : '' ?>">
+          </div>
+          <?php foreach ($newsItems as $item): ?>
+            <?php
+              $attachments = attachments_for_news((int) $item['id']);
+              $images = array_filter($attachments, fn ($a) => str_starts_with($a['mime_type'], 'image/'));
+              $files = array_filter($attachments, fn ($a) => !str_starts_with($a['mime_type'], 'image/'));
+            ?>
+            <div class="form-card news-item<?= $item['pinned'] ? ' is-pinned' : '' ?>">
                 <div class="news-item-header">
                   <h4><?= $item['pinned'] ? '📌 ' : '' ?><?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?></h4>
                   <?php if ($canPost): ?>
@@ -248,9 +249,8 @@ require_once __DIR__ . '/includes/header.php';
                     <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
                   </form>
                 <?php endif; ?>
-              </div>
-            <?php endforeach; ?>
-          </div>
+            </div>
+          <?php endforeach; ?>
         </div>
 
         <?php if ($user['role'] === 'parent'): ?>
