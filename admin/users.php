@@ -201,6 +201,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $allUsers = db()->query('SELECT * FROM users ORDER BY role, first_name, last_name')->fetchAll();
 $allChildren = all_children_with_parent();
 
+// For the accounts list: which children (by name) are linked to each
+// guardian account, built from $allChildren so it's one pass instead
+// of a query per account.
+$childrenByGuardian = [];
+foreach ($allChildren as $child) {
+    foreach ($child['guardian_ids'] as $guardianId) {
+        $childrenByGuardian[$guardianId][] = full_child_name($child);
+    }
+}
+
 $pageTitle = 'Uživatelé | INSPIRA';
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -306,7 +316,12 @@ require_once __DIR__ . '/../includes/header.php';
                 'teacher' => 'Učitel/ka',
                 default => 'Rodič',
               }, ENT_QUOTES, 'UTF-8') ?></span>
-              <span class="user-summary-meta"><?= $row['is_active'] ? 'Aktivní' : 'Deaktivovaný' ?><?= $isSelf ? ' · toto jste vy' : '' ?></span>
+              <span class="user-summary-meta">
+                <?= $row['is_active'] ? 'Aktivní' : 'Deaktivovaný' ?><?= $isSelf ? ' · toto jste vy' : '' ?>
+                <?php if (!empty($childrenByGuardian[(int) $row['id']])): ?>
+                  · <?= htmlspecialchars(implode(', ', $childrenByGuardian[(int) $row['id']]), ENT_QUOTES, 'UTF-8') ?>
+                <?php endif; ?>
+              </span>
               <span class="user-summary-chevron" aria-hidden="true">▾</span>
             </summary>
 
