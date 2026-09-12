@@ -781,10 +781,25 @@ img { max-width: 100%; display: block; }
   font-weight: 600;
   margin-bottom: 20px;
   display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
-.alert.is-visible { display: block; }
+.alert.is-visible { display: flex; }
 .alert--success { background: rgba(111, 174, 127, 0.15); color: #3d6b48; }
 .alert--error { background: rgba(201, 82, 79, 0.12); color: var(--color-error); }
+.alert-close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+.alert-close:hover { opacity: 1; }
 
 /* ---------- Price calculator ---------- */
 .calc-layout {

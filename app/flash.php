@@ -25,5 +25,8 @@ function render_flash(): string
     }
     $class = $flash['type'] === 'error' ? 'alert--error' : 'alert--success';
     $message = htmlspecialchars($flash['message'], ENT_QUOTES, 'UTF-8');
-    return '<div class="alert ' . $class . ' is-visible">' . $message . '</div>';
+    return '<div class="alert ' . $class . ' is-visible">'
+        . '<span class="alert-message">' . $message . '</span>'
+        . '<button type="button" class="alert-close" aria-label="Zavřít">&times;</button>'
+        . '</div>';
 }

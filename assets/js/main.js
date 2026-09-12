@@ -1,5 +1,13 @@
 // Shared site behaviour: mobile nav, dropdown-on-tap, back-to-top button.
 (function () {
+  // Dismiss a flash message (success/error banner) via its × button.
+  document.querySelectorAll('.alert-close').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var alert = btn.closest('.alert');
+      if (alert) alert.remove();
+    });
+  });
+
   var toggle = document.querySelector('.nav-toggle');
   var navLinks = document.querySelector('.nav-links');
 
