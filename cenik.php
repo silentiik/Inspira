@@ -15,7 +15,6 @@ foreach ($pricingRows as $row) {
 
   <section class="page-header">
     <div class="container">
-      <p class="breadcrumbs"><a href="/index.php">Domů</a> / Ceník</p>
       <h1>Ceník</h1>
       <p class="lead">Vyberte program a počet dní v týdnu — kalkulačka spočítá odhad měsíční platby.</p>
     </div>

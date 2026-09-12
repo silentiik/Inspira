@@ -7,7 +7,6 @@ require_once __DIR__ . '/../includes/header.php';
 
   <section class="page-header">
     <div class="container">
-      <p class="breadcrumbs"><a href="/index.php">Domů</a> / Služby / Domškolácká akademie</p>
       <h1>Domškolácká akademie — prostor pro smysluplné vzdělávání</h1>
       <p class="lead">Pravidelné vzdělávání domškoláků, od 9 do 14 hodin, po–st, v Mladé Boleslavi.</p>
     </div>

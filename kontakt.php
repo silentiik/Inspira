@@ -7,7 +7,6 @@ require_once __DIR__ . '/includes/header.php';
 
   <section class="page-header">
     <div class="container">
-      <p class="breadcrumbs"><a href="/index.php">Domů</a> / Kontakt</p>
       <h1>Kontakt a přihlášky</h1>
       <p class="lead">Aktuálně přijímáme přihlášky na září 2026. Vyberte si formulář, který vám sedí, nebo nám rovnou napište.</p>
     </div>

@@ -31,7 +31,6 @@ require_once __DIR__ . '/../includes/header.php';
 
   <section class="page-header">
     <div class="container">
-      <p class="breadcrumbs"><a href="/dashboard.php">Nástěnka</a> / Ceník</p>
       <h1>Správa ceníku</h1>
       <p class="lead">Změny se ihned projeví v kalkulačce i ceníku na webu.</p>
     </div>

@@ -7,7 +7,6 @@ require_once __DIR__ . '/includes/header.php';
 
   <section class="page-header">
     <div class="container">
-      <p class="breadcrumbs"><a href="/index.php">Domů</a> / Rozvrh</p>
       <h1>Týdenní rozvrh</h1>
       <p class="lead">Klikněte na štítek programu a zobrazte nebo skryjte jeho bloky v rozvrhu.</p>
     </div>

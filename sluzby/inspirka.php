@@ -7,7 +7,6 @@ require_once __DIR__ . '/../includes/header.php';
 
   <section class="page-header">
     <div class="container">
-      <p class="breadcrumbs"><a href="/index.php">Domů</a> / Služby / INSPIRKA</p>
       <h1>INSPIRKA — dětský klub pro děti od 3 let</h1>
       <p class="lead">Laskavý prostor pro děti od 3 let, každý den od 8 do 16 hodin v Mladé Boleslavi.</p>
     </div>

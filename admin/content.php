@@ -46,7 +46,6 @@ require_once __DIR__ . '/../includes/header.php';
 
   <section class="page-header">
     <div class="container">
-      <p class="breadcrumbs"><a href="/dashboard.php">Nástěnka</a> / Texty na webu</p>
       <h1>Texty na webu</h1>
       <p class="lead">Úpravy se projeví na webu okamžitě.</p>
     </div>

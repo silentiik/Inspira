@@ -7,7 +7,6 @@ require_once __DIR__ . '/includes/header.php';
 
   <section class="page-header">
     <div class="container">
-      <p class="breadcrumbs"><a href="/index.php">Domů</a> / O nás</p>
       <h1>O nás</h1>
       <p class="lead">Jsme tým, který věří, že vzdělávání může být hravé, respektující a zároveň kvalitní.</p>
     </div>

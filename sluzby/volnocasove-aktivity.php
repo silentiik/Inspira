@@ -7,7 +7,6 @@ require_once __DIR__ . '/../includes/header.php';
 
   <section class="page-header">
     <div class="container">
-      <p class="breadcrumbs"><a href="/index.php">Domů</a> / Služby / Volnočasové aktivity</p>
       <h1>Volnočasové aktivity</h1>
       <p class="lead">Tematické workshopy a kroužky, besedy a přednášky pro děti i dospělé různých věkových skupin.</p>
     </div>

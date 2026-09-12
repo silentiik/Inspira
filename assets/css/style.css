@@ -509,12 +509,10 @@ img { max-width: 100%; display: block; }
 
 /* ---------- Page header (inner pages) ---------- */
 .page-header {
-  padding: 56px 0 40px;
+  padding: 32px 0 28px;
   background: var(--color-bg-alt);
   text-align: center;
 }
-.breadcrumbs { font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 10px; }
-.breadcrumbs a { color: var(--color-text-muted); }
 
 /* ---------- Forms ---------- */
 .form-tabs {

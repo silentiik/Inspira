@@ -230,7 +230,6 @@ require_once __DIR__ . '/../includes/header.php';
 
   <section class="page-header">
     <div class="container">
-      <p class="breadcrumbs"><a href="/dashboard.php">Nástěnka</a> / Uživatelé</p>
       <h1>Uživatelé a role</h1>
     </div>
   </section>
