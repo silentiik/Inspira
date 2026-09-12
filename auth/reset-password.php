@@ -21,8 +21,7 @@ if ($tokenRow && $_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($password !== $confirm) {
         $errors[] = 'Hesla se neshodují.';
     } else {
-        db()->prepare('UPDATE users SET password_hash = ?, failed_attempts = 0, locked_until = NULL WHERE id = ?')
-            ->execute([hash_password($password), $tokenRow['user_id']]);
+        set_password((int) $tokenRow['user_id'], $password);
         consume_token((int) $tokenRow['id']);
         log_in_user((int) $tokenRow['user_id']);
         $done = true;

@@ -29,6 +29,15 @@ function db(): PDO
     return $pdo;
 }
 
+/** Adds $column to $table if it isn't there yet — safe to call every request. */
+function ensure_column(PDO $pdo, string $table, string $column, string $columnDdl): void
+{
+    $existing = $pdo->query("PRAGMA table_info($table)")->fetchAll(PDO::FETCH_COLUMN, 1);
+    if (!in_array($column, $existing, true)) {
+        $pdo->exec("ALTER TABLE $table ADD COLUMN $columnDdl");
+    }
+}
+
 function migrate(PDO $pdo): void
 {
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
@@ -42,6 +51,18 @@ function migrate(PDO $pdo): void
         locked_until TEXT,
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
     )");
+
+    // first_name/last_name replaced the single `name` column — added via
+    // ALTER TABLE so existing installs (with data already in `name`)
+    // upgrade in place instead of losing their one admin account.
+    ensure_column($pdo, 'users', 'first_name', "first_name TEXT NOT NULL DEFAULT ''");
+    ensure_column($pdo, 'users', 'last_name', "last_name TEXT NOT NULL DEFAULT ''");
+    $unmigrated = $pdo->query("SELECT id, name FROM users WHERE first_name = '' AND name != ''")->fetchAll();
+    foreach ($unmigrated as $row) {
+        $parts = explode(' ', trim((string) $row['name']), 2);
+        $pdo->prepare('UPDATE users SET first_name = ?, last_name = ? WHERE id = ?')
+            ->execute([$parts[0], $parts[1] ?? '', $row['id']]);
+    }
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS password_resets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

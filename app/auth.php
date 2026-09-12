@@ -2,9 +2,16 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/mailer.php';
 
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_SECONDS = 900; // 15 minutes
+
+/** "Jana Nováková" from a users row's first_name/last_name. */
+function full_name(array $user): string
+{
+    return trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+}
 
 /** The logged-in user's row, or null. Cached per request. */
 function current_user(): ?array
@@ -157,4 +164,29 @@ function consume_token(int $tokenId): void
 {
     db()->prepare('UPDATE password_resets SET used_at = datetime(\'now\') WHERE id = ?')
         ->execute([$tokenId]);
+}
+
+/** Sets a new password directly (admin action or a completed reset/invite) and clears any lockout. */
+function set_password(int $userId, string $password): void
+{
+    db()->prepare('UPDATE users SET password_hash = ?, failed_attempts = 0, locked_until = NULL WHERE id = ?')
+        ->execute([hash_password($password), $userId]);
+}
+
+/**
+ * Emails a password-reset link for an existing account. Shared by the
+ * self-service "zapomenuté heslo" form and the admin-triggered "poslat
+ * odkaz" action — same token/link mechanics either way.
+ */
+function send_password_reset_email(array $user): bool
+{
+    $token = create_token((int) $user['id'], 'reset');
+    $link = SITE_BASE_URL . '/auth/reset-password.php?token=' . $token;
+    $body = "Dobrý den " . full_name($user) . ",\n\n"
+        . "někdo (doufáme, že vy) požádal o obnovení hesla k účtu na webu INSPIRA.\n\n"
+        . "Pro nastavení nového hesla klikněte na odkaz níže. Odkaz je platný 1 hodinu:\n"
+        . $link . "\n\n"
+        . "Pokud jste o obnovení hesla nežádali, tento e-mail můžete ignorovat — vaše heslo zůstane beze změny.\n\n"
+        . "INSPIRA";
+    return send_mail($user['email'], full_name($user), 'Obnovení hesla — INSPIRA', $body);
 }

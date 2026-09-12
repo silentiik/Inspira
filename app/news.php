@@ -6,7 +6,7 @@ require_once __DIR__ . '/db.php';
 function all_news(): array
 {
     return db()->query(
-        "SELECT news.*, users.name AS author_name
+        "SELECT news.*, trim(users.first_name || ' ' || users.last_name) AS author_name
          FROM news JOIN users ON users.id = news.author_id
          ORDER BY news.pinned DESC, news.created_at DESC"
     )->fetchAll();

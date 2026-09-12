@@ -14,17 +14,20 @@ $done = false;
 
 if ($userCount === 0 && $_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
-    $name = trim((string) ($_POST['name'] ?? ''));
+    $firstName = trim((string) ($_POST['first_name'] ?? ''));
+    $lastName = trim((string) ($_POST['last_name'] ?? ''));
     $email = strtolower(trim((string) ($_POST['email'] ?? '')));
     $password = (string) ($_POST['password'] ?? '');
 
-    if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Zadejte prosím jméno a platný e-mail.';
+    if ($firstName === '' || $lastName === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Zadejte prosím jméno, příjmení a platný e-mail.';
     } elseif (mb_strlen($password) < 8) {
         $errors[] = 'Heslo musí mít alespoň 8 znaků.';
     } else {
-        $stmt = db()->prepare('INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)');
-        $stmt->execute([$email, hash_password($password), $name, 'admin']);
+        $stmt = db()->prepare(
+            'INSERT INTO users (email, password_hash, name, first_name, last_name, role) VALUES (?, ?, ?, ?, ?, ?)'
+        );
+        $stmt->execute([$email, hash_password($password), "$firstName $lastName", $firstName, $lastName, 'admin']);
         log_in_user((int) db()->lastInsertId());
         $done = true;
     }
@@ -57,9 +60,15 @@ require_once __DIR__ . '/includes/header.php';
             <?php endforeach; ?>
             <form method="post" action="/setup.php">
               <?= csrf_field() ?>
-              <div class="field">
-                <label for="name">Vaše jméno</label>
-                <input type="text" id="name" name="name" required autofocus>
+              <div class="field-row">
+                <div class="field">
+                  <label for="first_name">Jméno</label>
+                  <input type="text" id="first_name" name="first_name" required autofocus>
+                </div>
+                <div class="field">
+                  <label for="last_name">Příjmení</label>
+                  <input type="text" id="last_name" name="last_name" required>
+                </div>
               </div>
               <div class="field">
                 <label for="email">E-mail</label>

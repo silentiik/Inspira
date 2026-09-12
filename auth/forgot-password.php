@@ -21,15 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
 
         if ($user) {
-            $token = create_token((int) $user['id'], 'reset');
-            $link = SITE_BASE_URL . '/auth/reset-password.php?token=' . $token;
-            $body = "Dobrý den {$user['name']},\n\n"
-                . "někdo (doufáme, že vy) požádal o obnovení hesla k účtu na webu INSPIRA.\n\n"
-                . "Pro nastavení nového hesla klikněte na odkaz níže. Odkaz je platný 1 hodinu:\n"
-                . $link . "\n\n"
-                . "Pokud jste o obnovení hesla nežádali, tento e-mail můžete ignorovat — vaše heslo zůstane beze změny.\n\n"
-                . "INSPIRA";
-            send_mail($user['email'], $user['name'], 'Obnovení hesla — INSPIRA', $body);
+            send_password_reset_email($user);
         }
         // Same outcome whether or not the email exists — never reveal
         // which addresses have an account.

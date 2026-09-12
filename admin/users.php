@@ -11,51 +11,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string) ($_POST['action'] ?? '');
 
     if ($action === 'invite') {
+        $directPassword = trim((string) ($_POST['password'] ?? ''));
         $result = invite_user(
             (string) ($_POST['email'] ?? ''),
-            (string) ($_POST['name'] ?? ''),
-            (string) ($_POST['role'] ?? '')
+            (string) ($_POST['first_name'] ?? ''),
+            (string) ($_POST['last_name'] ?? ''),
+            (string) ($_POST['role'] ?? ''),
+            $directPassword !== '' ? $directPassword : null
         );
         $linkNote = $result['link'] ? ' Odkaz pro nastavení hesla: ' . $result['link'] : '';
         flash_set(
             $result['status'] === 'ok' ? 'success' : 'error',
             match ($result['status']) {
-                'ok' => 'Pozvánka byla odeslána.' . $linkNote,
+                'ok' => $directPassword !== '' ? 'Účet byl vytvořen se zadaným heslem.' : 'Pozvánka byla odeslána.' . $linkNote,
                 'exists' => 'Tento e-mail už má vytvořený účet.',
                 'mail_failed' => 'Účet byl vytvořen, ale e-mail se nepodařilo odeslat.' . $linkNote,
-                default => 'Zkontrolujte prosím zadané údaje.',
+                default => 'Zkontrolujte prosím zadané údaje (heslo musí mít alespoň 8 znaků).',
             }
         );
     }
 
     if ($action === 'update_user') {
         $targetId = (int) ($_POST['user_id'] ?? 0);
-        $newName = trim((string) ($_POST['name'] ?? ''));
+        $firstName = trim((string) ($_POST['first_name'] ?? ''));
+        $lastName = trim((string) ($_POST['last_name'] ?? ''));
         $newEmail = strtolower(trim((string) ($_POST['email'] ?? '')));
         $newRole = (string) ($_POST['role'] ?? '');
+        $newPassword = (string) ($_POST['new_password'] ?? '');
         $isSelf = $targetId === (int) $user['id'];
 
-        if ($newName === '' || !filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
-            flash_set('error', 'Zadejte prosím platné jméno a e-mail.');
+        if ($firstName === '' || $lastName === '' || !filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
+            flash_set('error', 'Zadejte prosím platné jméno, příjmení a e-mail.');
         } elseif (!$isSelf && !in_array($newRole, ['admin', 'teacher', 'parent'], true)) {
             flash_set('error', 'Neplatná role.');
+        } elseif ($newPassword !== '' && mb_strlen($newPassword) < 8) {
+            flash_set('error', 'Nové heslo musí mít alespoň 8 znaků.');
         } else {
             $existing = db()->prepare('SELECT id FROM users WHERE email = ? AND id != ?');
             $existing->execute([$newEmail, $targetId]);
             if ($existing->fetch()) {
                 flash_set('error', 'Tento e-mail už používá jiný účet.');
             } else {
+                $fullName = trim("$firstName $lastName");
                 if ($isSelf) {
                     // Role is intentionally left out here — changing your
                     // own role could lock you out of this very page.
-                    db()->prepare('UPDATE users SET name = ?, email = ? WHERE id = ?')
-                        ->execute([$newName, $newEmail, $targetId]);
+                    db()->prepare('UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ? WHERE id = ?')
+                        ->execute([$fullName, $firstName, $lastName, $newEmail, $targetId]);
                 } else {
-                    db()->prepare('UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?')
-                        ->execute([$newName, $newEmail, $newRole, $targetId]);
+                    db()->prepare('UPDATE users SET name = ?, first_name = ?, last_name = ?, email = ?, role = ? WHERE id = ?')
+                        ->execute([$fullName, $firstName, $lastName, $newEmail, $newRole, $targetId]);
                 }
-                flash_set('success', 'Účet byl uložen.');
+                if ($newPassword !== '') {
+                    set_password($targetId, $newPassword);
+                }
+                flash_set('success', 'Účet byl uložen.' . ($newPassword !== '' ? ' Nové heslo bylo nastaveno.' : ''));
             }
+        }
+    }
+
+    if ($action === 'send_reset') {
+        $targetId = (int) ($_POST['user_id'] ?? 0);
+        $stmt = db()->prepare('SELECT * FROM users WHERE id = ?');
+        $stmt->execute([$targetId]);
+        $target = $stmt->fetch();
+        if ($target) {
+            $sent = send_password_reset_email($target);
+            flash_set($sent ? 'success' : 'error', $sent
+                ? 'Odkaz pro obnovení hesla byl odeslán na ' . $target['email'] . '.'
+                : 'E-mail se nepodařilo odeslat.');
         }
     }
 
@@ -73,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$allUsers = db()->query('SELECT * FROM users ORDER BY role, name')->fetchAll();
+$allUsers = db()->query('SELECT * FROM users ORDER BY role, first_name, last_name')->fetchAll();
 
 $pageTitle = 'Uživatelé | INSPIRA';
 require_once __DIR__ . '/../includes/header.php';
@@ -89,29 +113,40 @@ require_once __DIR__ . '/../includes/header.php';
   <section class="section">
     <div class="container">
       <div class="form-card" style="margin-bottom:28px;">
-        <h3 class="mt-0">Pozvat nový účet</h3>
+        <h3 class="mt-0">Přidat nový účet</h3>
         <form method="post" action="/admin/users.php">
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="invite">
           <div class="field-row">
             <div class="field">
-              <label for="name">Jméno</label>
-              <input type="text" id="name" name="name" required>
+              <label for="first_name">Jméno</label>
+              <input type="text" id="first_name" name="first_name" required>
             </div>
+            <div class="field">
+              <label for="last_name">Příjmení</label>
+              <input type="text" id="last_name" name="last_name" required>
+            </div>
+          </div>
+          <div class="field-row">
             <div class="field">
               <label for="email">E-mail</label>
               <input type="email" id="email" name="email" required>
             </div>
+            <div class="field">
+              <label for="role">Role</label>
+              <select id="role" name="role" required>
+                <option value="parent">Rodič</option>
+                <option value="teacher">Učitel/ka</option>
+                <option value="admin">Administrátor</option>
+              </select>
+            </div>
           </div>
           <div class="field">
-            <label for="role">Role</label>
-            <select id="role" name="role" required>
-              <option value="parent">Rodič</option>
-              <option value="teacher">Učitel/ka</option>
-              <option value="admin">Administrátor</option>
-            </select>
+            <label for="password">Heslo (nepovinné)</label>
+            <input type="password" id="password" name="password" minlength="8" placeholder="Ponechte prázdné pro pozvánku e-mailem">
+            <span class="hint-text">Necháte-li pole prázdné, účet dostane e-mail s odkazem pro nastavení vlastního hesla. Vyplníte-li heslo, účet se vytvoří rovnou s ním a e-mail se neposílá.</span>
           </div>
-          <button type="submit" class="btn btn--primary">Odeslat pozvánku</button>
+          <button type="submit" class="btn btn--primary">Vytvořit účet</button>
         </form>
       </div>
 
@@ -121,7 +156,7 @@ require_once __DIR__ . '/../includes/header.php';
           <div class="form-card">
             <div class="portal-topbar" style="margin-bottom:16px;">
               <div class="portal-user">
-                <div class="portal-avatar"><?= htmlspecialchars(mb_strtoupper(mb_substr($row['name'], 0, 1)), ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="portal-avatar"><?= htmlspecialchars(initials($row), ENT_QUOTES, 'UTF-8') ?></div>
                 <div>
                   <span class="role-badge"><?= htmlspecialchars(match ($row['role']) {
                     'admin' => 'Administrátor',
@@ -131,14 +166,22 @@ require_once __DIR__ . '/../includes/header.php';
                   <span class="hint-text"><?= $row['is_active'] ? 'Aktivní' : 'Deaktivovaný' ?><?= $isSelf ? ' · toto jste vy' : '' ?></span>
                 </div>
               </div>
-              <?php if (!$isSelf): ?>
-                <form method="post" action="/admin/users.php" onsubmit="return confirm('Opravdu změnit stav tohoto účtu?');">
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <form method="post" action="/admin/users.php">
                   <?= csrf_field() ?>
-                  <input type="hidden" name="action" value="toggle_active">
+                  <input type="hidden" name="action" value="send_reset">
                   <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
-                  <button type="submit" class="btn btn--outline btn--sm"><?= $row['is_active'] ? 'Deaktivovat' : 'Aktivovat' ?></button>
+                  <button type="submit" class="btn btn--outline btn--sm">Poslat odkaz pro obnovení hesla</button>
                 </form>
-              <?php endif; ?>
+                <?php if (!$isSelf): ?>
+                  <form method="post" action="/admin/users.php" onsubmit="return confirm('Opravdu změnit stav tohoto účtu?');">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="action" value="toggle_active">
+                    <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
+                    <button type="submit" class="btn btn--outline btn--sm"><?= $row['is_active'] ? 'Deaktivovat' : 'Aktivovat' ?></button>
+                  </form>
+                <?php endif; ?>
+              </div>
             </div>
 
             <form method="post" action="/admin/users.php">
@@ -147,9 +190,15 @@ require_once __DIR__ . '/../includes/header.php';
               <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
               <div class="field-row">
                 <div class="field">
-                  <label for="name-<?= (int) $row['id'] ?>">Jméno</label>
-                  <input type="text" id="name-<?= (int) $row['id'] ?>" name="name" value="<?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?>" required>
+                  <label for="first_name-<?= (int) $row['id'] ?>">Jméno</label>
+                  <input type="text" id="first_name-<?= (int) $row['id'] ?>" name="first_name" value="<?= htmlspecialchars($row['first_name'], ENT_QUOTES, 'UTF-8') ?>" required>
                 </div>
+                <div class="field">
+                  <label for="last_name-<?= (int) $row['id'] ?>">Příjmení</label>
+                  <input type="text" id="last_name-<?= (int) $row['id'] ?>" name="last_name" value="<?= htmlspecialchars($row['last_name'], ENT_QUOTES, 'UTF-8') ?>" required>
+                </div>
+              </div>
+              <div class="field-row">
                 <div class="field">
                   <label for="email-<?= (int) $row['id'] ?>">E-mail</label>
                   <input type="email" id="email-<?= (int) $row['id'] ?>" name="email" value="<?= htmlspecialchars($row['email'], ENT_QUOTES, 'UTF-8') ?>" required>
@@ -164,6 +213,10 @@ require_once __DIR__ . '/../includes/header.php';
                     </select>
                   </div>
                 <?php endif; ?>
+              </div>
+              <div class="field">
+                <label for="new_password-<?= (int) $row['id'] ?>">Nastavit nové heslo (nepovinné)</label>
+                <input type="password" id="new_password-<?= (int) $row['id'] ?>" name="new_password" minlength="8" placeholder="Ponechte prázdné, pokud heslo neměnit">
               </div>
               <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
             </form>

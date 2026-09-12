@@ -6,24 +6,33 @@ require_once __DIR__ . '/mailer.php';
 require_once __DIR__ . '/config.php';
 
 /**
- * Creates a new account with no usable password and emails a
- * set-password link.
+ * Creates a new account. With $password omitted, it gets no usable
+ * password and an emailed set-password link (the classic invite flow).
+ * With $password given, the account is created ready to use immediately
+ * with that password and no email is sent — useful for handing
+ * credentials to someone directly, or when mail isn't confirmed working
+ * yet.
  *
  * @return array{status: string, link: ?string} status is one of:
  *   'ok', 'exists' (email already registered), 'invalid' (bad
- *   email/role), or 'mail_failed' (account created, but send_mail()
- *   reported failure — 'link' is included so the caller can hand it to
- *   the inviter directly as a fallback). 'link' is also included
- *   when MAIL_DEV_MODE is on, since the email only went to the log.
+ *   email/role/names), or 'mail_failed' (account created, but
+ *   send_mail() reported failure — 'link' is included so the caller can
+ *   hand it to the inviter directly as a fallback). 'link' is also
+ *   included when MAIL_DEV_MODE is on, since the email only went to the
+ *   log. 'link' is always null when $password was set directly.
  */
-function invite_user(string $email, string $name, string $role): array
+function invite_user(string $email, string $firstName, string $lastName, string $role, ?string $password = null): array
 {
     $email = strtolower(trim($email));
-    $name = trim($name);
-    if ($email === '' || $name === '' || !in_array($role, ['admin', 'teacher', 'parent'], true)) {
+    $firstName = trim($firstName);
+    $lastName = trim($lastName);
+    if ($email === '' || $firstName === '' || $lastName === '' || !in_array($role, ['admin', 'teacher', 'parent'], true)) {
         return ['status' => 'invalid', 'link' => null];
     }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return ['status' => 'invalid', 'link' => null];
+    }
+    if ($password !== null && mb_strlen($password) < 8) {
         return ['status' => 'invalid', 'link' => null];
     }
 
@@ -33,13 +42,19 @@ function invite_user(string $email, string $name, string $role): array
         return ['status' => 'exists', 'link' => null];
     }
 
-    // No one can log in with this hash — it's replaced the moment the
-    // invite link is used to set a real password.
-    $placeholder = hash_password(bin2hex(random_bytes(32)));
+    // A random, never-shared placeholder when no direct password was
+    // given — it's replaced the moment the invite link is used.
+    $passwordHash = hash_password($password ?? bin2hex(random_bytes(32)));
 
-    $stmt = db()->prepare('INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)');
-    $stmt->execute([$email, $placeholder, $name, $role]);
+    $stmt = db()->prepare(
+        'INSERT INTO users (email, password_hash, name, first_name, last_name, role) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    $stmt->execute([$email, $passwordHash, trim("$firstName $lastName"), $firstName, $lastName, $role]);
     $userId = (int) db()->lastInsertId();
+
+    if ($password !== null) {
+        return ['status' => 'ok', 'link' => null];
+    }
 
     $token = create_token($userId, 'invite');
     $link = SITE_BASE_URL . '/auth/reset-password.php?token=' . $token;
@@ -48,12 +63,12 @@ function invite_user(string $email, string $name, string $role): array
         'teacher' => 'učitele',
         default => 'rodiče',
     };
-    $body = "Dobrý den {$name},\n\n"
+    $body = "Dobrý den {$firstName},\n\n"
         . "byl/a vám vytvořen přístup do portálu webu INSPIRA jako {$roleLabel}.\n\n"
         . "Pro nastavení hesla a první přihlášení klikněte na odkaz níže. Odkaz je platný 7 dní:\n"
         . $link . "\n\n"
         . "INSPIRA";
-    $sent = send_mail($email, $name, 'Pozvánka do portálu INSPIRA', $body);
+    $sent = send_mail($email, "$firstName $lastName", 'Pozvánka do portálu INSPIRA', $body);
 
     if (!$sent) {
         return ['status' => 'mail_failed', 'link' => $link];

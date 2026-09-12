@@ -20,12 +20,11 @@ function nav_class(string $key, string $active): string
     return $key === $active ? ' class="is-active"' : '';
 }
 
-/** First letter of up to the first two words, e.g. "Petra Nováková" -> "PN". */
-function initials(string $name): string
+/** "Petra" + "Nováková" -> "PN". */
+function initials(array $user): string
 {
-    $parts = preg_split('/\s+/', trim($name), -1, PREG_SPLIT_NO_EMPTY);
-    $letters = array_map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)), array_slice($parts, 0, 2));
-    return implode('', $letters) ?: '?';
+    $letters = mb_strtoupper(mb_substr($user['first_name'] ?? '', 0, 1)) . mb_strtoupper(mb_substr($user['last_name'] ?? '', 0, 1));
+    return $letters !== '' ? $letters : '?';
 }
 ?>
 <!DOCTYPE html>
@@ -68,8 +67,8 @@ function initials(string $name): string
         <li class="nav-divider" aria-hidden="true"></li>
         <li class="has-dropdown nav-account">
           <a href="#account" class="nav-account-trigger">
-            <span class="nav-avatar"><?= htmlspecialchars(initials($user['name']), ENT_QUOTES, 'UTF-8') ?></span>
-            <span class="nav-account-name"><?= htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8') ?></span>
+            <span class="nav-avatar"><?= htmlspecialchars(initials($user), ENT_QUOTES, 'UTF-8') ?></span>
+            <span class="nav-account-name"><?= htmlspecialchars(full_name($user), ENT_QUOTES, 'UTF-8') ?></span>
             <span aria-hidden="true">▾</span>
           </a>
           <ul class="dropdown">

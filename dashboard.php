@@ -35,7 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'invite_parent' && $canPost) {
         $result = invite_user(
             (string) ($_POST['invite_email'] ?? ''),
-            (string) ($_POST['invite_name'] ?? ''),
+            (string) ($_POST['invite_first_name'] ?? ''),
+            (string) ($_POST['invite_last_name'] ?? ''),
             'parent'
         );
         $linkNote = $result['link'] ? ' Odkaz pro nastavení hesla: ' . $result['link'] : '';
@@ -90,7 +91,7 @@ require_once __DIR__ . '/includes/header.php';
 
   <section class="page-header">
     <div class="container">
-      <h1>Vítejte, <?= htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8') ?></h1>
+      <h1>Vítejte, <?= htmlspecialchars(full_name($user), ENT_QUOTES, 'UTF-8') ?></h1>
       <p class="lead">
         <span class="role-badge"><?= htmlspecialchars(match ($user['role']) {
           'admin' => 'Administrátor',
@@ -167,13 +168,17 @@ require_once __DIR__ . '/includes/header.php';
                 <input type="hidden" name="action" value="invite_parent">
                 <div class="field-row">
                   <div class="field">
-                    <label for="invite_name">Jméno rodiče</label>
-                    <input type="text" id="invite_name" name="invite_name" required>
+                    <label for="invite_first_name">Jméno rodiče</label>
+                    <input type="text" id="invite_first_name" name="invite_first_name" required>
                   </div>
                   <div class="field">
-                    <label for="invite_email">E-mail rodiče</label>
-                    <input type="email" id="invite_email" name="invite_email" required>
+                    <label for="invite_last_name">Příjmení rodiče</label>
+                    <input type="text" id="invite_last_name" name="invite_last_name" required>
                   </div>
+                </div>
+                <div class="field">
+                  <label for="invite_email">E-mail rodiče</label>
+                  <input type="email" id="invite_email" name="invite_email" required>
                 </div>
                 <button type="submit" class="btn btn--primary">Odeslat pozvánku</button>
               </form>
