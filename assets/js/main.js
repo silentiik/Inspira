@@ -8,6 +8,15 @@
     });
   });
 
+  // News post edit toggle (dashboard.php): the pencil icon shows/hides
+  // that post's inline edit form.
+  document.querySelectorAll('[data-toggle-edit]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var form = document.getElementById(btn.getAttribute('data-toggle-edit'));
+      if (form) form.hidden = !form.hidden;
+    });
+  });
+
   // Styled confirm dialog for destructive form submits — replaces the
   // browser's native confirm() popup. A form opts in with
   // data-confirm="message shown in the dialog".
