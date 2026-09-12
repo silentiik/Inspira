@@ -63,18 +63,23 @@ function initials(string $name): string
       <li><a href="/rozvrh.php"<?= nav_class('rozvrh', $activeNav) ?>>Rozvrh</a></li>
       <li><a href="/cenik.php"<?= nav_class('cenik', $activeNav) ?>>Ceník</a></li>
       <li><a href="/o-nas.php"<?= nav_class('o-nas', $activeNav) ?>>O nás</a></li>
+      <li><a href="/kontakt.php"<?= nav_class('kontakt', $activeNav) ?>>Kontakt</a></li>
       <?php if ($user): ?>
         <li class="nav-divider" aria-hidden="true"></li>
-        <li class="nav-account">
-          <span class="nav-avatar"><?= htmlspecialchars(initials($user['name']), ENT_QUOTES, 'UTF-8') ?></span>
-          <span class="nav-account-name"><?= htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8') ?></span>
-          <a href="/dashboard.php"<?= nav_class('dashboard', $activeNav) ?>>Nástěnka</a>
-          <a href="/auth/logout.php" class="btn btn--outline btn--sm nav-logout">Odhlásit</a>
+        <li class="has-dropdown nav-account">
+          <a href="#account" class="nav-account-trigger">
+            <span class="nav-avatar"><?= htmlspecialchars(initials($user['name']), ENT_QUOTES, 'UTF-8') ?></span>
+            <span class="nav-account-name"><?= htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8') ?></span>
+            <span aria-hidden="true">▾</span>
+          </a>
+          <ul class="dropdown">
+            <li><a href="/dashboard.php"<?= nav_class('dashboard', $activeNav) ?>>Nástěnka</a></li>
+            <li><a href="/auth/logout.php">Odhlásit</a></li>
+          </ul>
         </li>
       <?php else: ?>
         <li><a href="/auth/login.php"<?= nav_class('login', $activeNav) ?>>Přihlásit se</a></li>
       <?php endif; ?>
-      <li><a href="/kontakt.php"<?= nav_class('kontakt', $activeNav) ?>>Kontakt</a></li>
     </ul>
   </div>
 </header>

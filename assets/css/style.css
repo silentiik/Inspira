@@ -232,18 +232,17 @@ img { max-width: 100%; display: block; }
   flex-shrink: 0;
 }
 
-.nav-account {
+.nav-links a.nav-account-trigger {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px 6px 6px;
-  border-radius: 999px;
+  gap: 7px;
   background: var(--color-bg-alt);
+  border-radius: 999px;
 }
 
 .nav-avatar {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
   border-radius: 50%;
   background: var(--color-primary);
@@ -253,21 +252,18 @@ img { max-width: 100%; display: block; }
   justify-content: center;
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
 }
 
 .nav-account-name {
   font-weight: 700;
-  font-size: 0.85rem;
-  color: var(--color-primary-dark);
   white-space: nowrap;
-  max-width: 140px;
+  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.nav-account a { padding: 7px 14px; font-size: 0.85rem; }
-.nav-logout.btn--outline { flex-shrink: 0; }
+.nav-account .dropdown { right: 0; left: auto; min-width: 180px; }
 
 .nav-toggle {
   display: none;
@@ -319,12 +315,8 @@ img { max-width: 100%; display: block; }
     height: 1px;
     margin: 10px 4px;
   }
-  .nav-account {
-    flex-wrap: wrap;
-    padding: 12px 14px;
-  }
   .nav-account-name { max-width: none; }
-  .nav-account a { padding: 8px 14px; }
+  .nav-account .dropdown { right: auto; left: 0; }
 }
 
 /* ---------- Hero ---------- */
