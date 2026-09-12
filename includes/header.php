@@ -89,7 +89,7 @@ function asset_url(string $publicPath): string
             <?php if ($user['role'] === 'admin'): ?>
               <li><a href="/admin/users.php"<?= nav_class('admin-users', $activeNav) ?>>Uživatelé a role</a></li>
               <li><a href="/admin/content.php"<?= nav_class('admin-content', $activeNav) ?>>Texty na webu</a></li>
-              <li><a href="/admin/pricing.php"<?= nav_class('admin-pricing', $activeNav) ?>>Ceník</a></li>
+              <li><a href="/admin/pricing.php"<?= nav_class('admin-pricing', $activeNav) ?>>Správa ceníku</a></li>
             <?php endif; ?>
             <li><a href="/auth/logout.php">Odhlásit</a></li>
           </ul>
