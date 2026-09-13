@@ -68,8 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'toggle_pin' && $canPost) {
-        toggle_news_pin((int) ($_POST['news_id'] ?? 0));
-        header('Location: /dashboard.php');
+        $newsId = (int) ($_POST['news_id'] ?? 0);
+        toggle_news_pin($newsId);
+        // Jump back to the same post instead of the top of the page —
+        // pinning can also reorder the list (pinned posts sort first).
+        header('Location: /dashboard.php#news-' . $newsId);
         exit;
     }
 
@@ -185,7 +188,7 @@ require_once __DIR__ . '/includes/header.php';
               $images = array_filter($attachments, fn ($a) => str_starts_with($a['mime_type'], 'image/'));
               $files = array_filter($attachments, fn ($a) => !str_starts_with($a['mime_type'], 'image/'));
             ?>
-            <div class="form-card news-item<?= $item['pinned'] ? ' is-pinned' : '' ?>">
+            <div class="form-card news-item<?= $item['pinned'] ? ' is-pinned' : '' ?>" id="news-<?= (int) $item['id'] ?>">
                 <div class="news-item-header">
                   <h4><?= $item['pinned'] ? '📌 ' : '' ?><?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?></h4>
                   <?php if ($canPost): ?>
