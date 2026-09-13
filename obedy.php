@@ -17,9 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $childId = (int) ($_POST['child_id'] ?? 0);
         if (child_belongs_to($childId, (int) $user['id'])) {
             foreach ($weekDates as $day => $date) {
-                $wantsLunch = !empty($_POST['lunch_' . $day]);
-                $mealSnapshot = menu_for_date($date) ?? 'Jídelníček zatím nebyl nastaven.';
-                save_lunch_selection($childId, $week, $day, $wantsLunch, $mealSnapshot);
+                $menuText = menu_for_date($date);
+                // No menu set for that day yet — nothing to opt into,
+                // regardless of what was submitted.
+                $wantsLunch = $menuText !== null && !empty($_POST['lunch_' . $day]);
+                save_lunch_selection($childId, $week, $day, $wantsLunch, $menuText ?? 'Jídelníček zatím nebyl nastaven.');
             }
             flash_set('success', 'Výběr obědů byl uložen.');
         }
@@ -100,13 +102,14 @@ require_once __DIR__ . '/includes/header.php';
                   <?php foreach (LUNCH_DAYS as $code => $label): ?>
                     <?php
                       $date = $weekDates[$code];
+                      $hasMenu = isset($weekMenus[$date]);
                       $mealText = $weekMenus[$date] ?? 'Jídelníček zatím nebyl nastaven.';
                       $inputId = 'lunch_' . $code . '_' . (int) $child['id'];
                     ?>
-                    <label class="lunch-day<?= isset($selections[$code]) ? ' is-saved' : '' ?>" for="<?= $inputId ?>">
+                    <label class="lunch-day<?= isset($selections[$code]) ? ' is-saved' : '' ?><?= $hasMenu ? '' : ' is-disabled' ?>" for="<?= $inputId ?>">
                       <span class="lunch-day-name"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?><span class="lunch-day-date"><?= htmlspecialchars((new DateTimeImmutable($date))->format('j. n.'), ENT_QUOTES, 'UTF-8') ?></span></span>
                       <span class="lunch-day-meal"><?= htmlspecialchars($mealText, ENT_QUOTES, 'UTF-8') ?></span>
-                      <input type="checkbox" id="<?= $inputId ?>" name="lunch_<?= $code ?>" class="lunch-checkbox"<?= isset($selections[$code]) ? ' checked' : '' ?>>
+                      <input type="checkbox" id="<?= $inputId ?>" name="lunch_<?= $code ?>" class="lunch-checkbox"<?= isset($selections[$code]) ? ' checked' : '' ?><?= $hasMenu ? '' : ' disabled' ?>>
                     </label>
                   <?php endforeach; ?>
                 </div>
