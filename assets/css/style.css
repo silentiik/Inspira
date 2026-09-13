@@ -584,6 +584,7 @@ img { max-width: 100%; display: block; }
 .richtext { border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
 .richtext-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 2px;
   padding: 6px;
@@ -613,15 +614,15 @@ img { max-width: 100%; display: block; }
 .richtext-sep { width: 1.5px; align-self: stretch; margin: 2px 4px; background: var(--color-border); }
 .richtext-select {
   flex: 0 0 auto;
-  width: 110px;
+  width: 72px;
   height: 28px;
-  padding: 0 6px;
+  padding: 0 2px;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-text);
   font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-size: 0.72rem;
 }
 .richtext-editor {
   min-height: 110px;
