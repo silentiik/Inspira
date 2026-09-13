@@ -429,7 +429,14 @@ function monthly_lunch_roster(string $monthDate): array
         'user_id'
     );
 
+    // Grouped by category (each child program, then staff last) rather
+    // than one flat alphabetical list, so the table can visually set
+    // each group apart.
+    $categoryOrder = array_merge(array_values(CHILD_PROGRAMS), ['Lektor/ka']);
     $roster = array_values($roster);
-    usort($roster, fn (array $a, array $b) => strnatcasecmp($a['name'], $b['name']));
+    usort($roster, function (array $a, array $b) use ($categoryOrder) {
+        $orderDiff = array_search($a['category'], $categoryOrder, true) <=> array_search($b['category'], $categoryOrder, true);
+        return $orderDiff !== 0 ? $orderDiff : strnatcasecmp($a['name'], $b['name']);
+    });
     return $roster;
 }

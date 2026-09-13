@@ -196,8 +196,10 @@ require_once __DIR__ . '/includes/header.php';
             <table class="overview-table">
               <thead><tr><th>Jméno</th><th>Skupina</th><th>Počet obědů</th></tr></thead>
               <tbody>
+                <?php $previousCategory = null; ?>
                 <?php foreach ($monthlyRoster as $entry): ?>
-                  <tr>
+                  <?php $isNewGroup = $previousCategory !== null && $entry['category'] !== $previousCategory; $previousCategory = $entry['category']; ?>
+                  <tr<?= $isNewGroup ? ' class="overview-table-group-start"' : '' ?>>
                     <td><?= htmlspecialchars($entry['name'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td><?= htmlspecialchars($entry['category'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td><?= (int) $entry['count'] ?></td>

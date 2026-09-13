@@ -1357,6 +1357,7 @@ img { max-width: 100%; display: block; }
 .overview-table { width: 100%; border-collapse: collapse; }
 .overview-table th, .overview-table td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--color-border); }
 .overview-table th { font-family: var(--font-heading); color: var(--color-primary-dark); }
+.overview-table-group-start td { border-top: 2px solid var(--color-primary); }
 
 .hint-text { font-size: 0.82rem; color: var(--color-text-muted); }
 
