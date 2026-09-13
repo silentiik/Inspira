@@ -69,6 +69,21 @@ function find_attachment(int $attachmentId): ?array
 }
 
 /**
+ * Deletes one attachment's file and row — but only if it actually
+ * belongs to $newsId, so a submitted id for a different post's
+ * attachment can't be used to delete someone else's file.
+ */
+function remove_news_attachment(int $attachmentId, int $newsId): void
+{
+    $attachment = find_attachment($attachmentId);
+    if ($attachment === null || (int) $attachment['news_id'] !== $newsId) {
+        return;
+    }
+    @unlink(NEWS_UPLOAD_DIR . '/' . $attachment['stored_name']);
+    db()->prepare('DELETE FROM news_attachments WHERE id = ?')->execute([$attachmentId]);
+}
+
+/**
  * Validates one uploaded file (from a $_FILES['x']['tmp_name'][$i]
  * style entry) and, if it passes, moves it into permanent storage and
  * records it against $newsId. Returns a user-facing error message on
@@ -128,4 +143,39 @@ function add_news_attachment(int $newsId, string $tmpName, string $originalName,
     )->execute([$newsId, $originalName, $storedName, $mimeType, $reportedSize]);
 
     return null;
+}
+
+/**
+ * Processes any images[]/attachments[] fields present in the current
+ * request against $newsId — shared by both creating and editing a
+ * post. Honors the combined NEWS_MAX_ATTACHMENTS cap, counting
+ * whatever the post already has (relevant on edit, always 0 on
+ * create). Returns a user-facing error string per file that failed.
+ */
+function process_news_file_uploads(int $newsId): array
+{
+    $errors = [];
+    $remainingSlots = NEWS_MAX_ATTACHMENTS - count(attachments_for_news($newsId));
+    foreach (['images' => 'image', 'attachments' => 'document'] as $fieldName => $kind) {
+        $uploaded = $_FILES[$fieldName] ?? null;
+        if (!$uploaded || !is_array($uploaded['name'])) {
+            continue;
+        }
+        for ($i = 0; $i < count($uploaded['name']) && $remainingSlots > 0; $i++) {
+            if ($uploaded['error'][$i] === UPLOAD_ERR_NO_FILE) {
+                continue;
+            }
+            if ($uploaded['error'][$i] !== UPLOAD_ERR_OK) {
+                $errors[] = 'Soubor ' . $uploaded['name'][$i] . ' se nepodařilo nahrát.';
+                continue;
+            }
+            $error = add_news_attachment($newsId, $uploaded['tmp_name'][$i], $uploaded['name'][$i], (int) $uploaded['size'][$i], $kind);
+            if ($error !== null) {
+                $errors[] = $error;
+            } else {
+                $remainingSlots--;
+            }
+        }
+    }
+    return $errors;
 }

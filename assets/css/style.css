@@ -1065,6 +1065,7 @@ img { max-width: 100%; display: block; }
 .icon-btn--delete:hover { background: #a8403d; border-color: #a8403d; }
 .news-edit-form { margin-top: 10px; }
 .news-item.is-pinned { background: var(--color-bg-alt); }
+.news-item.is-editing { background: rgba(242, 184, 114, 0.15); }
 .news-image {
   max-width: 100%;
   border-radius: var(--radius-sm);

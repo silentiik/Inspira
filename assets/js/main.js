@@ -9,11 +9,14 @@
   });
 
   // News post edit toggle (dashboard.php): the pencil icon shows/hides
-  // that post's inline edit form.
+  // that post's inline edit form, highlighting the post while it's open.
   document.querySelectorAll('[data-toggle-edit]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var form = document.getElementById(btn.getAttribute('data-toggle-edit'));
-      if (form) form.hidden = !form.hidden;
+      if (!form) return;
+      form.hidden = !form.hidden;
+      var item = form.closest('.news-item');
+      if (item) item.classList.toggle('is-editing', !form.hidden);
     });
   });
 

@@ -22,30 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash_set('error', 'Zadejte prosím titulek a text novinky, nebo k ní alespoň přiložte obrázek či soubor.');
         } else {
             $newsId = create_news((int) $user['id'], $title, $body, $pinned);
-
-            $uploadErrors = [];
-            $remainingSlots = NEWS_MAX_ATTACHMENTS;
-            foreach (['images' => 'image', 'attachments' => 'document'] as $fieldName => $kind) {
-                $uploaded = $_FILES[$fieldName] ?? null;
-                if (!$uploaded || !is_array($uploaded['name'])) {
-                    continue;
-                }
-                for ($i = 0; $i < count($uploaded['name']) && $remainingSlots > 0; $i++) {
-                    if ($uploaded['error'][$i] === UPLOAD_ERR_NO_FILE) {
-                        continue;
-                    }
-                    if ($uploaded['error'][$i] !== UPLOAD_ERR_OK) {
-                        $uploadErrors[] = 'Soubor ' . $uploaded['name'][$i] . ' se nepodařilo nahrát.';
-                        continue;
-                    }
-                    $error = add_news_attachment($newsId, $uploaded['tmp_name'][$i], $uploaded['name'][$i], (int) $uploaded['size'][$i], $kind);
-                    if ($error !== null) {
-                        $uploadErrors[] = $error;
-                    } else {
-                        $remainingSlots--;
-                    }
-                }
-            }
+            $uploadErrors = process_news_file_uploads($newsId);
 
             flash_set(
                 empty($uploadErrors) ? 'success' : 'error',
@@ -73,7 +50,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash_set('error', 'Zadejte prosím titulek novinky.');
         } else {
             update_news($newsId, $title, $body);
-            flash_set('success', 'Novinka byla upravena.');
+
+            foreach ((array) ($_POST['remove_attachments'] ?? []) as $attachmentId) {
+                remove_news_attachment((int) $attachmentId, $newsId);
+            }
+            $uploadErrors = process_news_file_uploads($newsId);
+
+            flash_set(
+                empty($uploadErrors) ? 'success' : 'error',
+                empty($uploadErrors)
+                    ? 'Novinka byla upravena.'
+                    : 'Novinka byla upravena, ale: ' . implode(' ', $uploadErrors)
+            );
         }
         header('Location: /dashboard.php');
         exit;
@@ -234,7 +222,7 @@ require_once __DIR__ . '/includes/header.php';
                   </ul>
                 <?php endif; ?>
                 <?php if ($canPost): ?>
-                  <form method="post" action="/dashboard.php" class="news-edit-form" id="edit-news-<?= (int) $item['id'] ?>" hidden>
+                  <form method="post" action="/dashboard.php" enctype="multipart/form-data" class="news-edit-form" id="edit-news-<?= (int) $item['id'] ?>" hidden>
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="edit_news">
                     <input type="hidden" name="news_id" value="<?= (int) $item['id'] ?>">
@@ -245,6 +233,29 @@ require_once __DIR__ . '/includes/header.php';
                     <div class="field">
                       <label for="edit_body_<?= (int) $item['id'] ?>">Text</label>
                       <textarea id="edit_body_<?= (int) $item['id'] ?>" name="body"><?= htmlspecialchars($item['body'], ENT_QUOTES, 'UTF-8') ?></textarea>
+                    </div>
+                    <?php if ($attachments): ?>
+                      <div class="field">
+                        <label>Stávající přílohy</label>
+                        <div class="checkbox-list">
+                          <?php foreach ($attachments as $att): ?>
+                            <label class="checkbox-list-item" for="remove_att_<?= (int) $att['id'] ?>">
+                              <input type="checkbox" id="remove_att_<?= (int) $att['id'] ?>" name="remove_attachments[]" value="<?= (int) $att['id'] ?>">
+                              <?= str_starts_with($att['mime_type'], 'image/') ? '🖼️' : '📎' ?> <?= htmlspecialchars($att['original_name'], ENT_QUOTES, 'UTF-8') ?> <span class="hint-text">(odstranit)</span>
+                            </label>
+                          <?php endforeach; ?>
+                        </div>
+                      </div>
+                    <?php endif; ?>
+                    <div class="field-row">
+                      <div class="field">
+                        <label for="edit_images_<?= (int) $item['id'] ?>">🖼️ Přidat obrázky</label>
+                        <input type="file" id="edit_images_<?= (int) $item['id'] ?>" name="images[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp">
+                      </div>
+                      <div class="field">
+                        <label for="edit_attachments_<?= (int) $item['id'] ?>">📎 Přidat přílohy</label>
+                        <input type="file" id="edit_attachments_<?= (int) $item['id'] ?>" name="attachments[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
+                      </div>
                     </div>
                     <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
                   </form>
