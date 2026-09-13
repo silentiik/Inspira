@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/pricing.php';
 
 const LUNCH_DAYS = ['po' => 'Pondělí', 'ut' => 'Úterý', 'st' => 'Středa', 'ct' => 'Čtvrtek', 'pa' => 'Pátek'];
 
@@ -393,6 +394,7 @@ function monthly_lunch_roster(string $monthDate): array
             'group_key' => $child['program'],
             'category' => CHILD_PROGRAMS[$child['program']] ?? $child['program'],
             'count' => 0,
+            'amount' => 0,
         ];
     }
     foreach (db()->query(
@@ -404,9 +406,13 @@ function monthly_lunch_roster(string $monthDate): array
             'group_key' => 'teacher',
             'category' => 'Lektor/ka',
             'count' => 0,
+            'amount' => 0,
         ];
     }
 
+    // Each order is priced at whatever was in effect on its own date, not
+    // today's price, so a price change never retroactively changes what
+    // earlier orders are billed at.
     $tally = function (array $rows, string $prefix, string $idColumn) use (&$roster, $monthStart, $monthEnd) {
         foreach ($rows as $row) {
             $date = week_day_dates($row['week_start'])[$row['day']];
@@ -416,6 +422,7 @@ function monthly_lunch_roster(string $monthDate): array
             $key = $prefix . $row[$idColumn];
             if (isset($roster[$key])) {
                 $roster[$key]['count']++;
+                $roster[$key]['amount'] += lunch_price_on($date);
             }
         }
     };

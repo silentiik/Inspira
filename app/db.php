@@ -260,6 +260,33 @@ function migrate(PDO $pdo): void
         UNIQUE(program, days)
     )");
 
+    // A history of per-lunch prices rather than one editable number, so
+    // raising the price doesn't retroactively change what old orders are
+    // billed at. Each row means "this price applies from valid_from
+    // until the next row's valid_from (or forever, for the latest one)"
+    // — see lunch_price_on() in app/pricing.php.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS lunch_prices (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        price INTEGER NOT NULL,
+        valid_from TEXT NOT NULL,
+        updated_by INTEGER REFERENCES users(id),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )");
+    // One-time migration from the old flat content_blocks value (if an
+    // admin had already set one) into the new history table, applied
+    // retroactively from the start so existing billing figures don't
+    // change.
+    if ((int) $pdo->query('SELECT count(*) FROM lunch_prices')->fetchColumn() === 0) {
+        $legacyPrice = $pdo->prepare("SELECT value FROM content_blocks WHERE block_key = 'lunch_price'");
+        $legacyPrice->execute();
+        $legacyValue = $legacyPrice->fetchColumn();
+        if ($legacyValue !== false && (int) $legacyValue > 0) {
+            $pdo->prepare('INSERT INTO lunch_prices (price, valid_from, updated_at) VALUES (?, ?, datetime(\'now\'))')
+                ->execute([(int) $legacyValue, '2000-01-01']);
+            $pdo->exec("DELETE FROM content_blocks WHERE block_key = 'lunch_price'");
+        }
+    }
+
     seed_defaults($pdo);
 }
 

@@ -457,7 +457,6 @@
     var rows = Array.prototype.slice.call(table.querySelectorAll('[data-overview-row]'));
     var sumEl = table.querySelector('[data-overview-sum]');
     var sumPriceEl = table.querySelector('[data-overview-sum-price]');
-    var lunchPrice = parseInt(table.getAttribute('data-lunch-price'), 10) || 0;
 
     function formatKc(amount) {
       return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' Kč';
@@ -469,6 +468,7 @@
       var filterValue = activeChip ? activeChip.getAttribute('data-filter-value') : '';
       var visibleCount = 0;
       var sum = 0;
+      var sumAmount = 0;
       rows.forEach(function (row) {
         var name = row.getAttribute('data-name') || '';
         var matchesSearch = name.indexOf(query) !== -1;
@@ -478,11 +478,12 @@
         if (visible) {
           visibleCount++;
           sum += parseInt(row.getAttribute('data-count'), 10) || 0;
+          sumAmount += parseInt(row.getAttribute('data-amount'), 10) || 0;
         }
       });
       if (countEl) countEl.textContent = visibleCount + '/' + rows.length;
       if (sumEl) sumEl.textContent = sum;
-      if (sumPriceEl) sumPriceEl.textContent = formatKc(sum * lunchPrice);
+      if (sumPriceEl) sumPriceEl.textContent = formatKc(sumAmount);
     }
 
     input.addEventListener('input', render);

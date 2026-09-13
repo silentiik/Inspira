@@ -44,3 +44,41 @@ function update_pricing_row(int $id, int $price, ?string $note): void
     $stmt = db()->prepare('UPDATE pricing SET price = ?, note = ? WHERE id = ?');
     $stmt->execute([$price, $note ?: null, $id]);
 }
+
+/**
+ * The lunch price in effect on $date — the most recently started price
+ * period that had already begun by then. Returns 0 if no price has ever
+ * been set (rather than guessing), so a missing price is visibly "0 Kč"
+ * instead of silently wrong.
+ */
+function lunch_price_on(string $date): int
+{
+    $stmt = db()->prepare('SELECT price FROM lunch_prices WHERE valid_from <= ? ORDER BY valid_from DESC, id DESC LIMIT 1');
+    $stmt->execute([$date]);
+    $value = $stmt->fetchColumn();
+    return $value !== false ? (int) $value : 0;
+}
+
+/** Schedules a new lunch price starting from $validFrom. Past periods are never edited — this only adds a new one that supersedes them going forward. */
+function add_lunch_price(int $price, string $validFrom, int $updatedBy): void
+{
+    $stmt = db()->prepare('INSERT INTO lunch_prices (price, valid_from, updated_by, updated_at) VALUES (?, ?, ?, datetime(\'now\'))');
+    $stmt->execute([$price, $validFrom, $updatedBy]);
+}
+
+/**
+ * Every lunch price period, most recent first, each with an explicit
+ * 'valid_until' computed from the next (older) row's start date — null
+ * for the currently active period. For the admin history view.
+ */
+function all_lunch_prices(): array
+{
+    $rows = db()->query('SELECT * FROM lunch_prices ORDER BY valid_from DESC, id DESC')->fetchAll();
+    foreach ($rows as $i => &$row) {
+        $row['valid_until'] = $i > 0
+            ? (new DateTimeImmutable($rows[$i - 1]['valid_from']))->modify('-1 day')->format('Y-m-d')
+            : null;
+    }
+    unset($row);
+    return $rows;
+}
