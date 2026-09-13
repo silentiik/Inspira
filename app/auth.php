@@ -124,6 +124,16 @@ function hash_password(string $password): string
     return password_hash($password, PASSWORD_DEFAULT);
 }
 
+const PASSWORD_POLICY_MESSAGE = 'Heslo musí mít alespoň 8 znaků, alespoň jedno velké písmeno a alespoň jeden speciální znak (např. ! ? # @ %).';
+
+/** Every place a new password is set (self-service, admin, invite, reset) enforces this same minimum strength. */
+function password_meets_policy(string $password): bool
+{
+    return mb_strlen($password) >= 8
+        && preg_match('/[A-Z]/', $password) === 1
+        && preg_match('/[^A-Za-z0-9]/', $password) === 1;
+}
+
 /**
  * Creates a one-time token for password reset or first-time invite
  * links. Returns the RAW token (only ever exposed via the emailed URL —

@@ -21,8 +21,8 @@ if ($userCount === 0 && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($firstName === '' || $lastName === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Zadejte prosím jméno, příjmení a platný e-mail.';
-    } elseif (mb_strlen($password) < 8) {
-        $errors[] = 'Heslo musí mít alespoň 8 znaků.';
+    } elseif (!password_meets_policy($password)) {
+        $errors[] = PASSWORD_POLICY_MESSAGE;
     } else {
         $stmt = db()->prepare(
             'INSERT INTO users (email, password_hash, name, first_name, last_name, role) VALUES (?, ?, ?, ?, ?, ?)'

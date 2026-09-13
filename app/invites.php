@@ -35,7 +35,7 @@ function invite_user(string $email, string $firstName, string $lastName, string 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         return ['status' => 'invalid', 'link' => null];
     }
-    if ($password !== null && mb_strlen($password) < 8) {
+    if ($password !== null && !password_meets_policy($password)) {
         return ['status' => 'invalid', 'link' => null];
     }
     $gender = in_array($gender, ['male', 'female'], true) ? $gender : null;

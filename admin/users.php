@@ -91,8 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash_set('error', 'Neplatná role.');
         } elseif ($newPhone !== '' && !preg_match('/^[0-9+\-\s()]{6,20}$/', $newPhone)) {
             flash_set('error', 'Zadejte prosím platné telefonní číslo.');
-        } elseif ($newPassword !== '' && mb_strlen($newPassword) < 8) {
-            flash_set('error', 'Nové heslo musí mít alespoň 8 znaků.');
+        } elseif ($newPassword !== '' && !password_meets_policy($newPassword)) {
+            flash_set('error', PASSWORD_POLICY_MESSAGE);
         } else {
             $existing = db()->prepare('SELECT id FROM users WHERE email = ? AND id != ?');
             $existing->execute([$newEmail, $targetId]);

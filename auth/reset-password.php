@@ -16,8 +16,8 @@ if ($tokenRow && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = (string) ($_POST['password'] ?? '');
     $confirm = (string) ($_POST['password_confirm'] ?? '');
 
-    if (mb_strlen($password) < 8) {
-        $errors[] = 'Heslo musí mít alespoň 8 znaků.';
+    if (!password_meets_policy($password)) {
+        $errors[] = PASSWORD_POLICY_MESSAGE;
     } elseif ($password !== $confirm) {
         $errors[] = 'Hesla se neshodují.';
     } else {
