@@ -1306,7 +1306,16 @@ img { max-width: 100%; display: block; }
 }
 .lunch-day-meal-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
 
-.obedy-menu-toolbar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 14px; }
+.obedy-menu-header { position: relative; }
+.lunch-week-spacer { visibility: hidden; }
+.obedy-menu-toolbar {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 8px;
+}
 .icon-btn--danger:hover { border-color: var(--color-error); color: var(--color-error); }
 .icon-btn--lock.is-locked { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
 .icon-btn--lock:hover { border-color: var(--color-primary); color: var(--color-primary-dark); }

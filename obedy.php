@@ -204,21 +204,24 @@ require_once __DIR__ . '/includes/header.php';
               </form>
             <?php endforeach; ?>
 
-            <div class="obedy-menu-toolbar">
-              <form method="post" action="/obedy.php" data-confirm="Opravdu vymazat celý jídelníček pro tento týden? Vybrané obědy dětí a zaměstnanců zůstanou zachované, jen se smaže nastavení jídel.">
-                <?= csrf_field() ?>
-                <input type="hidden" name="action" value="clear_week_menu">
-                <input type="hidden" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>">
-                <input type="hidden" name="view" value="nastaveni">
-                <button type="submit" class="icon-btn icon-btn--danger" aria-label="Vymazat jídelníček pro tento týden" title="<?= $weekAutoLocked ? 'Starší týdny jsou automaticky uzamčené a nelze je vymazat' : 'Vymazat jídelníček pro tento týden' ?>"<?= $weekAutoLocked ? ' disabled' : '' ?>>🗑️</button>
-              </form>
-              <form method="post" action="/obedy.php">
-                <?= csrf_field() ?>
-                <input type="hidden" name="action" value="toggle_week_lock">
-                <input type="hidden" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>">
-                <input type="hidden" name="view" value="nastaveni">
-                <button type="submit" class="icon-btn icon-btn--lock<?= $weekLocked ? ' is-locked' : '' ?>" aria-label="<?= $weekLocked ? 'Odemknout celý týden' : 'Uzamknout celý týden' ?>" title="<?= $weekAutoLocked ? 'Starší týdny se uzamykají automaticky' : ($weekLocked ? 'Odemknout celý týden' : 'Uzamknout celý týden') ?>"<?= $weekAutoLocked ? ' disabled' : '' ?>><?= $weekLocked ? '🔒' : '🔓' ?></button>
-              </form>
+            <div class="obedy-menu-header">
+              <h4 class="lunch-child-name lunch-week-spacer" aria-hidden="true">&nbsp;</h4>
+              <div class="obedy-menu-toolbar">
+                <form method="post" action="/obedy.php" data-confirm="Opravdu vymazat celý jídelníček pro tento týden? Vybrané obědy dětí a zaměstnanců zůstanou zachované, jen se smaže nastavení jídel.">
+                  <?= csrf_field() ?>
+                  <input type="hidden" name="action" value="clear_week_menu">
+                  <input type="hidden" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>">
+                  <input type="hidden" name="view" value="nastaveni">
+                  <button type="submit" class="icon-btn icon-btn--danger" aria-label="Vymazat jídelníček pro tento týden" title="<?= $weekAutoLocked ? 'Starší týdny jsou automaticky uzamčené a nelze je vymazat' : 'Vymazat jídelníček pro tento týden' ?>"<?= $weekAutoLocked ? ' disabled' : '' ?>>🗑️</button>
+                </form>
+                <form method="post" action="/obedy.php">
+                  <?= csrf_field() ?>
+                  <input type="hidden" name="action" value="toggle_week_lock">
+                  <input type="hidden" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>">
+                  <input type="hidden" name="view" value="nastaveni">
+                  <button type="submit" class="icon-btn icon-btn--lock<?= $weekLocked ? ' is-locked' : '' ?>" aria-label="<?= $weekLocked ? 'Odemknout celý týden' : 'Uzamknout celý týden' ?>" title="<?= $weekAutoLocked ? 'Starší týdny se uzamykají automaticky' : ($weekLocked ? 'Odemknout celý týden' : 'Uzamknout celý týden') ?>"<?= $weekAutoLocked ? ' disabled' : '' ?>><?= $weekLocked ? '🔒' : '🔓' ?></button>
+                </form>
+              </div>
             </div>
 
             <form method="post" action="/obedy.php">
