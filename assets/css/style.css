@@ -1288,6 +1288,7 @@ img { max-width: 100%; display: block; }
 }
 
 .lunch-day--edit { cursor: default; }
+.lunch-week-spacer { visibility: hidden; }
 .lunch-day-meal-input {
   flex: 1;
   padding: 8px 12px;
