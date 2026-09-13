@@ -29,6 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $children = $user['role'] === 'parent' ? children_for_parent((int) $user['id']) : [];
 $nextWeek = week_start('next monday');
+$weekStartDt = new DateTimeImmutable($nextWeek);
+$weekEndDt = $weekStartDt->modify('+4 days');
+$weekNumber = (int) $weekStartDt->format('W');
 
 $pageTitle = 'Obědy | INSPIRA';
 require_once __DIR__ . '/includes/header.php';
@@ -43,9 +46,11 @@ require_once __DIR__ . '/includes/header.php';
   <section class="section">
     <div class="container">
       <div class="stack">
-        <div class="form-card">
-          <h3 class="mt-0">🍽️ Výběr obědů na týden od <?= htmlspecialchars(date('j. n. Y', strtotime($nextWeek)), ENT_QUOTES, 'UTF-8') ?></h3>
+        <div class="form-card news-board-header">
+          <h3 class="mt-0 text-center news-board-title">🍽️ Výběr obědů — týden č. <?= $weekNumber ?> (<?= htmlspecialchars($weekStartDt->format('j. n.'), ENT_QUOTES, 'UTF-8') ?> – <?= htmlspecialchars($weekEndDt->format('j. n. Y'), ENT_QUOTES, 'UTF-8') ?>)</h3>
+        </div>
 
+        <div class="form-card">
           <?php if (empty($children)): ?>
             <p class="hint-text"><?= $user['role'] === 'parent' ? 'Zatím k vám není přiřazené žádné dítě. Kontaktujte prosím centrum.' : 'Žádné děti k zobrazení.' ?></p>
           <?php endif; ?>
