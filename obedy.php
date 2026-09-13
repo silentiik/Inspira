@@ -191,8 +191,7 @@ require_once __DIR__ . '/includes/header.php';
 
         <?php if ($view === 'prehled' && $canEditMenu): ?>
           <div class="form-card">
-            <h3 class="mt-0">Měsíční přehled — <?= htmlspecialchars($overviewMonthLabel, ENT_QUOTES, 'UTF-8') ?></h3>
-            <p class="hint-text">Počet objednaných obědů za měsíc, ve kterém tento týden začíná — pro snazší vyúčtování rodičům.</p>
+            <h3 class="overview-banner">Měsíční přehled — <?= htmlspecialchars($overviewMonthLabel, ENT_QUOTES, 'UTF-8') ?></h3>
             <div class="list-toolbar" data-overview-toolbar>
               <input type="text" class="list-search" placeholder="Hledat podle jména…" data-overview-search autocomplete="off">
               <div class="list-controls">
