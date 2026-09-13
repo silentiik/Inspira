@@ -371,42 +371,65 @@ function lunch_orders_overview(string $weekStart): array
 }
 
 /**
- * Total ordered lunches per person (children and staff) within the
- * calendar month containing $monthDate, keyed by display name — for an
- * admin/teacher to use as a billing reference. A lunch_selections row
- * only records a week_start + day code, not the exact date, so this
- * resolves each row's actual date in PHP and filters by month there
- * rather than in SQL.
+ * Every child and every admin/teacher, each with their group (their
+ * program, or 'Lektor/ka' for staff) and how many lunches they ordered
+ * within the calendar month containing $monthDate — including a 0 for
+ * anyone who ordered none, so the list works as a complete billing
+ * roster rather than just a list of that month's orders. Keyed by
+ * child/user id internally so two people sharing a display name can't
+ * collide; a lunch_selections row only records a week_start + day code,
+ * not the exact date, so this resolves each row's actual date in PHP
+ * and filters by month there rather than in SQL.
  */
-function monthly_lunch_totals(string $monthDate): array
+function monthly_lunch_roster(string $monthDate): array
 {
     $monthStart = (new DateTimeImmutable($monthDate))->modify('first day of this month')->format('Y-m-d');
     $monthEnd = (new DateTimeImmutable($monthDate))->modify('last day of this month')->format('Y-m-d');
 
-    $totals = [];
-    $tally = function (array $rows) use (&$totals, $monthStart, $monthEnd) {
+    $roster = [];
+    foreach (db()->query('SELECT id, name, program FROM children ORDER BY first_name, last_name')->fetchAll() as $child) {
+        $roster['child:' . $child['id']] = [
+            'name' => $child['name'],
+            'category' => CHILD_PROGRAMS[$child['program']] ?? $child['program'],
+            'count' => 0,
+        ];
+    }
+    foreach (db()->query(
+        "SELECT id, trim(first_name || ' ' || last_name) AS name FROM users
+         WHERE role IN ('admin', 'teacher') ORDER BY first_name, last_name"
+    )->fetchAll() as $staff) {
+        $roster['staff:' . $staff['id']] = [
+            'name' => $staff['name'],
+            'category' => 'Lektor/ka',
+            'count' => 0,
+        ];
+    }
+
+    $tally = function (array $rows, string $prefix, string $idColumn) use (&$roster, $monthStart, $monthEnd) {
         foreach ($rows as $row) {
             $date = week_day_dates($row['week_start'])[$row['day']];
-            if ($date >= $monthStart && $date <= $monthEnd) {
-                $totals[$row['person_name']] = ($totals[$row['person_name']] ?? 0) + 1;
+            if ($date < $monthStart || $date > $monthEnd) {
+                continue;
+            }
+            $key = $prefix . $row[$idColumn];
+            if (isset($roster[$key])) {
+                $roster[$key]['count']++;
             }
         }
     };
 
-    $tally(db()->query(
-        'SELECT ls.week_start, ls.day, c.name AS person_name
-         FROM lunch_selections ls
-         JOIN children c ON c.id = ls.child_id
-         WHERE ls.wants_lunch = 1'
-    )->fetchAll());
+    $tally(
+        db()->query('SELECT child_id, week_start, day FROM lunch_selections WHERE wants_lunch = 1')->fetchAll(),
+        'child:',
+        'child_id'
+    );
+    $tally(
+        db()->query('SELECT user_id, week_start, day FROM staff_lunch_selections WHERE wants_lunch = 1')->fetchAll(),
+        'staff:',
+        'user_id'
+    );
 
-    $tally(db()->query(
-        "SELECT sls.week_start, sls.day, trim(u.first_name || ' ' || u.last_name) || ' (lektor/ka)' AS person_name
-         FROM staff_lunch_selections sls
-         JOIN users u ON u.id = sls.user_id
-         WHERE sls.wants_lunch = 1"
-    )->fetchAll());
-
-    ksort($totals, SORT_NATURAL | SORT_FLAG_CASE);
-    return $totals;
+    $roster = array_values($roster);
+    usort($roster, fn (array $a, array $b) => strnatcasecmp($a['name'], $b['name']));
+    return $roster;
 }

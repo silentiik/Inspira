@@ -164,7 +164,7 @@ $nextWeek = $weekStartDt->modify('+7 days')->format('Y-m-d');
 
 if ($canEditMenu && $view === 'prehled') {
     $weekOverview = lunch_orders_overview($viewedWeek);
-    $monthlyTotals = monthly_lunch_totals($viewedWeek);
+    $monthlyRoster = monthly_lunch_roster($viewedWeek);
     $overviewMonthLabel = CZECH_MONTHS[(int) $weekStartDt->format('n')] . ' ' . $weekStartDt->format('Y');
 }
 
@@ -186,6 +186,25 @@ require_once __DIR__ . '/includes/header.php';
             <a href="/obedy.php?week=<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>&view=vyber" class="obedy-tab<?= $view === 'vyber' ? ' is-active' : '' ?>">Výběr obědů</a>
             <a href="/obedy.php?week=<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>&view=nastaveni" class="obedy-tab<?= $view === 'nastaveni' ? ' is-active' : '' ?>">Nastavení jídelníčku</a>
             <a href="/obedy.php?week=<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>&view=prehled" class="obedy-tab<?= $view === 'prehled' ? ' is-active' : '' ?>">Přehled obědů</a>
+          </div>
+        <?php endif; ?>
+
+        <?php if ($view === 'prehled' && $canEditMenu): ?>
+          <div class="form-card">
+            <h3 class="mt-0">Měsíční přehled — <?= htmlspecialchars($overviewMonthLabel, ENT_QUOTES, 'UTF-8') ?></h3>
+            <p class="hint-text">Počet objednaných obědů za měsíc, ve kterém tento týden začíná — pro snazší vyúčtování rodičům.</p>
+            <table class="overview-table">
+              <thead><tr><th>Jméno</th><th>Skupina</th><th>Počet obědů</th></tr></thead>
+              <tbody>
+                <?php foreach ($monthlyRoster as $entry): ?>
+                  <tr>
+                    <td><?= htmlspecialchars($entry['name'], ENT_QUOTES, 'UTF-8') ?></td>
+                    <td><?= htmlspecialchars($entry['category'], ENT_QUOTES, 'UTF-8') ?></td>
+                    <td><?= (int) $entry['count'] ?></td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
           </div>
         <?php endif; ?>
 
@@ -282,23 +301,6 @@ require_once __DIR__ . '/includes/header.php';
                 <?php endif; ?>
               </div>
             <?php endforeach; ?>
-          </div>
-
-          <div class="form-card">
-            <h3 class="mt-0">Měsíční přehled — <?= htmlspecialchars($overviewMonthLabel, ENT_QUOTES, 'UTF-8') ?></h3>
-            <p class="hint-text">Počet objednaných obědů za měsíc, ve kterém tento týden začíná — pro snazší vyúčtování rodičům.</p>
-            <?php if (empty($monthlyTotals)): ?>
-              <p class="hint-text">Zatím žádné objednávky.</p>
-            <?php else: ?>
-              <table class="overview-table">
-                <thead><tr><th>Jméno</th><th>Počet obědů</th></tr></thead>
-                <tbody>
-                  <?php foreach ($monthlyTotals as $name => $count): ?>
-                    <tr><td><?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8') ?></td><td><?= (int) $count ?></td></tr>
-                  <?php endforeach; ?>
-                </tbody>
-              </table>
-            <?php endif; ?>
           </div>
 
         <?php else: ?>
