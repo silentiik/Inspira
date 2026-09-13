@@ -55,8 +55,7 @@ function asset_url(string $publicPath): string
 <header class="site-header">
   <div class="container nav">
     <a href="/index.php" class="brand">
-      <span class="brand-mark">✦</span>
-      <span>INSPIRA<span class="brand-sub">Vzdělávací centrum</span></span>
+      <img src="<?= htmlspecialchars(asset_url('/assets/img/cropped-Vzdelavaci-centrum-Inspira-logo-pruhledne-768x279.png'), ENT_QUOTES, 'UTF-8') ?>" alt="INSPIRA — Vzdělávací centrum" class="brand-logo">
     </a>
     <button class="nav-toggle" aria-label="Otevřít menu" aria-expanded="false">
       <span></span><span></span><span></span>

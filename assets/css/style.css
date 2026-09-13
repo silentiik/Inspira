@@ -170,23 +170,9 @@ img { max-width: 100%; display: block; }
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: var(--color-primary-dark);
 }
 .brand:hover { text-decoration: none; }
-.brand-mark { color: var(--color-accent-dark); }
-.brand-sub {
-  display: block;
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: var(--color-text-muted);
-  font-family: var(--font-body);
-}
+.brand-logo { height: 52px; width: auto; display: block; }
 
 .nav-links {
   display: flex;
