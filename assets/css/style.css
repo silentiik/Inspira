@@ -611,7 +611,7 @@ img { max-width: 100%; display: block; }
 .richtext-btn--underline { text-decoration: underline; }
 .richtext-btn svg { fill: currentColor; }
 .richtext-sep { width: 1.5px; align-self: stretch; margin: 2px 4px; background: var(--color-border); }
-.richtext-select {
+.richtext-toolbar .richtext-select {
   height: 28px;
   padding: 0 6px;
   border: 1.5px solid var(--color-border);
