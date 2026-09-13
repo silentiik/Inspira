@@ -103,6 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'clear_week_menu' && $canEditMenu && !$weekAutoLocked) {
         clear_week_menus($week);
+        reset_week_selections($week);
         flash_set('success', 'Jídelníček pro tento týden byl vymazán.');
         header('Location: ' . $redirectTo);
         exit;
@@ -207,7 +208,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="obedy-menu-header">
               <h4 class="lunch-child-name lunch-week-spacer" aria-hidden="true">&nbsp;</h4>
               <div class="obedy-menu-toolbar">
-                <form method="post" action="/obedy.php" data-confirm="Opravdu vymazat celý jídelníček pro tento týden? Vybrané obědy dětí a zaměstnanců zůstanou zachované, jen se smaže nastavení jídel.">
+                <form method="post" action="/obedy.php" data-confirm="Opravdu vymazat celý jídelníček pro tento týden? Vybrané obědy dětí a zaměstnanců budou vyresetovány.">
                   <?= csrf_field() ?>
                   <input type="hidden" name="action" value="clear_week_menu">
                   <input type="hidden" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>">

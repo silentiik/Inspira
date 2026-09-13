@@ -247,17 +247,24 @@ function week_is_auto_locked(string $weekStart): bool
     return $weekStart < week_start('-1 week');
 }
 
-/**
- * Clears the menu (and any lock state) for every day of one week only.
- * Existing lunch_selections / staff_lunch_selections rows — the actual
- * historical choices — are untouched, since billing relies on those, not
- * on daily_menus.
- */
+/** Clears the menu (and any lock state) for every day of one week only — see reset_week_selections() for the matching choices reset. */
 function clear_week_menus(string $weekStart): void
 {
     $end = (new DateTimeImmutable($weekStart))->modify('+4 days')->format('Y-m-d');
     $stmt = db()->prepare('DELETE FROM daily_menus WHERE date BETWEEN ? AND ?');
     $stmt->execute([$weekStart, $end]);
+}
+
+/**
+ * Deletes every child's and staff member's lunch choice for one week —
+ * called alongside clear_week_menus(), since a stale "yes I want lunch"
+ * made against a menu that's being wiped doesn't mean anything once
+ * that menu is gone; parents/staff choose again once it's reset.
+ */
+function reset_week_selections(string $weekStart): void
+{
+    db()->prepare('DELETE FROM lunch_selections WHERE week_start = ?')->execute([$weekStart]);
+    db()->prepare('DELETE FROM staff_lunch_selections WHERE week_start = ?')->execute([$weekStart]);
 }
 
 /** [day_code => true] for the days this child is opted in for lunch, this week. */
