@@ -156,6 +156,13 @@ require_once __DIR__ . '/includes/header.php';
                       <button type="button" class="richtext-btn richtext-btn--italic" data-rt-cmd="italic" aria-label="Kurzíva">I</button>
                       <button type="button" class="richtext-btn richtext-btn--underline" data-rt-cmd="underline" aria-label="Podtržené">U</button>
                       <span class="richtext-sep"></span>
+                      <select class="richtext-select" data-rt-fontsize aria-label="Velikost písma">
+                        <option value="12">Malé</option>
+                        <option value="16" selected>Normální</option>
+                        <option value="20">Velké</option>
+                        <option value="28">Obrovské</option>
+                      </select>
+                      <span class="richtext-sep"></span>
                       <button type="button" class="richtext-btn" data-rt-cmd="justifyLeft" aria-label="Zarovnat vlevo"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1" y="3" width="14" height="2"></rect><rect x="1" y="7" width="9" height="2"></rect><rect x="1" y="11" width="12" height="2"></rect></svg></button>
                       <button type="button" class="richtext-btn" data-rt-cmd="justifyCenter" aria-label="Zarovnat na střed"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1" y="3" width="14" height="2"></rect><rect x="3.5" y="7" width="9" height="2"></rect><rect x="2" y="11" width="12" height="2"></rect></svg></button>
                       <button type="button" class="richtext-btn" data-rt-cmd="justifyRight" aria-label="Zarovnat vpravo"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1" y="3" width="14" height="2"></rect><rect x="6" y="7" width="9" height="2"></rect><rect x="3" y="11" width="12" height="2"></rect></svg></button>
@@ -294,6 +301,13 @@ require_once __DIR__ . '/includes/header.php';
                           <button type="button" class="richtext-btn richtext-btn--bold" data-rt-cmd="bold" aria-label="Tučně">B</button>
                           <button type="button" class="richtext-btn richtext-btn--italic" data-rt-cmd="italic" aria-label="Kurzíva">I</button>
                           <button type="button" class="richtext-btn richtext-btn--underline" data-rt-cmd="underline" aria-label="Podtržené">U</button>
+                          <span class="richtext-sep"></span>
+                          <select class="richtext-select" data-rt-fontsize aria-label="Velikost písma">
+                            <option value="12">Malé</option>
+                            <option value="16" selected>Normální</option>
+                            <option value="20">Velké</option>
+                            <option value="28">Obrovské</option>
+                          </select>
                           <span class="richtext-sep"></span>
                           <button type="button" class="richtext-btn" data-rt-cmd="justifyLeft" aria-label="Zarovnat vlevo"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1" y="3" width="14" height="2"></rect><rect x="1" y="7" width="9" height="2"></rect><rect x="1" y="11" width="12" height="2"></rect></svg></button>
                           <button type="button" class="richtext-btn" data-rt-cmd="justifyCenter" aria-label="Zarovnat na střed"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1" y="3" width="14" height="2"></rect><rect x="3.5" y="7" width="9" height="2"></rect><rect x="2" y="11" width="12" height="2"></rect></svg></button>

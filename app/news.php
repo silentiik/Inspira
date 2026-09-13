@@ -37,12 +37,18 @@ function render_news_body(array $item): string
     return nl2br(htmlspecialchars($item['body'], ENT_QUOTES, 'UTF-8'));
 }
 
+// The only font sizes the toolbar's dropdown can produce — kept as an
+// explicit allowlist rather than accepting arbitrary px values, so a
+// forged request can't smuggle in something like font-size:999999px.
+const NEWS_BODY_FONT_SIZES = [12, 16, 20, 28];
+
 /**
  * Strips a rich-text post body down to a small safe HTML allowlist
- * (b/strong, i/em, u, p with only a text-align style) before it's ever
- * stored. The formatting toolbar only ever produces these tags — this
- * exists so a forged request (or a stray browser quirk) can't smuggle
- * in a script tag or an event-handler attribute.
+ * (b/strong, i/em, u, p with only a text-align style, span with only a
+ * font-size from NEWS_BODY_FONT_SIZES) before it's ever stored. The
+ * formatting toolbar only ever produces these tags — this exists so a
+ * forged request (or a stray browser quirk) can't smuggle in a script
+ * tag or an event-handler attribute.
  */
 function sanitize_news_body_html(string $html): string
 {
@@ -51,7 +57,7 @@ function sanitize_news_body_html(string $html): string
         return '';
     }
 
-    $allowedTags = ['p', 'br', 'b', 'strong', 'i', 'em', 'u'];
+    $allowedTags = ['p', 'br', 'b', 'strong', 'i', 'em', 'u', 'span'];
 
     $doc = new DOMDocument();
     libxml_use_internal_errors(true);
@@ -90,6 +96,12 @@ function sanitize_news_body_html(string $html): string
                 if ($tag === 'p' && $attr->name === 'style'
                     && preg_match('/^text-align:\s*(left|center|right|justify)\s*;?$/i', trim($attr->value), $m)) {
                     $child->setAttribute('style', 'text-align: ' . strtolower($m[1]) . ';');
+                    continue;
+                }
+                if ($tag === 'span' && $attr->name === 'style'
+                    && preg_match('/^font-size:\s*(\d+)px\s*;?$/i', trim($attr->value), $m)
+                    && in_array((int) $m[1], NEWS_BODY_FONT_SIZES, true)) {
+                    $child->setAttribute('style', 'font-size: ' . (int) $m[1] . 'px;');
                     continue;
                 }
                 $child->removeAttribute($attr->name);

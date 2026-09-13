@@ -36,6 +36,24 @@
       });
     });
 
+    // Font size: there's no execCommand for an arbitrary CSS size, so
+    // apply the classic workaround — request the largest legacy <font
+    // size> value, then swap each resulting <font> for a <span> with
+    // the actual pixel size we want.
+    var fontSizeSelect = wrap.querySelector('[data-rt-fontsize]');
+    if (fontSizeSelect) {
+      fontSizeSelect.addEventListener('change', function () {
+        editor.focus();
+        document.execCommand('fontSize', false, '7');
+        editor.querySelectorAll('font[size="7"]').forEach(function (fontEl) {
+          var span = document.createElement('span');
+          span.style.fontSize = fontSizeSelect.value + 'px';
+          while (fontEl.firstChild) span.appendChild(fontEl.firstChild);
+          fontEl.parentNode.replaceChild(span, fontEl);
+        });
+      });
+    }
+
     var form = wrap.closest('form');
     if (form) {
       form.addEventListener('submit', function () {
