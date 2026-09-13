@@ -151,6 +151,21 @@ img { max-width: 100%; display: block; }
 .btn--block { width: 100%; }
 .btn[disabled] { opacity: 0.55; cursor: not-allowed; transform: none !important; }
 
+/* ---------- Impersonation banner (admin "log in as") ---------- */
+.impersonation-banner { background: var(--color-accent-dark); color: #fff; }
+.impersonation-banner-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+.impersonation-banner-exit { background: #fff; color: var(--color-accent-dark); box-shadow: none; }
+.impersonation-banner-exit:hover { background: var(--color-bg-alt); color: var(--color-accent-dark); }
+
 /* ---------- Header / Nav ---------- */
 .site-header {
   position: sticky;

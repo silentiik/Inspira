@@ -119,6 +119,58 @@ function log_out_user(): void
     session_regenerate_id(true);
 }
 
+/** True while an admin is currently acting as someone else's account. */
+function is_impersonating(): bool
+{
+    return !empty($_SESSION['impersonator_id']);
+}
+
+/** The real admin's row while impersonating, or null otherwise. */
+function impersonator_user(): ?array
+{
+    if (empty($_SESSION['impersonator_id'])) {
+        return null;
+    }
+    $stmt = db()->prepare('SELECT * FROM users WHERE id = ?');
+    $stmt->execute([$_SESSION['impersonator_id']]);
+    return $stmt->fetch() ?: null;
+}
+
+/**
+ * Switches the session to act as $targetId, stashing $adminId so
+ * stop_impersonating() can return to it. Refuses to impersonate an
+ * admin account, an inactive account, or yourself — returns false in
+ * that case and leaves the session untouched.
+ */
+function start_impersonating(int $adminId, int $targetId): bool
+{
+    if ($adminId === $targetId) {
+        return false;
+    }
+    $stmt = db()->prepare('SELECT id, role FROM users WHERE id = ? AND is_active = 1');
+    $stmt->execute([$targetId]);
+    $target = $stmt->fetch();
+    if (!$target || $target['role'] === 'admin') {
+        return false;
+    }
+    session_regenerate_id(true);
+    $_SESSION['impersonator_id'] = $adminId;
+    $_SESSION['user_id'] = $targetId;
+    return true;
+}
+
+/** Ends impersonation, if active, restoring the original admin's session. */
+function stop_impersonating(): void
+{
+    if (empty($_SESSION['impersonator_id'])) {
+        return;
+    }
+    $adminId = (int) $_SESSION['impersonator_id'];
+    unset($_SESSION['impersonator_id']);
+    session_regenerate_id(true);
+    $_SESSION['user_id'] = $adminId;
+}
+
 function hash_password(string $password): string
 {
     return password_hash($password, PASSWORD_DEFAULT);

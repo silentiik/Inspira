@@ -377,6 +377,13 @@ require_once __DIR__ . '/../includes/header.php';
                   <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
                   <button type="submit" class="btn btn--outline btn--sm">Poslat odkaz pro obnovení hesla</button>
                 </form>
+                <?php if (!$isSelf && $row['role'] !== 'admin' && $row['is_active']): ?>
+                  <form method="post" action="/admin/impersonate.php">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
+                    <button type="submit" class="btn btn--outline btn--sm">👁️ Přihlásit se jako</button>
+                  </form>
+                <?php endif; ?>
                 <?php if (!$isSelf): ?>
                   <form method="post" action="/admin/users.php" data-confirm="Opravdu změnit stav tohoto účtu?">
                     <?= csrf_field() ?>

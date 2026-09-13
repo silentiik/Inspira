@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/auth.php';
 require_once __DIR__ . '/../app/flash.php';
+require_once __DIR__ . '/../app/csrf.php';
 
 /**
  * Expected optional variables from the including page:
@@ -51,6 +52,21 @@ function asset_url(string $publicPath): string
 <link rel="stylesheet" href="<?= htmlspecialchars(asset_url('/assets/css/style.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 <body>
+
+<?php if (is_impersonating()): ?>
+<div class="impersonation-banner">
+  <div class="container impersonation-banner-inner">
+    <span>👁️ Prohlížíte portál jako <strong><?= htmlspecialchars(full_name($user), ENT_QUOTES, 'UTF-8') ?></strong> (<?= htmlspecialchars(match ($user['role']) {
+      'teacher' => 'učitel/ka',
+      default => 'rodič',
+    }, ENT_QUOTES, 'UTF-8') ?>)</span>
+    <form method="post" action="/auth/stop-impersonate.php">
+      <?= csrf_field() ?>
+      <button type="submit" class="btn btn--sm impersonation-banner-exit">Ukončit náhled</button>
+    </form>
+  </div>
+</div>
+<?php endif; ?>
 
 <header class="site-header">
   <div class="container nav">
