@@ -31,6 +31,23 @@
     });
   });
 
+  // Custom file-picker buttons (create/edit news post): the real file
+  // input is visually hidden and triggered by a styled <label>; this
+  // just keeps the "no file chosen" text next to it up to date.
+  document.querySelectorAll('[data-file-picker]').forEach(function (input) {
+    var status = input.parentElement.querySelector('[data-file-picker-status]');
+    if (!status) return;
+    input.addEventListener('change', function () {
+      if (input.files.length === 0) {
+        status.textContent = 'Nevybrán žádný soubor';
+      } else if (input.files.length === 1) {
+        status.textContent = input.files[0].name;
+      } else {
+        status.textContent = input.files.length + ' souborů vybráno';
+      }
+    });
+  });
+
   // Styled confirm dialog for destructive form submits — replaces the
   // browser's native confirm() popup. A form opts in with
   // data-confirm="message shown in the dialog".

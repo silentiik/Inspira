@@ -576,6 +576,8 @@ img { max-width: 100%; display: block; }
 
 .checkbox-field { display: flex; align-items: flex-start; gap: 10px; }
 .checkbox-field input { width: auto; margin-top: 4px; }
+.file-picker { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.file-picker-status { font-size: 0.85rem; color: var(--color-text-muted); }
 
 .checkbox-list {
   display: flex;

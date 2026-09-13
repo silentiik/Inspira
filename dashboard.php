@@ -150,11 +150,19 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="field-row">
                   <div class="field">
                     <label for="images">🖼️ Obrázky</label>
-                    <input type="file" id="images" name="images[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp">
+                    <div class="file-picker">
+                      <input type="file" id="images" name="images[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp" class="visually-hidden" data-file-picker>
+                      <label for="images" class="btn btn--outline btn--sm">Vybrat soubory</label>
+                      <span class="file-picker-status" data-file-picker-status>Nevybrán žádný soubor</span>
+                    </div>
                   </div>
                   <div class="field">
                     <label for="attachments">📎 Přílohy</label>
-                    <input type="file" id="attachments" name="attachments[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
+                    <div class="file-picker">
+                      <input type="file" id="attachments" name="attachments[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" class="visually-hidden" data-file-picker>
+                      <label for="attachments" class="btn btn--outline btn--sm">Vybrat soubory</label>
+                      <span class="file-picker-status" data-file-picker-status>Nevybrán žádný soubor</span>
+                    </div>
                   </div>
                 </div>
                 <span class="hint-text">Max. <?= NEWS_MAX_ATTACHMENTS ?> souborů celkem, každý do <?= (int) (NEWS_MAX_FILE_SIZE / 1024 / 1024) ?> MB. Obrázky se zobrazí přímo v novince, přílohy jako odkaz ke stažení.</span>
@@ -250,11 +258,19 @@ require_once __DIR__ . '/includes/header.php';
                     <div class="field-row">
                       <div class="field">
                         <label for="edit_images_<?= (int) $item['id'] ?>">🖼️ Přidat obrázky</label>
-                        <input type="file" id="edit_images_<?= (int) $item['id'] ?>" name="images[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp">
+                        <div class="file-picker">
+                          <input type="file" id="edit_images_<?= (int) $item['id'] ?>" name="images[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp" class="visually-hidden" data-file-picker>
+                          <label for="edit_images_<?= (int) $item['id'] ?>" class="btn btn--outline btn--sm">Vybrat soubory</label>
+                          <span class="file-picker-status" data-file-picker-status>Nevybrán žádný soubor</span>
+                        </div>
                       </div>
                       <div class="field">
                         <label for="edit_attachments_<?= (int) $item['id'] ?>">📎 Přidat přílohy</label>
-                        <input type="file" id="edit_attachments_<?= (int) $item['id'] ?>" name="attachments[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
+                        <div class="file-picker">
+                          <input type="file" id="edit_attachments_<?= (int) $item['id'] ?>" name="attachments[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" class="visually-hidden" data-file-picker>
+                          <label for="edit_attachments_<?= (int) $item['id'] ?>" class="btn btn--outline btn--sm">Vybrat soubory</label>
+                          <span class="file-picker-status" data-file-picker-status>Nevybrán žádný soubor</span>
+                        </div>
                       </div>
                     </div>
                     <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
