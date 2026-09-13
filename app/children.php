@@ -193,3 +193,110 @@ function save_lunch_selection(int $childId, string $weekStart, string $day, bool
     );
     $stmt->execute([$childId, $weekStart, $day, $wantsLunch ? 1 : 0, $mealSnapshot]);
 }
+
+/** Same as lunch_selections_for(), but for an admin/teacher ordering lunch for themselves. */
+function staff_lunch_selections_for(int $userId, string $weekStart): array
+{
+    $stmt = db()->prepare('SELECT day FROM staff_lunch_selections WHERE user_id = ? AND week_start = ? AND wants_lunch = 1');
+    $stmt->execute([$userId, $weekStart]);
+    return array_fill_keys($stmt->fetchAll(PDO::FETCH_COLUMN), true);
+}
+
+/** Same as save_lunch_selection(), but for an admin/teacher ordering lunch for themselves. */
+function save_staff_lunch_selection(int $userId, string $weekStart, string $day, bool $wantsLunch, string $mealSnapshot): void
+{
+    $stmt = db()->prepare(
+        'INSERT INTO staff_lunch_selections (user_id, week_start, day, wants_lunch, meal_option, updated_at)
+         VALUES (?, ?, ?, ?, ?, datetime(\'now\'))
+         ON CONFLICT(user_id, week_start, day) DO UPDATE SET wants_lunch = excluded.wants_lunch, meal_option = excluded.meal_option, updated_at = excluded.updated_at'
+    );
+    $stmt->execute([$userId, $weekStart, $day, $wantsLunch ? 1 : 0, $mealSnapshot]);
+}
+
+/**
+ * For one week: per day, that day's menu and the list of names (children
+ * and staff) who are opted in for lunch. Used by the admin/teacher
+ * "Přehled obědů" overview.
+ */
+function lunch_orders_overview(string $weekStart): array
+{
+    $dates = week_day_dates($weekStart);
+    $menus = menus_for_week($weekStart);
+
+    $overview = [];
+    foreach (LUNCH_DAYS as $code => $label) {
+        $overview[$code] = [
+            'label' => $label,
+            'date' => $dates[$code],
+            'menu' => $menus[$dates[$code]] ?? null,
+            'orders' => [],
+        ];
+    }
+
+    $stmt = db()->prepare(
+        'SELECT ls.day, c.name AS person_name
+         FROM lunch_selections ls
+         JOIN children c ON c.id = ls.child_id
+         WHERE ls.week_start = ? AND ls.wants_lunch = 1
+         ORDER BY c.first_name, c.last_name'
+    );
+    $stmt->execute([$weekStart]);
+    foreach ($stmt->fetchAll() as $row) {
+        $overview[$row['day']]['orders'][] = $row['person_name'];
+    }
+
+    $stmt = db()->prepare(
+        "SELECT sls.day, trim(u.first_name || ' ' || u.last_name) AS person_name
+         FROM staff_lunch_selections sls
+         JOIN users u ON u.id = sls.user_id
+         WHERE sls.week_start = ? AND sls.wants_lunch = 1
+         ORDER BY u.first_name, u.last_name"
+    );
+    $stmt->execute([$weekStart]);
+    foreach ($stmt->fetchAll() as $row) {
+        $overview[$row['day']]['orders'][] = $row['person_name'] . ' (lektor/ka)';
+    }
+
+    return $overview;
+}
+
+/**
+ * Total ordered lunches per person (children and staff) within the
+ * calendar month containing $monthDate, keyed by display name — for an
+ * admin/teacher to use as a billing reference. A lunch_selections row
+ * only records a week_start + day code, not the exact date, so this
+ * resolves each row's actual date in PHP and filters by month there
+ * rather than in SQL.
+ */
+function monthly_lunch_totals(string $monthDate): array
+{
+    $monthStart = (new DateTimeImmutable($monthDate))->modify('first day of this month')->format('Y-m-d');
+    $monthEnd = (new DateTimeImmutable($monthDate))->modify('last day of this month')->format('Y-m-d');
+
+    $totals = [];
+    $tally = function (array $rows) use (&$totals, $monthStart, $monthEnd) {
+        foreach ($rows as $row) {
+            $date = week_day_dates($row['week_start'])[$row['day']];
+            if ($date >= $monthStart && $date <= $monthEnd) {
+                $totals[$row['person_name']] = ($totals[$row['person_name']] ?? 0) + 1;
+            }
+        }
+    };
+
+    $tally(db()->query(
+        'SELECT ls.week_start, ls.day, c.name AS person_name
+         FROM lunch_selections ls
+         JOIN children c ON c.id = ls.child_id
+         WHERE ls.wants_lunch = 1'
+    )->fetchAll());
+
+    $tally(db()->query(
+        "SELECT sls.week_start, sls.day, trim(u.first_name || ' ' || u.last_name) || ' (lektor/ka)' AS person_name
+         FROM staff_lunch_selections sls
+         JOIN users u ON u.id = sls.user_id
+         WHERE sls.wants_lunch = 1"
+    )->fetchAll());
+
+    ksort($totals, SORT_NATURAL | SORT_FLAG_CASE);
+    return $totals;
+}

@@ -193,6 +193,19 @@ function migrate(PDO $pdo): void
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )");
 
+    // Mirrors lunch_selections, but for an admin/teacher ordering lunch
+    // for themselves rather than for a child.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS staff_lunch_selections (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        week_start TEXT NOT NULL,
+        day TEXT NOT NULL CHECK(day IN ('po','ut','st','ct','pa')),
+        wants_lunch INTEGER NOT NULL DEFAULT 0,
+        meal_option TEXT NOT NULL,
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE(user_id, week_start, day)
+    )");
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS news (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
