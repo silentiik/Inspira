@@ -351,6 +351,7 @@ require_once __DIR__ . '/includes/header.php';
                 <?php endif; ?>
             </div>
           <?php endforeach; ?>
+          <div class="pagination" data-news-pagination></div>
         </div>
 
         <?php if ($user['role'] === 'parent'): ?>

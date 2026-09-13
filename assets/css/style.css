@@ -1110,6 +1110,7 @@ img { max-width: 100%; display: block; }
 .news-board-header .news-board-title { color: #fff; }
 .news-board-header .hint-text { color: rgba(255, 255, 255, 0.9); text-align: center; }
 .news-item { scroll-margin-top: calc(var(--header-height) + 20px); }
+.news-item.is-hidden { display: none; }
 .news-item h4 { margin-bottom: 4px; font-size: 1.15rem; }
 .news-meta { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 8px; }
 .news-item-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }

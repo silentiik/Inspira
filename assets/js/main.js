@@ -183,6 +183,64 @@
     });
   }
 
+  // Paginate the news board, 10 posts per page — same numbered
+  // ‹ 1 2 3 › control used for the admin account/children lists.
+  var newsPagination = document.querySelector('[data-news-pagination]');
+  if (newsPagination) {
+    var newsItems = Array.prototype.slice.call(document.querySelectorAll('.news-item'));
+    var newsPageSize = 10;
+    var newsCurrentPage = 1;
+
+    // If we've been redirected to a specific post's anchor (pinning,
+    // editing), start on the page that actually contains it instead of
+    // always defaulting to page 1 and hiding it.
+    if (location.hash.indexOf('#news-') === 0) {
+      var targetIndex = newsItems.findIndex(function (item) { return '#' + item.id === location.hash; });
+      if (targetIndex !== -1) {
+        newsCurrentPage = Math.floor(targetIndex / newsPageSize) + 1;
+      }
+    }
+
+    var renderNewsPage = function () {
+      var totalPages = Math.max(1, Math.ceil(newsItems.length / newsPageSize));
+      newsCurrentPage = Math.min(newsCurrentPage, totalPages);
+      var start = (newsCurrentPage - 1) * newsPageSize;
+      var end = start + newsPageSize;
+
+      newsItems.forEach(function (item, i) {
+        item.classList.toggle('is-hidden', i < start || i >= end);
+      });
+
+      newsPagination.innerHTML = '';
+      if (totalPages <= 1) return;
+
+      var makeNewsPageBtn = function (label, page, opts) {
+        opts = opts || {};
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'page-btn' + (opts.active ? ' is-active' : '');
+        btn.textContent = label;
+        if (opts.disabled) btn.disabled = true;
+        if (!opts.disabled && !opts.active) {
+          btn.addEventListener('click', function () {
+            newsCurrentPage = page;
+            renderNewsPage();
+            newsPagination.scrollIntoView({ block: 'nearest' });
+          });
+        }
+        return btn;
+      };
+
+      newsPagination.appendChild(makeNewsPageBtn('‹', newsCurrentPage - 1, { disabled: newsCurrentPage === 1 }));
+      for (var p = 1; p <= totalPages; p++) {
+        newsPagination.appendChild(makeNewsPageBtn(String(p), p, { active: p === newsCurrentPage }));
+      }
+      newsPagination.appendChild(makeNewsPageBtn('›', newsCurrentPage + 1, { disabled: newsCurrentPage === totalPages }));
+    };
+
+    renderNewsPage();
+  }
+
   var toggle = document.querySelector('.nav-toggle');
   var navLinks = document.querySelector('.nav-links');
 
