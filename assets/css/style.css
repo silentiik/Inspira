@@ -275,9 +275,6 @@ img { max-width: 100%; display: block; }
 .nav-account-name {
   font-weight: 700;
   white-space: nowrap;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .nav-account .dropdown { right: 0; left: auto; min-width: 180px; }
@@ -332,7 +329,6 @@ img { max-width: 100%; display: block; }
     height: 1px;
     margin: 10px 4px;
   }
-  .nav-account-name { max-width: none; }
   .nav-account .dropdown { right: auto; left: 0; }
   /* The pill (content-width, 999px radius) only reads well as a single
      row; expanded on mobile, the static dropdown below it is full-width,
