@@ -1272,6 +1272,7 @@ img { max-width: 100%; display: block; }
   margin: 0;
   border-radius: 50%;
   border: 2px solid var(--color-border);
+  background: var(--color-surface);
   cursor: pointer;
   position: relative;
 }
