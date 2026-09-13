@@ -12,13 +12,13 @@ $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
-    $email = trim((string) ($_POST['email'] ?? ''));
+    $identifier = trim((string) ($_POST['identifier'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
 
-    if ($email === '' || $password === '') {
-        $errors[] = 'Vyplňte prosím e-mail i heslo.';
+    if ($identifier === '' || $password === '') {
+        $errors[] = 'Vyplňte prosím e-mail (nebo uživatelské jméno) i heslo.';
     } else {
-        $result = attempt_login($email, $password);
+        $result = attempt_login($identifier, $password);
         if (is_array($result)) {
             log_in_user((int) $result['id']);
             header('Location: /dashboard.php');
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = match ($result) {
             'locked' => 'Účet je dočasně uzamčen po několika neúspěšných pokusech. Zkuste to prosím za 15 minut, nebo si obnovte heslo.',
             'inactive' => 'Tento účet je deaktivovaný. Kontaktujte prosím centrum.',
-            default => 'Nesprávný e-mail nebo heslo.',
+            default => 'Nesprávný e-mail, uživatelské jméno nebo heslo.',
         };
     }
 }
@@ -55,8 +55,8 @@ require_once __DIR__ . '/../includes/header.php';
           <form method="post" action="/auth/login.php">
             <?= csrf_field() ?>
             <div class="field">
-              <label for="email">E-mail</label>
-              <input type="email" id="email" name="email" required autofocus>
+              <label for="identifier">E-mail nebo uživatelské jméno</label>
+              <input type="text" id="identifier" name="identifier" required autofocus>
             </div>
             <div class="field">
               <label for="password">Heslo</label>

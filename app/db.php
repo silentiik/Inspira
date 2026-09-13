@@ -63,6 +63,13 @@ function migrate(PDO $pdo): void
     // app just treats NULL the same as 'female' when rendering.
     ensure_column($pdo, 'users', 'gender', "gender TEXT CHECK(gender IN ('male','female'))");
     ensure_column($pdo, 'users', 'phone', 'phone TEXT');
+    // Optional alternate login handle — most accounts leave this NULL
+    // and sign in with their email. A partial unique index (rather than
+    // a UNIQUE column constraint, which SQLite's ALTER TABLE ADD COLUMN
+    // doesn't support) enforces uniqueness only among the rows that
+    // actually set one.
+    ensure_column($pdo, 'users', 'username', 'username TEXT');
+    $pdo->exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username) WHERE username IS NOT NULL');
     $unmigrated = $pdo->query("SELECT id, name FROM users WHERE first_name = '' AND name != ''")->fetchAll();
     foreach ($unmigrated as $row) {
         $parts = explode(' ', trim((string) $row['name']), 2);

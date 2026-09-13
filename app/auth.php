@@ -60,13 +60,18 @@ function require_role(array $roles): array
 
 /**
  * Verifies credentials, applying a per-account lockout after repeated
- * failures. Returns the user row on success, or a string error code on
- * failure: 'invalid', 'locked', or 'inactive'.
+ * failures. $identifier may be either the account's email or its
+ * (optional) username — usernames are restricted to a character set
+ * that excludes '@', so one can never equal a valid email, and matching
+ * either column this way can never resolve to the wrong account.
+ * Returns the user row on success, or a string error code on failure:
+ * 'invalid', 'locked', or 'inactive'.
  */
-function attempt_login(string $email, string $password)
+function attempt_login(string $identifier, string $password)
 {
-    $stmt = db()->prepare('SELECT * FROM users WHERE email = ?');
-    $stmt->execute([strtolower(trim($email))]);
+    $identifier = trim($identifier);
+    $stmt = db()->prepare('SELECT * FROM users WHERE email = ? OR (username IS NOT NULL AND LOWER(username) = LOWER(?))');
+    $stmt->execute([strtolower($identifier), $identifier]);
     $user = $stmt->fetch();
 
     if (!$user) {
