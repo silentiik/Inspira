@@ -1,5 +1,21 @@
 // Shared site behaviour: mobile nav, dropdown-on-tap, back-to-top button.
 (function () {
+  // Re-align to a pinned/unpinned post (dashboard.php redirects to
+  // #news-<id>) once webfonts and images have actually finished loading.
+  // The font-swap reflow and any image without known dimensions both
+  // shift page height after the browser's initial anchor scroll, which
+  // otherwise shows up as the page jumping a second time.
+  if (location.hash.indexOf('#news-') === 0) {
+    var scrollTarget = document.querySelector(location.hash);
+    if (scrollTarget) {
+      var realign = function () { scrollTarget.scrollIntoView({ block: 'start' }); };
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(realign);
+      }
+      window.addEventListener('load', realign);
+    }
+  }
+
   // Dismiss a flash message (success/error banner) via its × button.
   document.querySelectorAll('.alert-close').forEach(function (btn) {
     btn.addEventListener('click', function () {
