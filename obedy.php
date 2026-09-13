@@ -10,21 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
     $action = (string) ($_POST['action'] ?? '');
 
-    if ($action === 'add_child' && $user['role'] === 'parent') {
-        $firstName = trim((string) ($_POST['child_first_name'] ?? ''));
-        $lastName = trim((string) ($_POST['child_last_name'] ?? ''));
-        $program = (string) ($_POST['child_program'] ?? '');
-        $dateOfBirth = (string) ($_POST['child_date_of_birth'] ?? '');
-        if ($firstName !== '' && $lastName !== '' && in_array($program, ['inspirka', 'domskolaci'], true)) {
-            add_child([(int) $user['id']], $firstName, $lastName, $program, $dateOfBirth ?: null);
-            flash_set('success', 'Dítě bylo přidáno.');
-        } else {
-            flash_set('error', 'Zadejte prosím jméno, příjmení a program dítěte.');
-        }
-        header('Location: /obedy.php');
-        exit;
-    }
-
     if ($action === 'save_lunch' && $user['role'] === 'parent') {
         $childId = (int) ($_POST['child_id'] ?? 0);
         if (child_belongs_to($childId, (int) $user['id'])) {
@@ -62,7 +47,7 @@ require_once __DIR__ . '/includes/header.php';
           <h3 class="mt-0">🍽️ Výběr obědů na týden od <?= htmlspecialchars(date('j. n. Y', strtotime($nextWeek)), ENT_QUOTES, 'UTF-8') ?></h3>
 
           <?php if (empty($children)): ?>
-            <p class="hint-text"><?= $user['role'] === 'parent' ? 'Nejprve přidejte dítě, abyste mohli vybírat obědy.' : 'Žádné děti k zobrazení.' ?></p>
+            <p class="hint-text"><?= $user['role'] === 'parent' ? 'Zatím k vám není přiřazené žádné dítě. Kontaktujte prosím centrum.' : 'Žádné děti k zobrazení.' ?></p>
           <?php endif; ?>
 
           <?php foreach ($children as $child): ?>
@@ -88,38 +73,6 @@ require_once __DIR__ . '/includes/header.php';
               <button type="submit" class="btn btn--primary btn--block" style="margin-top:14px;">Uložit výběr pro <?= htmlspecialchars($child['name'], ENT_QUOTES, 'UTF-8') ?></button>
             </form>
           <?php endforeach; ?>
-
-          <?php if ($user['role'] === 'parent'): ?>
-            <h4>Přidat dítě</h4>
-            <form method="post" action="/obedy.php">
-              <?= csrf_field() ?>
-              <input type="hidden" name="action" value="add_child">
-              <div class="field-row">
-                <div class="field">
-                  <label for="child_first_name">Jméno dítěte</label>
-                  <input type="text" id="child_first_name" name="child_first_name" required>
-                </div>
-                <div class="field">
-                  <label for="child_last_name">Příjmení dítěte</label>
-                  <input type="text" id="child_last_name" name="child_last_name" required>
-                </div>
-              </div>
-              <div class="field-row">
-                <div class="field">
-                  <label for="child_date_of_birth">Datum narození</label>
-                  <input type="date" id="child_date_of_birth" name="child_date_of_birth">
-                </div>
-                <div class="field">
-                  <label for="child_program">Program</label>
-                  <select id="child_program" name="child_program" required>
-                    <option value="inspirka">INSPIRKA</option>
-                    <option value="domskolaci">Domškolácká akademie</option>
-                  </select>
-                </div>
-              </div>
-              <button type="submit" class="btn btn--outline">Přidat dítě</button>
-            </form>
-          <?php endif; ?>
         </div>
       </div>
     </div>
