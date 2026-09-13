@@ -1050,6 +1050,9 @@ img { max-width: 100%; display: block; }
 @media (max-width: 900px) { .portal-grid { grid-template-columns: 1fr; } }
 
 .news-board-title { font-size: 1.5rem; }
+.news-board-header { background: var(--color-primary); }
+.news-board-header .news-board-title { color: #fff; }
+.news-board-header .hint-text { color: rgba(255, 255, 255, 0.9); text-align: center; }
 .news-item { scroll-margin-top: calc(var(--header-height) + 20px); }
 .news-item h4 { margin-bottom: 4px; }
 .news-meta { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 8px; }
