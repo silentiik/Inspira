@@ -1294,6 +1294,7 @@ img { max-width: 100%; display: block; }
 .lunch-day-meal-input {
   flex: 1;
   padding: 8px 12px;
+  margin-left: -13.5px; /* border + padding-left, so the text lines up with .lunch-day-meal's text on the other tab */
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
