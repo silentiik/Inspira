@@ -54,8 +54,8 @@
   <div class="modal-box" role="alertdialog" aria-modal="true">
     <p class="modal-message">Změnili jste již zadané jídlo</p>
     <div class="modal-actions">
-      <button type="button" class="btn btn--primary btn--sm" data-menu-change-reset>Změna jídla</button>
-      <button type="button" class="btn btn--primary btn--sm" data-menu-change-text-only>Pouze úprava textu</button>
+      <button type="button" class="btn btn--danger btn--sm" data-menu-change-reset>Změna jídla</button>
+      <button type="button" class="btn btn--danger btn--sm" data-menu-change-text-only>Pouze úprava textu</button>
       <button type="button" class="btn btn--outline btn--sm" data-menu-change-cancel>Zrušit</button>
     </div>
   </div>
