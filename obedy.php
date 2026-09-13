@@ -28,6 +28,12 @@ function resolve_view(string $requested): string
     return in_array($requested, ['vyber', 'nastaveni', 'prehled'], true) ? $requested : 'vyber';
 }
 
+/** The month browsed on Prehled obedu ('Y-m'), independent of the viewed week — defaults to the current calendar month, not "next week"'s month. */
+function resolve_viewed_month(string $requested): string
+{
+    return preg_match('/^\d{4}-\d{2}$/', $requested) ? $requested : (new DateTimeImmutable('now'))->format('Y-m');
+}
+
 const CZECH_MONTHS = [
     1 => 'Leden', 2 => 'Únor', 3 => 'Březen', 4 => 'Duben', 5 => 'Květen', 6 => 'Červen',
     7 => 'Červenec', 8 => 'Srpen', 9 => 'Září', 10 => 'Říjen', 11 => 'Listopad', 12 => 'Prosinec',
@@ -164,8 +170,13 @@ $nextWeek = $weekStartDt->modify('+7 days')->format('Y-m-d');
 
 if ($canEditMenu && $view === 'prehled') {
     $weekOverview = lunch_orders_overview($viewedWeek);
-    $monthlyRoster = monthly_lunch_roster($viewedWeek);
-    $overviewMonthLabel = CZECH_MONTHS[(int) $weekStartDt->format('n')] . ' ' . $weekStartDt->format('Y');
+
+    $viewedMonth = resolve_viewed_month((string) ($_GET['month'] ?? ''));
+    $monthStartDt = new DateTimeImmutable($viewedMonth . '-01');
+    $prevMonth = $monthStartDt->modify('-1 month')->format('Y-m');
+    $nextMonth = $monthStartDt->modify('+1 month')->format('Y-m');
+    $overviewMonthLabel = CZECH_MONTHS[(int) $monthStartDt->format('n')] . ' ' . $monthStartDt->format('Y');
+    $monthlyRoster = monthly_lunch_roster($viewedMonth . '-01');
 }
 
 $pageTitle = 'Obědy | INSPIRA';
@@ -191,7 +202,14 @@ require_once __DIR__ . '/includes/header.php';
 
         <?php if ($view === 'prehled' && $canEditMenu): ?>
           <div class="form-card">
-            <h3 class="overview-banner">Měsíční přehled — <?= htmlspecialchars($overviewMonthLabel, ENT_QUOTES, 'UTF-8') ?></h3>
+            <h3 class="overview-banner">
+              <span>Měsíční přehled</span>
+              <span class="overview-banner-month-nav">
+                <a href="/obedy.php?week=<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>&view=prehled&month=<?= htmlspecialchars($prevMonth, ENT_QUOTES, 'UTF-8') ?>" class="page-btn" aria-label="Předchozí měsíc">‹</a>
+                <span><?= htmlspecialchars($overviewMonthLabel, ENT_QUOTES, 'UTF-8') ?></span>
+                <a href="/obedy.php?week=<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>&view=prehled&month=<?= htmlspecialchars($nextMonth, ENT_QUOTES, 'UTF-8') ?>" class="page-btn" aria-label="Další měsíc">›</a>
+              </span>
+            </h3>
             <div class="list-toolbar" data-overview-toolbar>
               <input type="text" class="list-search" placeholder="Hledat podle jména…" data-overview-search autocomplete="off">
               <div class="list-controls">
