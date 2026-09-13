@@ -212,13 +212,19 @@ require_once __DIR__ . '/includes/header.php';
                 <?php $previousCategory = null; ?>
                 <?php foreach ($monthlyRoster as $entry): ?>
                   <?php $isNewGroup = $previousCategory !== null && $entry['category'] !== $previousCategory; $previousCategory = $entry['category']; ?>
-                  <tr<?= $isNewGroup ? ' class="overview-table-group-start"' : '' ?> data-overview-row data-name="<?= htmlspecialchars(mb_strtolower($entry['name']), ENT_QUOTES, 'UTF-8') ?>" data-filter="<?= htmlspecialchars($entry['group_key'], ENT_QUOTES, 'UTF-8') ?>">
+                  <tr<?= $isNewGroup ? ' class="overview-table-group-start"' : '' ?> data-overview-row data-name="<?= htmlspecialchars(mb_strtolower($entry['name']), ENT_QUOTES, 'UTF-8') ?>" data-filter="<?= htmlspecialchars($entry['group_key'], ENT_QUOTES, 'UTF-8') ?>" data-count="<?= (int) $entry['count'] ?>">
                     <td><?= htmlspecialchars($entry['name'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td><?= htmlspecialchars($entry['category'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td><?= (int) $entry['count'] ?></td>
                   </tr>
                 <?php endforeach; ?>
               </tbody>
+              <tfoot>
+                <tr class="overview-table-sum">
+                  <td colspan="2">Celkem</td>
+                  <td data-overview-sum><?= array_sum(array_column($monthlyRoster, 'count')) ?></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         <?php endif; ?>

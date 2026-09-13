@@ -455,21 +455,27 @@
     var table = toolbar.nextElementSibling;
     if (!input || !table) return;
     var rows = Array.prototype.slice.call(table.querySelectorAll('[data-overview-row]'));
+    var sumEl = table.querySelector('[data-overview-sum]');
 
     function render() {
       var query = input.value.trim().toLowerCase();
       var activeChip = chipsWrap ? chipsWrap.querySelector('.filter-chip.is-active') : null;
       var filterValue = activeChip ? activeChip.getAttribute('data-filter-value') : '';
       var visibleCount = 0;
+      var sum = 0;
       rows.forEach(function (row) {
         var name = row.getAttribute('data-name') || '';
         var matchesSearch = name.indexOf(query) !== -1;
         var matchesFilter = !filterValue || row.getAttribute('data-filter') === filterValue;
         var visible = matchesSearch && matchesFilter;
         row.hidden = !visible;
-        if (visible) visibleCount++;
+        if (visible) {
+          visibleCount++;
+          sum += parseInt(row.getAttribute('data-count'), 10) || 0;
+        }
       });
       if (countEl) countEl.textContent = visibleCount + '/' + rows.length;
+      if (sumEl) sumEl.textContent = sum;
     }
 
     input.addEventListener('input', render);

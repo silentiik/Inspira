@@ -1361,6 +1361,13 @@ img { max-width: 100%; display: block; }
 .overview-table th:nth-child(2), .overview-table td:nth-child(2) { width: 30%; }
 .overview-table th:nth-child(3), .overview-table td:nth-child(3) { width: 25%; }
 .overview-table-group-start td { border-top: 2px solid var(--color-primary); }
+.overview-table-sum td {
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  border-bottom: none;
+}
 
 .hint-text { font-size: 0.82rem; color: var(--color-text-muted); }
 
