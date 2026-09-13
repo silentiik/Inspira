@@ -16,6 +16,34 @@
     }
   }
 
+  // Rich-text formatting toolbar for the news post editor (create and
+  // edit forms both use this same markup). document.execCommand is
+  // deprecated but still works fine in every current browser for this
+  // small a feature set, and keeps the page dependency-free.
+  var richtextWraps = document.querySelectorAll('[data-richtext]');
+  if (richtextWraps.length) {
+    try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}
+  }
+  richtextWraps.forEach(function (wrap) {
+    var editor = wrap.querySelector('[data-rt-editor]');
+    var input = wrap.querySelector('[data-rt-input]');
+    if (!editor || !input) return;
+
+    wrap.querySelectorAll('[data-rt-cmd]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        editor.focus();
+        document.execCommand(btn.getAttribute('data-rt-cmd'), false, null);
+      });
+    });
+
+    var form = wrap.closest('form');
+    if (form) {
+      form.addEventListener('submit', function () {
+        input.value = editor.innerHTML;
+      });
+    }
+  });
+
   // Dismiss a flash message (success/error banner) via its × button.
   document.querySelectorAll('.alert-close').forEach(function (btn) {
     btn.addEventListener('click', function () {

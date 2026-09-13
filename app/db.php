@@ -175,6 +175,11 @@ function migrate(PDO $pdo): void
         pinned INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
     )");
+    // 'text' = legacy plain-text body, rendered escaped with nl2br().
+    // 'html' = sanitized rich-text HTML from the formatting toolbar,
+    // rendered as-is. Every post written through the current editor is
+    // 'html'; older rows stay 'text' until next edited.
+    ensure_column($pdo, 'news', 'body_format', "body_format TEXT NOT NULL DEFAULT 'text'");
 
     // Files (photos or documents) attached to a news post. The actual
     // bytes live on disk under DATA_DIR/news-uploads, named randomly —

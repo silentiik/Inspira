@@ -17,8 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $body = trim((string) ($_POST['body'] ?? ''));
         $pinned = !empty($_POST['pinned']);
         $hasFiles = !empty(array_filter(array_merge($_FILES['images']['name'] ?? [], $_FILES['attachments']['name'] ?? [])));
+        $bodyIsEmpty = trim(strip_tags($body)) === '';
 
-        if ($title === '' || ($body === '' && !$hasFiles)) {
+        if ($title === '' || ($bodyIsEmpty && !$hasFiles)) {
             flash_set('error', 'Zadejte prosím titulek a text novinky, nebo k ní alespoň přiložte obrázek či soubor.');
         } else {
             $newsId = create_news((int) $user['id'], $title, $body, $pinned);
@@ -149,7 +150,19 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
                 <div class="field">
                   <label for="body">Text</label>
-                  <textarea id="body" name="body"></textarea>
+                  <div class="richtext" data-richtext>
+                    <div class="richtext-toolbar" role="toolbar" aria-label="Formátování textu">
+                      <button type="button" class="richtext-btn richtext-btn--bold" data-rt-cmd="bold" aria-label="Tučně">B</button>
+                      <button type="button" class="richtext-btn richtext-btn--italic" data-rt-cmd="italic" aria-label="Kurzíva">I</button>
+                      <button type="button" class="richtext-btn richtext-btn--underline" data-rt-cmd="underline" aria-label="Podtržené">U</button>
+                      <span class="richtext-sep"></span>
+                      <button type="button" class="richtext-btn" data-rt-cmd="justifyLeft" aria-label="Zarovnat vlevo"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1" y="3" width="14" height="2"></rect><rect x="1" y="7" width="9" height="2"></rect><rect x="1" y="11" width="12" height="2"></rect></svg></button>
+                      <button type="button" class="richtext-btn" data-rt-cmd="justifyCenter" aria-label="Zarovnat na střed"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1" y="3" width="14" height="2"></rect><rect x="3.5" y="7" width="9" height="2"></rect><rect x="2" y="11" width="12" height="2"></rect></svg></button>
+                      <button type="button" class="richtext-btn" data-rt-cmd="justifyRight" aria-label="Zarovnat vpravo"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1" y="3" width="14" height="2"></rect><rect x="6" y="7" width="9" height="2"></rect><rect x="3" y="11" width="12" height="2"></rect></svg></button>
+                    </div>
+                    <div class="richtext-editor" contenteditable="true" data-rt-editor></div>
+                    <textarea id="body" name="body" class="visually-hidden" data-rt-input></textarea>
+                  </div>
                 </div>
                 <div class="field-row">
                   <div class="field">
@@ -221,11 +234,11 @@ require_once __DIR__ . '/includes/header.php';
                     <span class="news-meta-inline"><?= $metaText ?></span>
                   <?php endif; ?>
                 </div>
-                <?php $hasBody = $item['body'] !== ''; ?>
+                <?php $hasBody = trim(strip_tags($item['body'])) !== ''; ?>
                 <?php if ($hasBody && $images): ?>
                   <div class="news-content-split">
                     <div class="news-text">
-                      <p style="margin:0;"><?= nl2br(htmlspecialchars($item['body'], ENT_QUOTES, 'UTF-8')) ?></p>
+                      <div class="news-body"><?= render_news_body($item) ?></div>
                     </div>
                     <div class="news-images-side">
                       <?php foreach ($images as $image): ?>
@@ -247,7 +260,7 @@ require_once __DIR__ . '/includes/header.php';
                   </div>
                 <?php else: ?>
                   <?php if ($hasBody): ?>
-                    <p style="margin:0;"><?= nl2br(htmlspecialchars($item['body'], ENT_QUOTES, 'UTF-8')) ?></p>
+                    <div class="news-body"><?= render_news_body($item) ?></div>
                   <?php endif; ?>
                   <?php foreach ($images as $image): ?>
                     <a href="/attachment.php?id=<?= (int) $image['id'] ?>" class="news-image-link" data-lightbox>
@@ -276,7 +289,19 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
                     <div class="field">
                       <label for="edit_body_<?= (int) $item['id'] ?>">Text</label>
-                      <textarea id="edit_body_<?= (int) $item['id'] ?>" name="body"><?= htmlspecialchars($item['body'], ENT_QUOTES, 'UTF-8') ?></textarea>
+                      <div class="richtext" data-richtext>
+                        <div class="richtext-toolbar" role="toolbar" aria-label="Formátování textu">
+                          <button type="button" class="richtext-btn richtext-btn--bold" data-rt-cmd="bold" aria-label="Tučně">B</button>
+                          <button type="button" class="richtext-btn richtext-btn--italic" data-rt-cmd="italic" aria-label="Kurzíva">I</button>
+                          <button type="button" class="richtext-btn richtext-btn--underline" data-rt-cmd="underline" aria-label="Podtržené">U</button>
+                          <span class="richtext-sep"></span>
+                          <button type="button" class="richtext-btn" data-rt-cmd="justifyLeft" aria-label="Zarovnat vlevo"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1" y="3" width="14" height="2"></rect><rect x="1" y="7" width="9" height="2"></rect><rect x="1" y="11" width="12" height="2"></rect></svg></button>
+                          <button type="button" class="richtext-btn" data-rt-cmd="justifyCenter" aria-label="Zarovnat na střed"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1" y="3" width="14" height="2"></rect><rect x="3.5" y="7" width="9" height="2"></rect><rect x="2" y="11" width="12" height="2"></rect></svg></button>
+                          <button type="button" class="richtext-btn" data-rt-cmd="justifyRight" aria-label="Zarovnat vpravo"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1" y="3" width="14" height="2"></rect><rect x="6" y="7" width="9" height="2"></rect><rect x="3" y="11" width="12" height="2"></rect></svg></button>
+                        </div>
+                        <div class="richtext-editor" contenteditable="true" data-rt-editor><?= render_news_body($item) ?></div>
+                        <textarea id="edit_body_<?= (int) $item['id'] ?>" name="body" class="visually-hidden" data-rt-input><?= htmlspecialchars(render_news_body($item), ENT_QUOTES, 'UTF-8') ?></textarea>
+                      </div>
                     </div>
                     <?php if ($attachments): ?>
                       <div class="field">

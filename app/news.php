@@ -22,21 +22,105 @@ function all_news(): array
     )->fetchAll();
 }
 
+/**
+ * Renders a post's body for output: already-sanitized HTML as-is for
+ * posts written through the formatting toolbar, or escaped + nl2br()
+ * for older plain-text posts that predate it. Safe to echo directly in
+ * either case — used both for display and to preload the edit form's
+ * rich-text editor.
+ */
+function render_news_body(array $item): string
+{
+    if (($item['body_format'] ?? 'text') === 'html') {
+        return $item['body'];
+    }
+    return nl2br(htmlspecialchars($item['body'], ENT_QUOTES, 'UTF-8'));
+}
+
+/**
+ * Strips a rich-text post body down to a small safe HTML allowlist
+ * (b/strong, i/em, u, p with only a text-align style) before it's ever
+ * stored. The formatting toolbar only ever produces these tags — this
+ * exists so a forged request (or a stray browser quirk) can't smuggle
+ * in a script tag or an event-handler attribute.
+ */
+function sanitize_news_body_html(string $html): string
+{
+    $html = trim($html);
+    if ($html === '') {
+        return '';
+    }
+
+    $allowedTags = ['p', 'br', 'b', 'strong', 'i', 'em', 'u'];
+
+    $doc = new DOMDocument();
+    libxml_use_internal_errors(true);
+    $doc->loadHTML(
+        '<?xml encoding="utf-8"?><div>' . $html . '</div>',
+        LIBXML_NOERROR | LIBXML_NOWARNING
+    );
+    libxml_clear_errors();
+
+    $wrapper = $doc->getElementsByTagName('div')->item(0);
+    if ($wrapper === null) {
+        return '';
+    }
+
+    $sanitizeChildren = function (DOMNode $parent) use (&$sanitizeChildren, $allowedTags) {
+        foreach (iterator_to_array($parent->childNodes) as $child) {
+            if ($child instanceof DOMText) {
+                continue;
+            }
+            if (!($child instanceof DOMElement)) {
+                $parent->removeChild($child);
+                continue;
+            }
+            $tag = strtolower($child->tagName);
+            if (!in_array($tag, $allowedTags, true)) {
+                // Not an allowed tag: clean its contents first, then
+                // unwrap — keep the text, drop the tag around it.
+                $sanitizeChildren($child);
+                while ($child->firstChild) {
+                    $parent->insertBefore($child->firstChild, $child);
+                }
+                $parent->removeChild($child);
+                continue;
+            }
+            foreach (iterator_to_array($child->attributes ?? []) as $attr) {
+                if ($tag === 'p' && $attr->name === 'style'
+                    && preg_match('/^text-align:\s*(left|center|right|justify)\s*;?$/i', trim($attr->value), $m)) {
+                    $child->setAttribute('style', 'text-align: ' . strtolower($m[1]) . ';');
+                    continue;
+                }
+                $child->removeAttribute($attr->name);
+            }
+            $sanitizeChildren($child);
+        }
+    };
+    $sanitizeChildren($wrapper);
+
+    $result = '';
+    foreach (iterator_to_array($wrapper->childNodes) as $child) {
+        $result .= $doc->saveHTML($child);
+    }
+    return trim($result);
+}
+
 /** Returns the new post's id, so attachments can be linked to it. */
 function create_news(int $authorId, string $title, string $body, bool $pinned): int
 {
     $stmt = db()->prepare(
-        'INSERT INTO news (author_id, title, body, pinned) VALUES (?, ?, ?, ?)'
+        "INSERT INTO news (author_id, title, body, body_format, pinned) VALUES (?, ?, ?, 'html', ?)"
     );
-    $stmt->execute([$authorId, $title, $body, $pinned ? 1 : 0]);
+    $stmt->execute([$authorId, $title, sanitize_news_body_html($body), $pinned ? 1 : 0]);
     return (int) db()->lastInsertId();
 }
 
 /** Edits a post's title/text. Pinning is its own toggle_news_pin() action; attachments are untouched. */
 function update_news(int $id, string $title, string $body): void
 {
-    db()->prepare('UPDATE news SET title = ?, body = ? WHERE id = ?')
-        ->execute([$title, $body, $id]);
+    db()->prepare("UPDATE news SET title = ?, body = ?, body_format = 'html' WHERE id = ?")
+        ->execute([$title, sanitize_news_body_html($body), $id]);
 }
 
 function toggle_news_pin(int $id): void
