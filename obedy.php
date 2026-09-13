@@ -84,7 +84,6 @@ $weekDates = week_day_dates($viewedWeek);
 $weekMenus = menus_for_week($viewedWeek);
 $weekStartDt = new DateTimeImmutable($viewedWeek);
 $weekEndDt = $weekStartDt->modify('+4 days');
-$weekNumber = (int) $weekStartDt->format('W');
 $weekPickerValue = $weekStartDt->format('o') . '-W' . $weekStartDt->format('W');
 $monthLabel = week_month_label($weekStartDt, $weekEndDt);
 $prevWeek = $weekStartDt->modify('-7 days')->format('Y-m-d');
@@ -105,15 +104,17 @@ require_once __DIR__ . '/includes/header.php';
       <div class="stack">
         <div class="week-nav">
           <a href="/obedy.php?week=<?= htmlspecialchars($prevWeek, ENT_QUOTES, 'UTF-8') ?>" class="page-btn" aria-label="Předchozí týden">‹</a>
-          <span class="week-nav-label"><?= htmlspecialchars($monthLabel, ENT_QUOTES, 'UTF-8') ?></span>
-          <form method="get" action="/obedy.php" class="week-nav-picker">
-            <input type="week" name="week" value="<?= htmlspecialchars($weekPickerValue, ENT_QUOTES, 'UTF-8') ?>" aria-label="Přejít na týden" data-week-picker>
-          </form>
+          <div class="week-nav-center">
+            <span class="week-nav-label"><?= htmlspecialchars($monthLabel, ENT_QUOTES, 'UTF-8') ?></span>
+            <form method="get" action="/obedy.php" class="week-nav-picker">
+              <input type="week" name="week" value="<?= htmlspecialchars($weekPickerValue, ENT_QUOTES, 'UTF-8') ?>" aria-label="Přejít na týden" data-week-picker>
+            </form>
+          </div>
           <a href="/obedy.php?week=<?= htmlspecialchars($nextWeek, ENT_QUOTES, 'UTF-8') ?>" class="page-btn" aria-label="Další týden">›</a>
         </div>
 
         <div class="form-card news-board-header">
-          <h3 class="mt-0 text-center news-board-title">🍽️ Výběr obědů pro <?= $weekNumber ?>. týden (<?= htmlspecialchars($weekStartDt->format('j. n.'), ENT_QUOTES, 'UTF-8') ?> – <?= htmlspecialchars($weekEndDt->format('j. n. Y'), ENT_QUOTES, 'UTF-8') ?>)</h3>
+          <h3 class="mt-0 text-center news-board-title">🍽️ Výběr obědů <?= htmlspecialchars($weekStartDt->format('j. n.'), ENT_QUOTES, 'UTF-8') ?> – <?= htmlspecialchars($weekEndDt->format('j. n. Y'), ENT_QUOTES, 'UTF-8') ?></h3>
         </div>
 
         <?php if ($canEditMenu): ?>
