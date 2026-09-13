@@ -209,6 +209,12 @@ img { max-width: 100%; display: block; }
 }
 .nav-links a:hover, .nav-links a.is-active { background: var(--color-primary-light); color: var(--color-primary-dark); text-decoration: none; }
 
+/* The "Portál pro rodiče" login link is a real .btn, not a plain nav
+   link — .nav-links a above outranks .btn on specificity, so restore
+   the button's own look here. */
+.nav-links a.btn { display: inline-flex; padding: 9px 18px; color: #fff; }
+.nav-links a.btn:hover { background: var(--color-primary-dark); color: #fff; }
+
 .has-dropdown .dropdown {
   position: absolute;
   top: 110%;

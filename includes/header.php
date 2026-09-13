@@ -95,7 +95,8 @@ function asset_url(string $publicPath): string
           </ul>
         </li>
       <?php else: ?>
-        <li><a href="/auth/login.php"<?= nav_class('login', $activeNav) ?>>Přihlásit se</a></li>
+        <li class="nav-divider" aria-hidden="true"></li>
+        <li><a href="/auth/login.php" class="btn btn--primary btn--sm">Portál pro rodiče</a></li>
       <?php endif; ?>
     </ul>
   </div>
