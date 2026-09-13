@@ -1137,8 +1137,8 @@ img { max-width: 100%; display: block; }
 .news-item { scroll-margin-top: calc(var(--header-height) + 20px); }
 .news-item.is-hidden { display: none; }
 .news-category-marker {
-  background: var(--color-primary);
-  color: #fff;
+  background: var(--color-bg-alt);
+  color: var(--color-primary-dark);
   text-align: center;
   font-weight: 700;
   font-size: 0.85rem;
