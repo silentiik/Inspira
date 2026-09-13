@@ -444,4 +444,47 @@
 
     render();
   });
+
+  // Mesicni prehled roster (Obedy -> Prehled obedu): search by name plus
+  // a group filter chip. It's a short, fixed list, so unlike the
+  // admin/users.php toolbars above there's no pagination to manage.
+  document.querySelectorAll('[data-overview-toolbar]').forEach(function (toolbar) {
+    var input = toolbar.querySelector('[data-overview-search]');
+    var chipsWrap = toolbar.querySelector('[data-overview-filter]');
+    var countEl = toolbar.querySelector('[data-overview-count]');
+    var table = toolbar.nextElementSibling;
+    if (!input || !table) return;
+    var rows = Array.prototype.slice.call(table.querySelectorAll('[data-overview-row]'));
+
+    function render() {
+      var query = input.value.trim().toLowerCase();
+      var activeChip = chipsWrap ? chipsWrap.querySelector('.filter-chip.is-active') : null;
+      var filterValue = activeChip ? activeChip.getAttribute('data-filter-value') : '';
+      var visibleCount = 0;
+      rows.forEach(function (row) {
+        var name = row.getAttribute('data-name') || '';
+        var matchesSearch = name.indexOf(query) !== -1;
+        var matchesFilter = !filterValue || row.getAttribute('data-filter') === filterValue;
+        var visible = matchesSearch && matchesFilter;
+        row.hidden = !visible;
+        if (visible) visibleCount++;
+      });
+      if (countEl) countEl.textContent = visibleCount + '/' + rows.length;
+    }
+
+    input.addEventListener('input', render);
+    if (chipsWrap) {
+      chipsWrap.querySelectorAll('.filter-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          chipsWrap.querySelectorAll('.filter-chip').forEach(function (c) {
+            c.classList.remove('is-active');
+          });
+          chip.classList.add('is-active');
+          render();
+        });
+      });
+    }
+
+    render();
+  });
 })();

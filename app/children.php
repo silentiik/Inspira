@@ -390,6 +390,7 @@ function monthly_lunch_roster(string $monthDate): array
     foreach (db()->query('SELECT id, name, program FROM children ORDER BY first_name, last_name')->fetchAll() as $child) {
         $roster['child:' . $child['id']] = [
             'name' => $child['name'],
+            'group_key' => $child['program'],
             'category' => CHILD_PROGRAMS[$child['program']] ?? $child['program'],
             'count' => 0,
         ];
@@ -400,6 +401,7 @@ function monthly_lunch_roster(string $monthDate): array
     )->fetchAll() as $staff) {
         $roster['staff:' . $staff['id']] = [
             'name' => $staff['name'],
+            'group_key' => 'teacher',
             'category' => 'Lektor/ka',
             'count' => 0,
         ];

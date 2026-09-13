@@ -193,13 +193,26 @@ require_once __DIR__ . '/includes/header.php';
           <div class="form-card">
             <h3 class="mt-0">Měsíční přehled — <?= htmlspecialchars($overviewMonthLabel, ENT_QUOTES, 'UTF-8') ?></h3>
             <p class="hint-text">Počet objednaných obědů za měsíc, ve kterém tento týden začíná — pro snazší vyúčtování rodičům.</p>
+            <div class="list-toolbar" data-overview-toolbar>
+              <input type="text" class="list-search" placeholder="Hledat podle jména…" data-overview-search autocomplete="off">
+              <div class="list-controls">
+                <span class="list-count" data-overview-count></span>
+                <div class="filter-chips" data-overview-filter>
+                  <button type="button" class="filter-chip is-active" data-filter-value="">Vše</button>
+                  <?php foreach (CHILD_PROGRAMS as $programKey => $programLabel): ?>
+                    <button type="button" class="filter-chip" data-filter-value="<?= htmlspecialchars($programKey, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($programLabel, ENT_QUOTES, 'UTF-8') ?></button>
+                  <?php endforeach; ?>
+                  <button type="button" class="filter-chip" data-filter-value="teacher">Lektor/ka</button>
+                </div>
+              </div>
+            </div>
             <table class="overview-table">
               <thead><tr><th>Jméno</th><th>Skupina</th><th>Počet obědů</th></tr></thead>
               <tbody>
                 <?php $previousCategory = null; ?>
                 <?php foreach ($monthlyRoster as $entry): ?>
                   <?php $isNewGroup = $previousCategory !== null && $entry['category'] !== $previousCategory; $previousCategory = $entry['category']; ?>
-                  <tr<?= $isNewGroup ? ' class="overview-table-group-start"' : '' ?>>
+                  <tr<?= $isNewGroup ? ' class="overview-table-group-start"' : '' ?> data-overview-row data-name="<?= htmlspecialchars(mb_strtolower($entry['name']), ENT_QUOTES, 'UTF-8') ?>" data-filter="<?= htmlspecialchars($entry['group_key'], ENT_QUOTES, 'UTF-8') ?>">
                     <td><?= htmlspecialchars($entry['name'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td><?= htmlspecialchars($entry['category'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td><?= (int) $entry['count'] ?></td>
