@@ -799,6 +799,17 @@ img { max-width: 100%; display: block; }
   min-width: 200px;
   text-align: center;
 }
+.week-nav-picker input[type="date"] {
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
 
 .user-row {
   background: var(--color-surface);

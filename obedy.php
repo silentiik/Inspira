@@ -96,6 +96,9 @@ require_once __DIR__ . '/includes/header.php';
         <div class="week-nav">
           <a href="/obedy.php?week=<?= htmlspecialchars($prevWeek, ENT_QUOTES, 'UTF-8') ?>" class="page-btn" aria-label="Předchozí týden">‹</a>
           <span class="week-nav-label"><?= htmlspecialchars($monthLabel, ENT_QUOTES, 'UTF-8') ?></span>
+          <form method="get" action="/obedy.php" class="week-nav-picker">
+            <input type="date" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>" aria-label="Přejít na týden" data-week-picker>
+          </form>
           <a href="/obedy.php?week=<?= htmlspecialchars($nextWeek, ENT_QUOTES, 'UTF-8') ?>" class="page-btn" aria-label="Další týden">›</a>
         </div>
 

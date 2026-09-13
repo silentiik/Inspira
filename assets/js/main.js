@@ -16,6 +16,14 @@
     }
   }
 
+  // Obědy's week-jump date picker: navigate as soon as a date is
+  // chosen, instead of making the user also press a "Go" button.
+  document.querySelectorAll('[data-week-picker]').forEach(function (input) {
+    input.addEventListener('change', function () {
+      if (input.value) input.form.submit();
+    });
+  });
+
   // Rich-text formatting toolbar for the news post editor (create and
   // edit forms both use this same markup). document.execCommand is
   // deprecated but still works fine in every current browser for this
