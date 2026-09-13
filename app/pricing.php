@@ -66,6 +66,13 @@ function add_lunch_price(int $price, string $validFrom, int $updatedBy): void
     $stmt->execute([$price, $validFrom, $updatedBy]);
 }
 
+/** Corrects an existing price period in place (fixing a typo'd amount or date) — unlike add_lunch_price(), this changes history rather than adding to it. */
+function update_lunch_price(int $id, int $price, string $validFrom): void
+{
+    $stmt = db()->prepare('UPDATE lunch_prices SET price = ?, valid_from = ? WHERE id = ?');
+    $stmt->execute([$price, $validFrom, $id]);
+}
+
 /**
  * Every lunch price period, most recent first, each with an explicit
  * 'valid_until' computed from the next (older) row's start date — null
