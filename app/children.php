@@ -236,6 +236,18 @@ function is_week_locked(string $weekStart): bool
 }
 
 /**
+ * True for any week older than last week — the current week, last week,
+ * and every future week stay open regardless of the manual lock. Once a
+ * week ages past that point it's frozen automatically, on top of
+ * whatever an admin/teacher set manually, so nobody has to remember to
+ * lock last month's weeks by hand.
+ */
+function week_is_auto_locked(string $weekStart): bool
+{
+    return $weekStart < week_start('-1 week');
+}
+
+/**
  * Clears the menu (and any lock state) for every day of one week only.
  * Existing lunch_selections / staff_lunch_selections rows — the actual
  * historical choices — are untouched, since billing relies on those, not

@@ -51,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $postView = resolve_view((string) ($_POST['view'] ?? ''));
     $weekDates = week_day_dates($week);
     $redirectTo = '/obedy.php?week=' . $week . '&view=' . $postView;
+    $weekAutoLocked = week_is_auto_locked($week);
 
     // Ownership (child_belongs_to) is what actually gates this, not
     // role — an admin/teacher who happens to be a guardian of their own
@@ -59,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $childId = (int) ($_POST['child_id'] ?? 0);
         if (child_belongs_to($childId, (int) $user['id'])) {
             foreach ($weekDates as $day => $date) {
-                if (is_day_locked($date)) {
+                if ($weekAutoLocked || is_day_locked($date)) {
                     continue; // frozen for billing — leave whatever was already saved
                 }
                 $menuText = menu_for_date($date);
@@ -76,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'save_staff_lunch' && $canEditMenu) {
         foreach ($weekDates as $day => $date) {
-            if (is_day_locked($date)) {
+            if ($weekAutoLocked || is_day_locked($date)) {
                 continue;
             }
             $menuText = menu_for_date($date);
@@ -100,21 +101,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    if ($action === 'clear_week_menu' && $canEditMenu) {
+    if ($action === 'clear_week_menu' && $canEditMenu && !$weekAutoLocked) {
         clear_week_menus($week);
         flash_set('success', 'Jídelníček pro tento týden byl vymazán.');
         header('Location: ' . $redirectTo);
         exit;
     }
 
-    if ($action === 'toggle_week_lock' && $canEditMenu) {
+    if ($action === 'toggle_week_lock' && $canEditMenu && !$weekAutoLocked) {
         set_week_locked($week, !is_week_locked($week), (int) $user['id']);
         flash_set('success', 'Uzamčení týdne bylo změněno.');
         header('Location: ' . $redirectTo);
         exit;
     }
 
-    if ($action === 'toggle_day_lock' && $canEditMenu) {
+    if ($action === 'toggle_day_lock' && $canEditMenu && !$weekAutoLocked) {
         $day = (string) ($_POST['day'] ?? '');
         if (isset($weekDates[$day])) {
             set_day_locked($weekDates[$day], !is_day_locked($weekDates[$day]), (int) $user['id']);
@@ -131,7 +132,9 @@ $view = $canEditMenu ? resolve_view((string) ($_GET['view'] ?? '')) : 'vyber';
 $weekDates = week_day_dates($viewedWeek);
 $weekMenus = menus_for_week($viewedWeek);
 $lockedDays = locked_days_for_week($viewedWeek); // [date => bool] — used on Vyber obedu regardless of role
-$weekLocked = $canEditMenu && is_week_locked($viewedWeek);
+// Anything older than last week is frozen automatically, on top of any manual per-day/week lock.
+$weekAutoLocked = week_is_auto_locked($viewedWeek);
+$weekLocked = $canEditMenu && ($weekAutoLocked || is_week_locked($viewedWeek));
 $weekStartDt = new DateTimeImmutable($viewedWeek);
 $weekEndDt = $weekStartDt->modify('+4 days');
 $weekPickerValue = $weekStartDt->format('o') . '-W' . $weekStartDt->format('W');
@@ -207,14 +210,14 @@ require_once __DIR__ . '/includes/header.php';
                 <input type="hidden" name="action" value="clear_week_menu">
                 <input type="hidden" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>">
                 <input type="hidden" name="view" value="nastaveni">
-                <button type="submit" class="icon-btn icon-btn--danger" aria-label="Vymazat jídelníček pro tento týden" title="Vymazat jídelníček pro tento týden">🗑️</button>
+                <button type="submit" class="icon-btn icon-btn--danger" aria-label="Vymazat jídelníček pro tento týden" title="<?= $weekAutoLocked ? 'Starší týdny jsou automaticky uzamčené a nelze je vymazat' : 'Vymazat jídelníček pro tento týden' ?>"<?= $weekAutoLocked ? ' disabled' : '' ?>>🗑️</button>
               </form>
               <form method="post" action="/obedy.php">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="toggle_week_lock">
                 <input type="hidden" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>">
                 <input type="hidden" name="view" value="nastaveni">
-                <button type="submit" class="icon-btn icon-btn--lock<?= $weekLocked ? ' is-locked' : '' ?>" aria-label="<?= $weekLocked ? 'Odemknout celý týden' : 'Uzamknout celý týden' ?>" title="<?= $weekLocked ? 'Odemknout celý týden' : 'Uzamknout celý týden' ?>"><?= $weekLocked ? '🔒' : '🔓' ?></button>
+                <button type="submit" class="icon-btn icon-btn--lock<?= $weekLocked ? ' is-locked' : '' ?>" aria-label="<?= $weekLocked ? 'Odemknout celý týden' : 'Uzamknout celý týden' ?>" title="<?= $weekAutoLocked ? 'Starší týdny se uzamykají automaticky' : ($weekLocked ? 'Odemknout celý týden' : 'Uzamknout celý týden') ?>"<?= $weekAutoLocked ? ' disabled' : '' ?>><?= $weekLocked ? '🔒' : '🔓' ?></button>
               </form>
             </div>
 
@@ -225,11 +228,11 @@ require_once __DIR__ . '/includes/header.php';
               <input type="hidden" name="view" value="nastaveni">
               <div class="lunch-week">
                 <?php foreach (LUNCH_DAYS as $code => $label): ?>
-                  <?php $isLocked = $lockedDays[$weekDates[$code]] ?? false; ?>
+                  <?php $isLocked = $weekAutoLocked || ($lockedDays[$weekDates[$code]] ?? false); ?>
                   <div class="lunch-day lunch-day--edit has-menu<?= $isLocked ? ' is-locked' : '' ?>">
                     <span class="lunch-day-name"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?><span class="lunch-day-date"><?= htmlspecialchars((new DateTimeImmutable($weekDates[$code]))->format('j. n.'), ENT_QUOTES, 'UTF-8') ?></span></span>
                     <input type="text" name="menu_<?= $code ?>" class="lunch-day-meal-input" aria-label="Jídlo na <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars($weekMenus[$weekDates[$code]] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Zadejte jídlo pro daný den">
-                    <button type="submit" form="lock-day-<?= $code ?>" class="icon-btn icon-btn--lock icon-btn--sm<?= $isLocked ? ' is-locked' : '' ?>" aria-label="<?= $isLocked ? 'Odemknout ' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') : 'Uzamknout ' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>" title="<?= $isLocked ? 'Odemknout tento den' : 'Uzamknout tento den' ?>"><?= $isLocked ? '🔒' : '🔓' ?></button>
+                    <button type="submit" form="lock-day-<?= $code ?>" class="icon-btn icon-btn--lock icon-btn--sm<?= $isLocked ? ' is-locked' : '' ?>" aria-label="<?= $isLocked ? 'Odemknout ' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') : 'Uzamknout ' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>" title="<?= $weekAutoLocked ? 'Starší týdny se uzamykají automaticky' : ($isLocked ? 'Odemknout tento den' : 'Uzamknout tento den') ?>"<?= $weekAutoLocked ? ' disabled' : '' ?>><?= $isLocked ? '🔒' : '🔓' ?></button>
                   </div>
                 <?php endforeach; ?>
               </div>
@@ -290,7 +293,7 @@ require_once __DIR__ . '/includes/header.php';
                     <?php
                       $date = $weekDates[$code];
                       $hasMenu = isset($weekMenus[$date]);
-                      $isLocked = $lockedDays[$date] ?? false;
+                      $isLocked = $weekAutoLocked || ($lockedDays[$date] ?? false);
                       $canChoose = $hasMenu && !$isLocked;
                       $mealText = $weekMenus[$date] ?? 'Jídelníček zatím nebyl nastaven.';
                       $inputId = 'staff_lunch_' . $code;
@@ -330,7 +333,7 @@ require_once __DIR__ . '/includes/header.php';
                     <?php
                       $date = $weekDates[$code];
                       $hasMenu = isset($weekMenus[$date]);
-                      $isLocked = $lockedDays[$date] ?? false;
+                      $isLocked = $weekAutoLocked || ($lockedDays[$date] ?? false);
                       $canChoose = $hasMenu && !$isLocked;
                       $mealText = $weekMenus[$date] ?? 'Jídelníček zatím nebyl nastaven.';
                       $inputId = 'lunch_' . $code . '_' . (int) $child['id'];
