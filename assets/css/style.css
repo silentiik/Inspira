@@ -1042,6 +1042,7 @@ img { max-width: 100%; display: block; }
 .portal-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: start; }
 @media (max-width: 900px) { .portal-grid { grid-template-columns: 1fr; } }
 
+.news-item { scroll-margin-top: calc(var(--header-height) + 20px); }
 .news-item h4 { margin-bottom: 4px; }
 .news-meta { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 8px; }
 .news-item-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
