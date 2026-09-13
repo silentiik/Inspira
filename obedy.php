@@ -90,10 +90,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'save_menu' && $canEditMenu) {
+        // 'meal_change' means the admin/teacher confirmed this is a genuinely
+        // different dish, not just a wording fix — the old choices no longer
+        // apply. Decided per request in the browser (see data-menu-form in
+        // main.js); re-verified here against the actual previous text rather
+        // than trusting which days the client claims changed.
+        $resetChoice = (string) ($_POST['reset_choice'] ?? '');
         foreach ($weekDates as $day => $date) {
             $text = trim((string) ($_POST['menu_' . $day] ?? ''));
-            if ($text !== '') {
-                save_menu_for_date($date, $text, (int) $user['id']);
+            if ($text === '') {
+                continue;
+            }
+            $previousText = menu_for_date($date);
+            save_menu_for_date($date, $text, (int) $user['id']);
+            if ($resetChoice === 'meal_change' && $previousText !== null && $previousText !== $text) {
+                reset_day_selections($week, $day);
             }
         }
         flash_set('success', 'Jídelníček byl uložen.');
@@ -225,7 +236,7 @@ require_once __DIR__ . '/includes/header.php';
               </div>
             </div>
 
-            <form method="post" action="/obedy.php">
+            <form method="post" action="/obedy.php" data-menu-form>
               <?= csrf_field() ?>
               <input type="hidden" name="action" value="save_menu">
               <input type="hidden" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>">

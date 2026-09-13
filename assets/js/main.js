@@ -160,6 +160,61 @@
     });
   }
 
+  // Nastaveni jidelnicku: editing a day that already had a meal typed in
+  // asks whether it's just a wording fix (keep everyone's existing
+  // choice) or a genuinely different dish (reset that day's choices).
+  // A day that had no meal yet always saves straight through.
+  var menuForm = document.querySelector('[data-menu-form]');
+  var menuChangeModal = document.querySelector('[data-menu-change-modal]');
+  if (menuForm && menuChangeModal) {
+    var menuChangeCancel = menuChangeModal.querySelector('[data-menu-change-cancel]');
+    var menuChangeTextOnly = menuChangeModal.querySelector('[data-menu-change-text-only]');
+    var menuChangeReset = menuChangeModal.querySelector('[data-menu-change-reset]');
+
+    function closeMenuChangeModal() {
+      menuChangeModal.hidden = true;
+    }
+
+    function submitMenuFormWithChoice(choice) {
+      var field = document.createElement('input');
+      field.type = 'hidden';
+      field.name = 'reset_choice';
+      field.value = choice;
+      menuForm.appendChild(field);
+      menuForm.dataset.confirmed = 'true';
+      menuForm.submit();
+    }
+
+    menuForm.addEventListener('submit', function (e) {
+      if (menuForm.dataset.confirmed === 'true') return;
+      var changedExistingMeal = false;
+      menuForm.querySelectorAll('.lunch-day-meal-input').forEach(function (input) {
+        if (input.defaultValue !== '' && input.value !== input.defaultValue) {
+          changedExistingMeal = true;
+        }
+      });
+      if (!changedExistingMeal) return; // nothing already-set was edited — save straight through
+      e.preventDefault();
+      menuChangeModal.hidden = false;
+    });
+
+    menuChangeCancel.addEventListener('click', closeMenuChangeModal);
+    menuChangeTextOnly.addEventListener('click', function () {
+      closeMenuChangeModal();
+      submitMenuFormWithChoice('text_only');
+    });
+    menuChangeReset.addEventListener('click', function () {
+      closeMenuChangeModal();
+      submitMenuFormWithChoice('meal_change');
+    });
+    menuChangeModal.addEventListener('click', function (e) {
+      if (e.target === menuChangeModal) closeMenuChangeModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !menuChangeModal.hidden) closeMenuChangeModal();
+    });
+  }
+
   // Lightbox for news pictures: clicking a thumbnail (or a full-size
   // post image) opens it enlarged instead of navigating to the raw file.
   var lightboxModal = document.querySelector('[data-lightbox-modal]');

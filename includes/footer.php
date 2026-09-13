@@ -50,6 +50,17 @@
   </div>
 </div>
 
+<div class="modal-overlay" data-menu-change-modal hidden>
+  <div class="modal-box" role="alertdialog" aria-modal="true">
+    <p class="modal-message">Změnili jste již zadané jídlo</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn--outline btn--sm" data-menu-change-cancel>Zrušit</button>
+      <button type="button" class="btn btn--primary btn--sm" data-menu-change-text-only>Pouze úprava textu</button>
+      <button type="button" class="btn btn--danger btn--sm" data-menu-change-reset>Změna jídla</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay lightbox-overlay" data-lightbox-modal hidden>
   <button type="button" class="lightbox-close" data-lightbox-close aria-label="Zavřít">✕</button>
   <img class="lightbox-image" data-lightbox-image src="" alt="">

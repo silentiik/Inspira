@@ -267,6 +267,18 @@ function reset_week_selections(string $weekStart): void
     db()->prepare('DELETE FROM staff_lunch_selections WHERE week_start = ?')->execute([$weekStart]);
 }
 
+/**
+ * Deletes every child's and staff member's lunch choice for one specific
+ * day of a week — used when a menu day's dish is edited into a genuinely
+ * different meal (as opposed to just fixing a typo), since a choice made
+ * against the old dish no longer reflects what's actually being served.
+ */
+function reset_day_selections(string $weekStart, string $day): void
+{
+    db()->prepare('DELETE FROM lunch_selections WHERE week_start = ? AND day = ?')->execute([$weekStart, $day]);
+    db()->prepare('DELETE FROM staff_lunch_selections WHERE week_start = ? AND day = ?')->execute([$weekStart, $day]);
+}
+
 /** [day_code => true] for the days this child is opted in for lunch, this week. */
 function lunch_selections_for(int $childId, string $weekStart): array
 {
