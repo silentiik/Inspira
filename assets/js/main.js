@@ -10,13 +10,24 @@
 
   // News post edit toggle (dashboard.php): the pencil icon shows/hides
   // that post's inline edit form, highlighting the post while it's open.
+  // Only one post can be edited at a time — opening another one closes
+  // whichever was open first.
   document.querySelectorAll('[data-toggle-edit]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var form = document.getElementById(btn.getAttribute('data-toggle-edit'));
       if (!form) return;
-      form.hidden = !form.hidden;
+      var willOpen = form.hidden;
+
+      document.querySelectorAll('.news-edit-form').forEach(function (otherForm) {
+        if (otherForm === form || otherForm.hidden) return;
+        otherForm.hidden = true;
+        var otherItem = otherForm.closest('.news-item');
+        if (otherItem) otherItem.classList.remove('is-editing');
+      });
+
+      form.hidden = !willOpen;
       var item = form.closest('.news-item');
-      if (item) item.classList.toggle('is-editing', !form.hidden);
+      if (item) item.classList.toggle('is-editing', willOpen);
     });
   });
 

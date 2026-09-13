@@ -236,12 +236,12 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
                     <?php if ($attachments): ?>
                       <div class="field">
-                        <label>Stávající přílohy</label>
-                        <div class="checkbox-list">
+                        <label>Odstranit stávající přílohy</label>
+                        <div class="checkbox-list remove-attachments-list">
                           <?php foreach ($attachments as $att): ?>
                             <label class="checkbox-list-item" for="remove_att_<?= (int) $att['id'] ?>">
                               <input type="checkbox" id="remove_att_<?= (int) $att['id'] ?>" name="remove_attachments[]" value="<?= (int) $att['id'] ?>">
-                              <?= str_starts_with($att['mime_type'], 'image/') ? '🖼️' : '📎' ?> <?= htmlspecialchars($att['original_name'], ENT_QUOTES, 'UTF-8') ?> <span class="hint-text">(odstranit)</span>
+                              <?= str_starts_with($att['mime_type'], 'image/') ? '🖼️' : '📎' ?> <?= htmlspecialchars($att['original_name'], ENT_QUOTES, 'UTF-8') ?>
                             </label>
                           <?php endforeach; ?>
                         </div>

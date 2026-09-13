@@ -593,6 +593,11 @@ img { max-width: 100%; display: block; }
   cursor: pointer;
 }
 .checkbox-list-item input { width: auto; flex-shrink: 0; }
+.remove-attachments-list {
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+}
 .checkbox-list-item.is-hidden { display: none; }
 
 .guardian-picker {
