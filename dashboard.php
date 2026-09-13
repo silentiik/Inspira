@@ -63,7 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     : 'Novinka byla upravena, ale: ' . implode(' ', $uploadErrors)
             );
         }
-        header('Location: /dashboard.php');
+        // Jump back to the same post instead of the top of the page.
+        header('Location: /dashboard.php#news-' . $newsId);
         exit;
     }
 
