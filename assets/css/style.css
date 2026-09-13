@@ -1075,7 +1075,7 @@ img { max-width: 100%; display: block; }
 .news-edit-form {
   margin-top: 28px;
   padding-top: 20px;
-  border-top: 1.5px dashed var(--color-border);
+  border-top: 2px dashed var(--color-primary);
 }
 .news-item.is-pinned { background: var(--color-bg-alt); }
 .news-item.is-editing { background: rgba(242, 184, 114, 0.15); }
