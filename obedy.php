@@ -7,10 +7,37 @@ require_once __DIR__ . '/app/children.php';
 $user = require_login();
 $canEditMenu = in_array($user['role'], ['admin', 'teacher'], true);
 
+/** Normalizes a submitted/queried 'Y-m-d' into that week's Monday, falling back to next week if missing or malformed. */
+function resolve_viewed_week(string $requested): string
+{
+    return preg_match('/^\d{4}-\d{2}-\d{2}$/', $requested) ? week_start($requested) : week_start('next monday');
+}
+
+const CZECH_MONTHS = [
+    1 => 'Leden', 2 => 'Únor', 3 => 'Březen', 4 => 'Duben', 5 => 'Květen', 6 => 'Červen',
+    7 => 'Červenec', 8 => 'Srpen', 9 => 'Září', 10 => 'Říjen', 11 => 'Listopad', 12 => 'Prosinec',
+];
+
+/** "Září 2026" for a week within one month, "Září – Říjen 2026" (or spanning years) when it crosses a boundary. */
+function week_month_label(DateTimeImmutable $start, DateTimeImmutable $end): string
+{
+    $startLabel = CZECH_MONTHS[(int) $start->format('n')];
+    $endLabel = CZECH_MONTHS[(int) $end->format('n')];
+    $startYear = $start->format('Y');
+    $endYear = $end->format('Y');
+    if ($start->format('Y-n') === $end->format('Y-n')) {
+        return "$startLabel $startYear";
+    }
+    if ($startYear === $endYear) {
+        return "$startLabel – $endLabel $startYear";
+    }
+    return "$startLabel $startYear – $endLabel $endYear";
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
     $action = (string) ($_POST['action'] ?? '');
-    $week = week_start('next monday');
+    $week = resolve_viewed_week((string) ($_POST['week'] ?? ''));
     $weekDates = week_day_dates($week);
 
     if ($action === 'save_lunch' && $user['role'] === 'parent') {
@@ -25,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             flash_set('success', 'Výběr obědů byl uložen.');
         }
-        header('Location: /obedy.php');
+        header('Location: /obedy.php?week=' . $week);
         exit;
     }
 
@@ -37,18 +64,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         flash_set('success', 'Jídelníček byl uložen.');
-        header('Location: /obedy.php');
+        header('Location: /obedy.php?week=' . $week);
         exit;
     }
 }
 
 $children = $user['role'] === 'parent' ? children_for_parent((int) $user['id']) : [];
-$nextWeek = week_start('next monday');
-$weekDates = week_day_dates($nextWeek);
-$weekMenus = menus_for_week($nextWeek);
-$weekStartDt = new DateTimeImmutable($nextWeek);
+$viewedWeek = resolve_viewed_week((string) ($_GET['week'] ?? ''));
+$weekDates = week_day_dates($viewedWeek);
+$weekMenus = menus_for_week($viewedWeek);
+$weekStartDt = new DateTimeImmutable($viewedWeek);
 $weekEndDt = $weekStartDt->modify('+4 days');
 $weekNumber = (int) $weekStartDt->format('W');
+$monthLabel = week_month_label($weekStartDt, $weekEndDt);
+$prevWeek = $weekStartDt->modify('-7 days')->format('Y-m-d');
+$nextWeek = $weekStartDt->modify('+7 days')->format('Y-m-d');
 
 $pageTitle = 'Obědy | INSPIRA';
 require_once __DIR__ . '/includes/header.php';
@@ -63,6 +93,12 @@ require_once __DIR__ . '/includes/header.php';
   <section class="section">
     <div class="container">
       <div class="stack">
+        <div class="week-nav">
+          <a href="/obedy.php?week=<?= htmlspecialchars($prevWeek, ENT_QUOTES, 'UTF-8') ?>" class="page-btn" aria-label="Předchozí týden">‹</a>
+          <span class="week-nav-label"><?= htmlspecialchars($monthLabel, ENT_QUOTES, 'UTF-8') ?></span>
+          <a href="/obedy.php?week=<?= htmlspecialchars($nextWeek, ENT_QUOTES, 'UTF-8') ?>" class="page-btn" aria-label="Další týden">›</a>
+        </div>
+
         <div class="form-card news-board-header">
           <h3 class="mt-0 text-center news-board-title">🍽️ Výběr obědů pro <?= $weekNumber ?>. týden (<?= htmlspecialchars($weekStartDt->format('j. n.'), ENT_QUOTES, 'UTF-8') ?> – <?= htmlspecialchars($weekEndDt->format('j. n. Y'), ENT_QUOTES, 'UTF-8') ?>)</h3>
         </div>
@@ -74,6 +110,7 @@ require_once __DIR__ . '/includes/header.php';
             <form method="post" action="/obedy.php">
               <?= csrf_field() ?>
               <input type="hidden" name="action" value="save_menu">
+              <input type="hidden" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>">
               <?php foreach (LUNCH_DAYS as $code => $label): ?>
                 <div class="field">
                   <label for="menu_<?= $code ?>"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?> (<?= htmlspecialchars((new DateTimeImmutable($weekDates[$code]))->format('j. n.'), ENT_QUOTES, 'UTF-8') ?>)</label>
@@ -92,10 +129,11 @@ require_once __DIR__ . '/includes/header.php';
             <?php endif; ?>
 
             <?php foreach ($children as $child): ?>
-              <?php $selections = lunch_selections_for((int) $child['id'], $nextWeek); ?>
+              <?php $selections = lunch_selections_for((int) $child['id'], $viewedWeek); ?>
               <form method="post" action="/obedy.php" style="margin-bottom:24px;">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="save_lunch">
+                <input type="hidden" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>">
                 <input type="hidden" name="child_id" value="<?= (int) $child['id'] ?>">
                 <h4 class="lunch-child-name"><?= htmlspecialchars($child['name'], ENT_QUOTES, 'UTF-8') ?></h4>
                 <div class="lunch-week">

@@ -789,6 +789,17 @@ img { max-width: 100%; display: block; }
 .page-btn.is-active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; cursor: default; }
 .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
+.week-nav { display: flex; align-items: center; justify-content: center; gap: 20px; }
+.week-nav a.page-btn { text-decoration: none; }
+.week-nav-label {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--color-primary-dark);
+  min-width: 200px;
+  text-align: center;
+}
+
 .user-row {
   background: var(--color-surface);
   border-radius: var(--radius-md);
