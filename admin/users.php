@@ -275,6 +275,7 @@ require_once __DIR__ . '/../includes/header.php';
                 <div class="field">
                   <label for="gender">Pohlaví</label>
                   <select id="gender" name="gender">
+                    <option value="">Nevyplněno</option>
                     <option value="female">Žena</option>
                     <option value="male">Muž</option>
                   </select>
@@ -323,6 +324,7 @@ require_once __DIR__ . '/../includes/header.php';
               <div class="field">
                 <label for="child_gender">Pohlaví</label>
                 <select id="child_gender" name="child_gender">
+                  <option value="">Nevyplněno</option>
                   <option value="female">Dívka</option>
                   <option value="male">Chlapec</option>
                 </select>
@@ -438,7 +440,8 @@ require_once __DIR__ . '/../includes/header.php';
                   <div class="field">
                     <label for="gender-<?= (int) $row['id'] ?>">Pohlaví</label>
                     <select id="gender-<?= (int) $row['id'] ?>" name="gender">
-                      <option value="female"<?= $row['gender'] !== 'male' ? ' selected' : '' ?>>Žena</option>
+                      <option value=""<?= $row['gender'] === null ? ' selected' : '' ?>>Nevyplněno</option>
+                      <option value="female"<?= $row['gender'] === 'female' ? ' selected' : '' ?>>Žena</option>
                       <option value="male"<?= $row['gender'] === 'male' ? ' selected' : '' ?>>Muž</option>
                     </select>
                   </div>
@@ -526,7 +529,8 @@ require_once __DIR__ . '/../includes/header.php';
                 <div class="field">
                   <label for="child_gender-<?= (int) $child['id'] ?>">Pohlaví</label>
                   <select id="child_gender-<?= (int) $child['id'] ?>" name="child_gender">
-                    <option value="female"<?= $child['gender'] !== 'male' ? ' selected' : '' ?>>Dívka</option>
+                    <option value=""<?= $child['gender'] === null ? ' selected' : '' ?>>Nevyplněno</option>
+                    <option value="female"<?= $child['gender'] === 'female' ? ' selected' : '' ?>>Dívka</option>
                     <option value="male"<?= $child['gender'] === 'male' ? ' selected' : '' ?>>Chlapec</option>
                   </select>
                 </div>
