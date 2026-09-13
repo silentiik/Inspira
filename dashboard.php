@@ -230,12 +230,14 @@ require_once __DIR__ . '/includes/header.php';
                         </a>
                       <?php endforeach; ?>
                       <?php if ($files): ?>
-                        <div class="news-attachments-heading">Přílohy ke stažení</div>
-                        <ul class="news-attachments">
-                          <?php foreach ($files as $file): ?>
-                            <li><a href="/attachment.php?id=<?= (int) $file['id'] ?>">📎 <?= htmlspecialchars($file['original_name'], ENT_QUOTES, 'UTF-8') ?></a></li>
-                          <?php endforeach; ?>
-                        </ul>
+                        <div class="news-attachments-block">
+                          <div class="news-attachments-heading">Přílohy ke stažení</div>
+                          <ul class="news-attachments">
+                            <?php foreach ($files as $file): ?>
+                              <li><a href="/attachment.php?id=<?= (int) $file['id'] ?>">📎 <?= htmlspecialchars($file['original_name'], ENT_QUOTES, 'UTF-8') ?></a></li>
+                            <?php endforeach; ?>
+                          </ul>
+                        </div>
                       <?php endif; ?>
                     </div>
                   </div>
@@ -249,12 +251,14 @@ require_once __DIR__ . '/includes/header.php';
                     </a>
                   <?php endforeach; ?>
                   <?php if ($files): ?>
-                    <div class="news-attachments-heading">Přílohy ke stažení</div>
-                    <ul class="news-attachments">
-                      <?php foreach ($files as $file): ?>
-                        <li><a href="/attachment.php?id=<?= (int) $file['id'] ?>">📎 <?= htmlspecialchars($file['original_name'], ENT_QUOTES, 'UTF-8') ?></a></li>
-                      <?php endforeach; ?>
-                    </ul>
+                    <div class="news-attachments-block">
+                      <div class="news-attachments-heading">Přílohy ke stažení</div>
+                      <ul class="news-attachments">
+                        <?php foreach ($files as $file): ?>
+                          <li><a href="/attachment.php?id=<?= (int) $file['id'] ?>">📎 <?= htmlspecialchars($file['original_name'], ENT_QUOTES, 'UTF-8') ?></a></li>
+                        <?php endforeach; ?>
+                      </ul>
+                    </div>
                   <?php endif; ?>
                 <?php endif; ?>
                 <?php if ($canPost): ?>
