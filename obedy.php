@@ -27,20 +27,15 @@ const CZECH_MONTHS = [
     7 => 'Červenec', 8 => 'Srpen', 9 => 'Září', 10 => 'Říjen', 11 => 'Listopad', 12 => 'Prosinec',
 ];
 
-/** "Září 2026" for a week within one month, "Září – Říjen 2026" (or spanning years) when it crosses a boundary. */
+/** "Září" for a week within one month, "Září – Říjen" when it crosses a month boundary. The year is shown in the week picker instead. */
 function week_month_label(DateTimeImmutable $start, DateTimeImmutable $end): string
 {
     $startLabel = CZECH_MONTHS[(int) $start->format('n')];
-    $endLabel = CZECH_MONTHS[(int) $end->format('n')];
-    $startYear = $start->format('Y');
-    $endYear = $end->format('Y');
     if ($start->format('Y-n') === $end->format('Y-n')) {
-        return "$startLabel $startYear";
+        return $startLabel;
     }
-    if ($startYear === $endYear) {
-        return "$startLabel – $endLabel $startYear";
-    }
-    return "$startLabel $startYear – $endLabel $endYear";
+    $endLabel = CZECH_MONTHS[(int) $end->format('n')];
+    return "$startLabel – $endLabel";
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -114,7 +109,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
 
         <div class="form-card news-board-header">
-          <h3 class="mt-0 text-center news-board-title">🍽️ Výběr obědů <?= htmlspecialchars($weekStartDt->format('j. n.'), ENT_QUOTES, 'UTF-8') ?> – <?= htmlspecialchars($weekEndDt->format('j. n. Y'), ENT_QUOTES, 'UTF-8') ?></h3>
+          <h3 class="mt-0 text-center news-board-title">🍽️ Výběr obědů <?= htmlspecialchars($weekStartDt->format('j. n.'), ENT_QUOTES, 'UTF-8') ?> – <?= htmlspecialchars($weekEndDt->format('j. n.'), ENT_QUOTES, 'UTF-8') ?></h3>
         </div>
 
         <?php if ($canEditMenu): ?>
