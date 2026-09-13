@@ -110,9 +110,8 @@ require_once __DIR__ . '/includes/header.php';
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="update_contact">
           <div class="field">
-            <label for="username">Uživatelské jméno pro přihlášení</label>
+            <label for="username">Uživatelské jméno pro přihlášení (Nepovinné)</label>
             <input type="text" id="username" name="username" value="<?= htmlspecialchars((string) $user['username'], ENT_QUOTES, 'UTF-8') ?>" placeholder="Nenastaveno" maxlength="32">
-            <span class="hint-text" style="display:block; margin-top:6px;">Nepovinný údaj. Pokud si ho nastavíte, půjde se do portálu přihlásit jím i heslem, místo e-mailem.</span>
           </div>
           <div class="field">
             <label for="email">E-mail</label>
