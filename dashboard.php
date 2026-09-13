@@ -216,11 +216,10 @@ require_once __DIR__ . '/includes/header.php';
                         <button type="submit" class="icon-btn icon-btn--delete" aria-label="Smazat novinku">✕</button>
                       </form>
                     </div>
+                  <?php else: ?>
+                    <span class="news-meta-inline"><?= $metaText ?></span>
                   <?php endif; ?>
                 </div>
-                <?php if (!$canPost): ?>
-                  <div class="news-meta"><?= $metaText ?></div>
-                <?php endif; ?>
                 <?php $hasBody = $item['body'] !== ''; ?>
                 <?php if ($hasBody && $images): ?>
                   <div class="news-content-split">
