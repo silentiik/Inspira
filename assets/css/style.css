@@ -1287,6 +1287,18 @@ img { max-width: 100%; display: block; }
   transform: rotate(45deg);
 }
 
+.lunch-day--edit { cursor: default; }
+.lunch-day-meal-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--color-text);
+}
+.lunch-day-meal-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+
 .obedy-tabs {
   display: flex;
   justify-content: center;

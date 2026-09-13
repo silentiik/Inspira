@@ -146,8 +146,15 @@ require_once __DIR__ . '/includes/header.php';
           <a href="/obedy.php?week=<?= htmlspecialchars($nextWeek, ENT_QUOTES, 'UTF-8') ?>&view=<?= htmlspecialchars($view, ENT_QUOTES, 'UTF-8') ?>" class="page-btn" aria-label="Další týden">›</a>
         </div>
 
+        <?php
+          $bannerLabels = [
+              'vyber' => '🍽️ Výběr obědů',
+              'nastaveni' => '📋 Nastavení jídelníčku',
+              'prehled' => '📊 Přehled obědů',
+          ];
+        ?>
         <div class="form-card news-board-header">
-          <h3 class="mt-0 text-center news-board-title">🍽️ Výběr obědů <?= htmlspecialchars($weekStartDt->format('j. n.'), ENT_QUOTES, 'UTF-8') ?> – <?= htmlspecialchars($weekEndDt->format('j. n.'), ENT_QUOTES, 'UTF-8') ?></h3>
+          <h3 class="mt-0 text-center news-board-title"><?= htmlspecialchars($bannerLabels[$view], ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars($weekStartDt->format('j. n.'), ENT_QUOTES, 'UTF-8') ?> – <?= htmlspecialchars($weekEndDt->format('j. n.'), ENT_QUOTES, 'UTF-8') ?></h3>
         </div>
 
         <?php if ($view === 'nastaveni' && $canEditMenu): ?>
@@ -159,13 +166,17 @@ require_once __DIR__ . '/includes/header.php';
               <input type="hidden" name="action" value="save_menu">
               <input type="hidden" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>">
               <input type="hidden" name="view" value="nastaveni">
-              <?php foreach (LUNCH_DAYS as $code => $label): ?>
-                <div class="field">
-                  <label for="menu_<?= $code ?>"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?> (<?= htmlspecialchars((new DateTimeImmutable($weekDates[$code]))->format('j. n.'), ENT_QUOTES, 'UTF-8') ?>)</label>
-                  <input type="text" id="menu_<?= $code ?>" name="menu_<?= $code ?>" value="<?= htmlspecialchars($weekMenus[$weekDates[$code]] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Např. Polévka + kuřecí řízek s bramborovou kaší">
-                </div>
-              <?php endforeach; ?>
-              <button type="submit" class="btn btn--primary">Uložit jídelníček</button>
+              <div class="lunch-week">
+                <?php foreach (LUNCH_DAYS as $code => $label): ?>
+                  <div class="lunch-day lunch-day--edit">
+                    <span class="lunch-day-name"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?><span class="lunch-day-date"><?= htmlspecialchars((new DateTimeImmutable($weekDates[$code]))->format('j. n.'), ENT_QUOTES, 'UTF-8') ?></span></span>
+                    <input type="text" name="menu_<?= $code ?>" class="lunch-day-meal-input" aria-label="Jídlo na <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars($weekMenus[$weekDates[$code]] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Např. Polévka + kuřecí řízek s bramborovou kaší">
+                  </div>
+                <?php endforeach; ?>
+              </div>
+              <div style="text-align:center; margin-top:14px;">
+                <button type="submit" class="btn btn--primary">Uložit jídelníček</button>
+              </div>
             </form>
           </div>
 
