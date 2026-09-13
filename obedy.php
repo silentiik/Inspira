@@ -132,14 +132,16 @@ require_once __DIR__ . '/includes/header.php';
         <?php endif; ?>
 
         <?php if ($user['role'] === 'parent'): ?>
-          <div class="form-card">
-            <?php if (empty($children)): ?>
+          <?php if (empty($children)): ?>
+            <div class="form-card">
               <p class="hint-text">Zatím k vám není přiřazené žádné dítě. Kontaktujte prosím centrum.</p>
-            <?php endif; ?>
+            </div>
+          <?php endif; ?>
 
-            <?php foreach ($children as $child): ?>
-              <?php $selections = lunch_selections_for((int) $child['id'], $viewedWeek); ?>
-              <form method="post" action="/obedy.php" style="margin-bottom:24px;">
+          <?php foreach ($children as $child): ?>
+            <?php $selections = lunch_selections_for((int) $child['id'], $viewedWeek); ?>
+            <div class="form-card">
+              <form method="post" action="/obedy.php">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="save_lunch">
                 <input type="hidden" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>">
@@ -164,8 +166,8 @@ require_once __DIR__ . '/includes/header.php';
                   <button type="submit" class="btn btn--primary">Uložit výběr</button>
                 </div>
               </form>
-            <?php endforeach; ?>
-          </div>
+            </div>
+          <?php endforeach; ?>
         <?php endif; ?>
       </div>
     </div>
