@@ -173,6 +173,25 @@ function migrate(PDO $pdo): void
         updated_at TEXT NOT NULL DEFAULT (datetime('now')),
         UNIQUE(child_id, week_start, day)
     )");
+    // There's only ever one meal offered per day now (see daily_menus
+    // below) — a parent just opts a child in or out of it. wants_lunch
+    // carries that; meal_option (originally the parent's free-text
+    // choice) is kept only as a snapshot of what was actually offered
+    // when they decided, for the record.
+    $lunchSelectionColumns = $pdo->query('PRAGMA table_info(lunch_selections)')->fetchAll(PDO::FETCH_COLUMN, 1);
+    if (!in_array('wants_lunch', $lunchSelectionColumns, true)) {
+        $pdo->exec('ALTER TABLE lunch_selections ADD COLUMN wants_lunch INTEGER NOT NULL DEFAULT 0');
+        // One-time backfill from the pre-existing rows' free-text choice.
+        $pdo->exec("UPDATE lunch_selections SET wants_lunch = CASE WHEN meal_option != 'Bez oběda' THEN 1 ELSE 0 END");
+    }
+
+    // One shared meal per calendar date, set by an admin/teacher.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS daily_menus (
+        date TEXT PRIMARY KEY,
+        meal_text TEXT NOT NULL,
+        updated_by INTEGER REFERENCES users(id),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS news (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

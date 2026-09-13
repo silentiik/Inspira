@@ -4,12 +4,6 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 
 const LUNCH_DAYS = ['po' => 'Pondělí', 'ut' => 'Úterý', 'st' => 'Středa', 'ct' => 'Čtvrtek', 'pa' => 'Pátek'];
-const LUNCH_OPTIONS = [
-    'Polévka + hlavní jídlo (masité)',
-    'Polévka + hlavní jídlo (bezmasé)',
-    'Polévka + hlavní jídlo (bez lepku)',
-    'Bez oběda',
-];
 
 const CHILD_PROGRAMS = ['inspirka' => 'INSPIRKA', 'domskolaci' => 'Domškolák'];
 
@@ -136,24 +130,66 @@ function week_start(string $date = 'now'): string
     return $dt->modify("-{$offset} days")->format('Y-m-d');
 }
 
-/** [day_code => meal_option] for one child's given week. */
-function lunch_selections_for(int $childId, string $weekStart): array
+/** [day_code => 'Y-m-d'] for the five weekdays of $weekStart (a Monday). */
+function week_day_dates(string $weekStart): array
 {
-    $stmt = db()->prepare('SELECT day, meal_option FROM lunch_selections WHERE child_id = ? AND week_start = ?');
-    $stmt->execute([$childId, $weekStart]);
+    $start = new DateTimeImmutable($weekStart);
+    $dates = [];
+    $offset = 0;
+    foreach (array_keys(LUNCH_DAYS) as $code) {
+        $dates[$code] = $start->modify("+{$offset} days")->format('Y-m-d');
+        $offset++;
+    }
+    return $dates;
+}
+
+/** The one shared meal set for $date, or null if nobody has set it yet. */
+function menu_for_date(string $date): ?string
+{
+    $stmt = db()->prepare('SELECT meal_text FROM daily_menus WHERE date = ?');
+    $stmt->execute([$date]);
+    $value = $stmt->fetchColumn();
+    return $value !== false ? $value : null;
+}
+
+/** [date => meal_text] for every date that has a menu set within [$weekStart, +4 days]. */
+function menus_for_week(string $weekStart): array
+{
+    $end = (new DateTimeImmutable($weekStart))->modify('+4 days')->format('Y-m-d');
+    $stmt = db()->prepare('SELECT date, meal_text FROM daily_menus WHERE date BETWEEN ? AND ? ORDER BY date');
+    $stmt->execute([$weekStart, $end]);
     $result = [];
     foreach ($stmt->fetchAll() as $row) {
-        $result[$row['day']] = $row['meal_option'];
+        $result[$row['date']] = $row['meal_text'];
     }
     return $result;
 }
 
-function save_lunch_selection(int $childId, string $weekStart, string $day, string $mealOption): void
+function save_menu_for_date(string $date, string $mealText, int $updatedBy): void
 {
     $stmt = db()->prepare(
-        'INSERT INTO lunch_selections (child_id, week_start, day, meal_option, updated_at)
-         VALUES (?, ?, ?, ?, datetime(\'now\'))
-         ON CONFLICT(child_id, week_start, day) DO UPDATE SET meal_option = excluded.meal_option, updated_at = excluded.updated_at'
+        'INSERT INTO daily_menus (date, meal_text, updated_by, updated_at)
+         VALUES (?, ?, ?, datetime(\'now\'))
+         ON CONFLICT(date) DO UPDATE SET meal_text = excluded.meal_text, updated_by = excluded.updated_by, updated_at = excluded.updated_at'
     );
-    $stmt->execute([$childId, $weekStart, $day, $mealOption]);
+    $stmt->execute([$date, $mealText, $updatedBy]);
+}
+
+/** [day_code => true] for the days this child is opted in for lunch, this week. */
+function lunch_selections_for(int $childId, string $weekStart): array
+{
+    $stmt = db()->prepare('SELECT day FROM lunch_selections WHERE child_id = ? AND week_start = ? AND wants_lunch = 1');
+    $stmt->execute([$childId, $weekStart]);
+    return array_fill_keys($stmt->fetchAll(PDO::FETCH_COLUMN), true);
+}
+
+/** $mealSnapshot records what was actually on offer when the choice was made, for the record. */
+function save_lunch_selection(int $childId, string $weekStart, string $day, bool $wantsLunch, string $mealSnapshot): void
+{
+    $stmt = db()->prepare(
+        'INSERT INTO lunch_selections (child_id, week_start, day, wants_lunch, meal_option, updated_at)
+         VALUES (?, ?, ?, ?, ?, datetime(\'now\'))
+         ON CONFLICT(child_id, week_start, day) DO UPDATE SET wants_lunch = excluded.wants_lunch, meal_option = excluded.meal_option, updated_at = excluded.updated_at'
+    );
+    $stmt->execute([$childId, $weekStart, $day, $wantsLunch ? 1 : 0, $mealSnapshot]);
 }
