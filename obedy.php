@@ -98,10 +98,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $resetChoice = (string) ($_POST['reset_choice'] ?? '');
         foreach ($weekDates as $day => $date) {
             $text = trim((string) ($_POST['menu_' . $day] ?? ''));
+            $previousText = menu_for_date($date);
             if ($text === '') {
+                // The field was cleared — actually remove the day's menu
+                // instead of silently keeping the old one in place.
+                if ($previousText !== null) {
+                    clear_day_menu($date);
+                    if ($resetChoice === 'meal_change') {
+                        reset_day_selections($week, $day);
+                    }
+                }
                 continue;
             }
-            $previousText = menu_for_date($date);
             save_menu_for_date($date, $text, (int) $user['id']);
             if ($resetChoice === 'meal_change' && $previousText !== null && $previousText !== $text) {
                 reset_day_selections($week, $day);

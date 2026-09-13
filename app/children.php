@@ -255,6 +255,12 @@ function clear_week_menus(string $weekStart): void
     $stmt->execute([$weekStart, $end]);
 }
 
+/** Removes one day's menu (and its lock state) — used when its meal text is edited down to empty and saved. */
+function clear_day_menu(string $date): void
+{
+    db()->prepare('DELETE FROM daily_menus WHERE date = ?')->execute([$date]);
+}
+
 /**
  * Deletes every child's and staff member's lunch choice for one week —
  * called alongside clear_week_menus(), since a stale "yes I want lunch"
