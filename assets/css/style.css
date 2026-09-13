@@ -1296,6 +1296,7 @@ img { max-width: 100%; display: block; }
   padding: 8px 12px;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
+  background: var(--color-surface);
   font-family: inherit;
   font-size: 1rem;
   color: var(--color-text);
