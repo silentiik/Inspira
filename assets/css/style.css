@@ -1290,7 +1290,7 @@ img { max-width: 100%; display: block; }
 }
 
 .lunch-day--edit { cursor: default; }
-.lunch-week-spacer { visibility: hidden; }
+.lunch-day.is-locked { opacity: 0.7; }
 .lunch-day-meal-input {
   flex: 1;
   padding: 8px 12px;
@@ -1303,6 +1303,13 @@ img { max-width: 100%; display: block; }
   color: var(--color-text);
 }
 .lunch-day-meal-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+
+.obedy-menu-toolbar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 14px; }
+.icon-btn--danger:hover { border-color: var(--color-error); color: var(--color-error); }
+.icon-btn--lock.is-locked { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.icon-btn--lock:hover { border-color: var(--color-primary); color: var(--color-primary-dark); }
+.icon-btn--lock.is-locked:hover { color: #fff; }
+.icon-btn--sm { width: 26px; height: 26px; font-size: 0.8rem; flex-shrink: 0; }
 
 .obedy-tabs {
   display: flex;

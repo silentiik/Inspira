@@ -143,16 +143,20 @@ function week_day_dates(string $weekStart): array
     return $dates;
 }
 
-/** The one shared meal set for $date, or null if nobody has set it yet. */
+/**
+ * The one shared meal set for $date, or null if nobody has set it yet.
+ * A blank meal_text (e.g. a day locked before any meal was typed in) also
+ * counts as "not set" — an empty string isn't a real menu.
+ */
 function menu_for_date(string $date): ?string
 {
     $stmt = db()->prepare('SELECT meal_text FROM daily_menus WHERE date = ?');
     $stmt->execute([$date]);
     $value = $stmt->fetchColumn();
-    return $value !== false ? $value : null;
+    return ($value !== false && $value !== '') ? $value : null;
 }
 
-/** [date => meal_text] for every date that has a menu set within [$weekStart, +4 days]. */
+/** [date => meal_text] for every date with a non-blank menu within [$weekStart, +4 days]. */
 function menus_for_week(string $weekStart): array
 {
     $end = (new DateTimeImmutable($weekStart))->modify('+4 days')->format('Y-m-d');
@@ -160,7 +164,9 @@ function menus_for_week(string $weekStart): array
     $stmt->execute([$weekStart, $end]);
     $result = [];
     foreach ($stmt->fetchAll() as $row) {
-        $result[$row['date']] = $row['meal_text'];
+        if ($row['meal_text'] !== '') {
+            $result[$row['date']] = $row['meal_text'];
+        }
     }
     return $result;
 }
@@ -173,6 +179,73 @@ function save_menu_for_date(string $date, string $mealText, int $updatedBy): voi
          ON CONFLICT(date) DO UPDATE SET meal_text = excluded.meal_text, updated_by = excluded.updated_by, updated_at = excluded.updated_at'
     );
     $stmt->execute([$date, $mealText, $updatedBy]);
+}
+
+function is_day_locked(string $date): bool
+{
+    $stmt = db()->prepare('SELECT locked FROM daily_menus WHERE date = ?');
+    $stmt->execute([$date]);
+    $value = $stmt->fetchColumn();
+    return $value !== false && (bool) $value;
+}
+
+/** [date => bool] for every date within [$weekStart, +4 days] that has a daily_menus row. */
+function locked_days_for_week(string $weekStart): array
+{
+    $end = (new DateTimeImmutable($weekStart))->modify('+4 days')->format('Y-m-d');
+    $stmt = db()->prepare('SELECT date, locked FROM daily_menus WHERE date BETWEEN ? AND ?');
+    $stmt->execute([$weekStart, $end]);
+    $result = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $result[$row['date']] = (bool) $row['locked'];
+    }
+    return $result;
+}
+
+/** Creates an (empty) daily_menus row if $date doesn't have one yet, so a day can be locked before any meal is set. */
+function set_day_locked(string $date, bool $locked, int $updatedBy): void
+{
+    $stmt = db()->prepare(
+        "INSERT INTO daily_menus (date, meal_text, locked, updated_by, updated_at)
+         VALUES (?, '', ?, ?, datetime('now'))
+         ON CONFLICT(date) DO UPDATE SET locked = excluded.locked, updated_by = excluded.updated_by, updated_at = excluded.updated_at"
+    );
+    $stmt->execute([$date, $locked ? 1 : 0, $updatedBy]);
+}
+
+function set_week_locked(string $weekStart, bool $locked, int $updatedBy): void
+{
+    foreach (week_day_dates($weekStart) as $date) {
+        set_day_locked($date, $locked, $updatedBy);
+    }
+}
+
+/** True only once every weekday of the week has been individually locked. */
+function is_week_locked(string $weekStart): bool
+{
+    $locked = locked_days_for_week($weekStart);
+    if (count($locked) < count(LUNCH_DAYS)) {
+        return false;
+    }
+    foreach ($locked as $isLocked) {
+        if (!$isLocked) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * Clears the menu (and any lock state) for every day of one week only.
+ * Existing lunch_selections / staff_lunch_selections rows — the actual
+ * historical choices — are untouched, since billing relies on those, not
+ * on daily_menus.
+ */
+function clear_week_menus(string $weekStart): void
+{
+    $end = (new DateTimeImmutable($weekStart))->modify('+4 days')->format('Y-m-d');
+    $stmt = db()->prepare('DELETE FROM daily_menus WHERE date BETWEEN ? AND ?');
+    $stmt->execute([$weekStart, $end]);
 }
 
 /** [day_code => true] for the days this child is opted in for lunch, this week. */

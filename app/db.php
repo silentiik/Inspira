@@ -192,6 +192,9 @@ function migrate(PDO $pdo): void
         updated_by INTEGER REFERENCES users(id),
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )");
+    // Locked days can't be chosen/unchosen on Vyber obedu — lets an
+    // admin/teacher freeze a day (or week) once billing is finalized.
+    ensure_column($pdo, 'daily_menus', 'locked', 'locked INTEGER NOT NULL DEFAULT 0');
 
     // Mirrors lunch_selections, but for an admin/teacher ordering lunch
     // for themselves rather than for a child.
