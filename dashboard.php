@@ -172,7 +172,7 @@ require_once __DIR__ . '/includes/header.php';
                   <button type="submit" class="btn btn--accent">Zveřejnit novinku</button>
                   <div class="field checkbox-field">
                     <input type="checkbox" id="pinned" name="pinned">
-                    <label for="pinned" style="margin:0;">Připnout nahoru</label>
+                    <label for="pinned" style="margin:0;">Připnout příspěvek</label>
                   </div>
                 </div>
               </form>
