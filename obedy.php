@@ -233,7 +233,7 @@ require_once __DIR__ . '/includes/header.php';
                       $mealText = $weekMenus[$date] ?? 'Jídelníček zatím nebyl nastaven.';
                       $inputId = 'staff_lunch_' . $code;
                     ?>
-                    <label class="lunch-day<?= isset($staffSelections[$code]) ? ' is-saved' : '' ?><?= $hasMenu ? '' : ' is-disabled' ?>" for="<?= $inputId ?>">
+                    <label class="lunch-day<?= isset($staffSelections[$code]) ? ' is-saved' : '' ?><?= $hasMenu ? ' has-menu' : ' is-disabled' ?>" for="<?= $inputId ?>">
                       <span class="lunch-day-name"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?><span class="lunch-day-date"><?= htmlspecialchars((new DateTimeImmutable($date))->format('j. n.'), ENT_QUOTES, 'UTF-8') ?></span></span>
                       <span class="lunch-day-meal"><?= htmlspecialchars($mealText, ENT_QUOTES, 'UTF-8') ?></span>
                       <input type="checkbox" id="<?= $inputId ?>" name="lunch_<?= $code ?>" class="lunch-checkbox"<?= isset($staffSelections[$code]) ? ' checked' : '' ?><?= $hasMenu ? '' : ' disabled' ?>>
@@ -271,7 +271,7 @@ require_once __DIR__ . '/includes/header.php';
                       $mealText = $weekMenus[$date] ?? 'Jídelníček zatím nebyl nastaven.';
                       $inputId = 'lunch_' . $code . '_' . (int) $child['id'];
                     ?>
-                    <label class="lunch-day<?= isset($selections[$code]) ? ' is-saved' : '' ?><?= $hasMenu ? '' : ' is-disabled' ?>" for="<?= $inputId ?>">
+                    <label class="lunch-day<?= isset($selections[$code]) ? ' is-saved' : '' ?><?= $hasMenu ? ' has-menu' : ' is-disabled' ?>" for="<?= $inputId ?>">
                       <span class="lunch-day-name"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?><span class="lunch-day-date"><?= htmlspecialchars((new DateTimeImmutable($date))->format('j. n.'), ENT_QUOTES, 'UTF-8') ?></span></span>
                       <span class="lunch-day-meal"><?= htmlspecialchars($mealText, ENT_QUOTES, 'UTF-8') ?></span>
                       <input type="checkbox" id="<?= $inputId ?>" name="lunch_<?= $code ?>" class="lunch-checkbox"<?= isset($selections[$code]) ? ' checked' : '' ?><?= $hasMenu ? '' : ' disabled' ?>>

@@ -1260,6 +1260,7 @@ img { max-width: 100%; display: block; }
 }
 .lunch-day-date { font-weight: 400; font-size: 0.8rem; color: var(--color-text-muted); }
 .lunch-day-meal { flex: 1; color: var(--color-text); }
+.lunch-day.has-menu:not(.is-saved) { background: var(--color-bg-alt); }
 .lunch-day.is-saved { border-color: var(--color-success); background: rgba(111,174,127,0.06); }
 .lunch-day.is-disabled { cursor: not-allowed; opacity: 0.55; }
 .lunch-checkbox:disabled { cursor: not-allowed; }
