@@ -206,6 +206,11 @@ function migrate(PDO $pdo): void
     // rendered as-is. Every post written through the current editor is
     // 'html'; older rows stay 'text' until next edited.
     ensure_column($pdo, 'news', 'body_format', "body_format TEXT NOT NULL DEFAULT 'text'");
+    // Which parents see the post: 'all', or restricted to one program
+    // ('inspirka'/'domskolaci', matching CHILD_PROGRAMS' keys). Existing
+    // posts default to 'all' — the same "everyone sees it" behavior
+    // they already had before categories existed.
+    ensure_column($pdo, 'news', 'category', "category TEXT NOT NULL DEFAULT 'all'");
 
     // Files (photos or documents) attached to a news post. The actual
     // bytes live on disk under DATA_DIR/news-uploads, named randomly —

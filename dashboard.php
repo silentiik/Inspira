@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'post_news' && $canPost) {
         $title = trim((string) ($_POST['title'] ?? ''));
         $body = trim((string) ($_POST['body'] ?? ''));
+        $category = (string) ($_POST['category'] ?? 'all');
         $pinned = !empty($_POST['pinned']);
         $hasFiles = !empty(array_filter(array_merge($_FILES['images']['name'] ?? [], $_FILES['attachments']['name'] ?? [])));
         $bodyIsEmpty = trim(strip_tags($body)) === '';
@@ -21,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($title === '' || ($bodyIsEmpty && !$hasFiles)) {
             flash_set('error', 'Zadejte prosím titulek a text novinky, nebo k ní alespoň přiložte obrázek či soubor.');
         } else {
-            $newsId = create_news((int) $user['id'], $title, $body, $pinned);
+            $newsId = create_news((int) $user['id'], $title, $body, $pinned, $category);
             $uploadErrors = process_news_file_uploads($newsId);
 
             flash_set(
@@ -46,10 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $newsId = (int) ($_POST['news_id'] ?? 0);
         $title = trim((string) ($_POST['title'] ?? ''));
         $body = trim((string) ($_POST['body'] ?? ''));
+        $category = (string) ($_POST['category'] ?? 'all');
         if ($title === '') {
             flash_set('error', 'Zadejte prosím titulek novinky.');
         } else {
-            update_news($newsId, $title, $body);
+            update_news($newsId, $title, $body, $category);
 
             foreach ((array) ($_POST['remove_attachments'] ?? []) as $attachmentId) {
                 remove_news_attachment((int) $attachmentId, $newsId);
@@ -79,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 }
 
-$newsItems = all_news();
+$newsItems = visible_news_for($user, all_news());
 
 $pageTitle = 'Nástěnka | INSPIRA';
 require_once __DIR__ . '/includes/header.php';
@@ -107,9 +109,19 @@ require_once __DIR__ . '/includes/header.php';
               <form method="post" action="/dashboard.php" enctype="multipart/form-data" class="news-create-form">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="post_news">
-                <div class="field">
-                  <label for="title">Titulek</label>
-                  <input type="text" id="title" name="title" required>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="title">Titulek</label>
+                    <input type="text" id="title" name="title" required>
+                  </div>
+                  <div class="field">
+                    <label for="category">Kategorie</label>
+                    <select id="category" name="category">
+                      <?php foreach (NEWS_CATEGORIES as $value => $label): ?>
+                        <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>"<?= $value === 'all' ? ' selected' : '' ?>><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
+                      <?php endforeach; ?>
+                    </select>
+                  </div>
                 </div>
                 <div class="field">
                   <label for="body">Text</label>
@@ -181,6 +193,9 @@ require_once __DIR__ . '/includes/header.php';
               $metaText = htmlspecialchars($item['author_name'], ENT_QUOTES, 'UTF-8') . ' · ' . htmlspecialchars($createdAt->format('j. n. Y H:i'), ENT_QUOTES, 'UTF-8') . ($item['pinned'] ? ' · <strong>Připnuto</strong>' : '');
             ?>
             <div class="form-card news-item<?= $item['pinned'] ? ' is-pinned' : '' ?>" id="news-<?= (int) $item['id'] ?>">
+                <?php if ($canPost): ?>
+                  <div class="news-category-marker"><?= htmlspecialchars(NEWS_CATEGORIES[$item['category']] ?? NEWS_CATEGORIES['all'], ENT_QUOTES, 'UTF-8') ?></div>
+                <?php endif; ?>
                 <div class="news-item-header">
                   <h4><?= $item['pinned'] ? '📌 ' : '' ?><?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?></h4>
                   <?php if ($canPost): ?>
@@ -253,9 +268,19 @@ require_once __DIR__ . '/includes/header.php';
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="edit_news">
                     <input type="hidden" name="news_id" value="<?= (int) $item['id'] ?>">
-                    <div class="field">
-                      <label for="edit_title_<?= (int) $item['id'] ?>">Titulek</label>
-                      <input type="text" id="edit_title_<?= (int) $item['id'] ?>" name="title" value="<?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?>" required>
+                    <div class="field-row">
+                      <div class="field">
+                        <label for="edit_title_<?= (int) $item['id'] ?>">Titulek</label>
+                        <input type="text" id="edit_title_<?= (int) $item['id'] ?>" name="title" value="<?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?>" required>
+                      </div>
+                      <div class="field">
+                        <label for="edit_category_<?= (int) $item['id'] ?>">Kategorie</label>
+                        <select id="edit_category_<?= (int) $item['id'] ?>" name="category">
+                          <?php foreach (NEWS_CATEGORIES as $value => $label): ?>
+                            <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>"<?= $item['category'] === $value ? ' selected' : '' ?>><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
+                          <?php endforeach; ?>
+                        </select>
+                      </div>
                     </div>
                     <div class="field">
                       <label for="edit_body_<?= (int) $item['id'] ?>">Text</label>

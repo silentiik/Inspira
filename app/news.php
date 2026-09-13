@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/children.php';
 
 const NEWS_UPLOAD_DIR = DATA_DIR . '/news-uploads';
 const NEWS_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB per file
@@ -13,6 +14,14 @@ const NEWS_ALLOWED_EXTENSIONS = [
     'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt',
 ];
 
+// Keys match CHILD_PROGRAMS (app/children.php) so a parent's own
+// children's programs can be checked directly against a post's category.
+const NEWS_CATEGORIES = [
+    'all' => 'Všichni',
+    'inspirka' => 'Inspirka',
+    'domskolaci' => 'Domškoláci',
+];
+
 function all_news(): array
 {
     return db()->query(
@@ -20,6 +29,24 @@ function all_news(): array
          FROM news JOIN users ON users.id = news.author_id
          ORDER BY news.pinned DESC, news.created_at DESC"
     )->fetchAll();
+}
+
+/**
+ * Filters $newsItems down to what $user is allowed to see: everything
+ * for admin/teacher, and for a parent, only 'all'-category posts plus
+ * any category matching one of their own children's programs (so a
+ * parent with kids in both programs sees both categories).
+ */
+function visible_news_for(array $user, array $newsItems): array
+{
+    if (in_array($user['role'], ['admin', 'teacher'], true)) {
+        return $newsItems;
+    }
+    $childPrograms = array_unique(array_column(children_for_parent((int) $user['id']), 'program'));
+    return array_values(array_filter(
+        $newsItems,
+        fn ($item) => $item['category'] === 'all' || in_array($item['category'], $childPrograms, true)
+    ));
 }
 
 /**
@@ -119,20 +146,22 @@ function sanitize_news_body_html(string $html): string
 }
 
 /** Returns the new post's id, so attachments can be linked to it. */
-function create_news(int $authorId, string $title, string $body, bool $pinned): int
+function create_news(int $authorId, string $title, string $body, bool $pinned, string $category = 'all'): int
 {
+    $category = array_key_exists($category, NEWS_CATEGORIES) ? $category : 'all';
     $stmt = db()->prepare(
-        "INSERT INTO news (author_id, title, body, body_format, pinned) VALUES (?, ?, ?, 'html', ?)"
+        "INSERT INTO news (author_id, title, body, body_format, pinned, category) VALUES (?, ?, ?, 'html', ?, ?)"
     );
-    $stmt->execute([$authorId, $title, sanitize_news_body_html($body), $pinned ? 1 : 0]);
+    $stmt->execute([$authorId, $title, sanitize_news_body_html($body), $pinned ? 1 : 0, $category]);
     return (int) db()->lastInsertId();
 }
 
-/** Edits a post's title/text. Pinning is its own toggle_news_pin() action; attachments are untouched. */
-function update_news(int $id, string $title, string $body): void
+/** Edits a post's title/text/category. Pinning is its own toggle_news_pin() action; attachments are untouched. */
+function update_news(int $id, string $title, string $body, string $category = 'all'): void
 {
-    db()->prepare("UPDATE news SET title = ?, body = ?, body_format = 'html' WHERE id = ?")
-        ->execute([$title, sanitize_news_body_html($body), $id]);
+    $category = array_key_exists($category, NEWS_CATEGORIES) ? $category : 'all';
+    db()->prepare("UPDATE news SET title = ?, body = ?, body_format = 'html', category = ? WHERE id = ?")
+        ->execute([$title, sanitize_news_body_html($body), $category, $id]);
 }
 
 function toggle_news_pin(int $id): void
