@@ -229,6 +229,14 @@ require_once __DIR__ . '/includes/header.php';
                           <img class="news-image" src="/attachment.php?id=<?= (int) $image['id'] ?>" alt="<?= htmlspecialchars($image['original_name'], ENT_QUOTES, 'UTF-8') ?>">
                         </a>
                       <?php endforeach; ?>
+                      <?php if ($files): ?>
+                        <div class="news-attachments-heading">Přílohy ke stažení</div>
+                        <ul class="news-attachments">
+                          <?php foreach ($files as $file): ?>
+                            <li><a href="/attachment.php?id=<?= (int) $file['id'] ?>">📎 <?= htmlspecialchars($file['original_name'], ENT_QUOTES, 'UTF-8') ?></a></li>
+                          <?php endforeach; ?>
+                        </ul>
+                      <?php endif; ?>
                     </div>
                   </div>
                 <?php else: ?>
@@ -240,13 +248,14 @@ require_once __DIR__ . '/includes/header.php';
                       <img class="news-image" src="/attachment.php?id=<?= (int) $image['id'] ?>" alt="<?= htmlspecialchars($image['original_name'], ENT_QUOTES, 'UTF-8') ?>">
                     </a>
                   <?php endforeach; ?>
-                <?php endif; ?>
-                <?php if ($files): ?>
-                  <ul class="news-attachments">
-                    <?php foreach ($files as $file): ?>
-                      <li><a href="/attachment.php?id=<?= (int) $file['id'] ?>">📎 <?= htmlspecialchars($file['original_name'], ENT_QUOTES, 'UTF-8') ?></a></li>
-                    <?php endforeach; ?>
-                  </ul>
+                  <?php if ($files): ?>
+                    <div class="news-attachments-heading">Přílohy ke stažení</div>
+                    <ul class="news-attachments">
+                      <?php foreach ($files as $file): ?>
+                        <li><a href="/attachment.php?id=<?= (int) $file['id'] ?>">📎 <?= htmlspecialchars($file['original_name'], ENT_QUOTES, 'UTF-8') ?></a></li>
+                      <?php endforeach; ?>
+                    </ul>
+                  <?php endif; ?>
                 <?php endif; ?>
                 <?php if ($canPost): ?>
                   <form method="post" action="/dashboard.php" enctype="multipart/form-data" class="news-edit-form" id="edit-news-<?= (int) $item['id'] ?>" hidden>
