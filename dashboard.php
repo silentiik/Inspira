@@ -177,7 +177,7 @@ require_once __DIR__ . '/includes/header.php';
           <?php endif; ?>
 
           <div class="form-card">
-            <h3 class="mt-0 text-center">📋 Nástěnka — novinky a informace pro rodiče</h3>
+            <h3 class="mt-0 text-center news-board-title">📋 Nástěnka — novinky a informace pro rodiče</h3>
             <?php if (empty($newsItems)): ?>
               <p class="hint-text">Zatím tu nejsou žádné novinky.</p>
             <?php endif; ?>
