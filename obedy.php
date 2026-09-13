@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // No menu set for that day yet — nothing to opt into,
                 // regardless of what was submitted.
                 $wantsLunch = $menuText !== null && !empty($_POST['lunch_' . $day]);
-                save_lunch_selection($childId, $week, $day, $wantsLunch, $menuText ?? 'Jídelníček zatím nebyl nastaven.');
+                save_lunch_selection($childId, $week, $day, $wantsLunch, $menuText ?? 'Jídelníček není nastaven.');
             }
             flash_set('success', 'Výběr obědů byl uložen.');
         }
@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $menuText = menu_for_date($date);
             $wantsLunch = $menuText !== null && !empty($_POST['lunch_' . $day]);
-            save_staff_lunch_selection((int) $user['id'], $week, $day, $wantsLunch, $menuText ?? 'Jídelníček zatím nebyl nastaven.');
+            save_staff_lunch_selection((int) $user['id'], $week, $day, $wantsLunch, $menuText ?? 'Jídelníček není nastaven.');
         }
         flash_set('success', 'Výběr obědů byl uložen.');
         header('Location: ' . $redirectTo);
@@ -295,7 +295,7 @@ require_once __DIR__ . '/includes/header.php';
                       $hasMenu = isset($weekMenus[$date]);
                       $isLocked = $weekAutoLocked || ($lockedDays[$date] ?? false);
                       $canChoose = $hasMenu && !$isLocked;
-                      $mealText = $weekMenus[$date] ?? 'Jídelníček zatím nebyl nastaven.';
+                      $mealText = $weekMenus[$date] ?? 'Jídelníček není nastaven.';
                       $inputId = 'staff_lunch_' . $code;
                     ?>
                     <label class="lunch-day<?= isset($staffSelections[$code]) ? ' is-saved' : '' ?><?= $canChoose ? ' has-menu' : ' is-disabled' ?><?= $isLocked ? ' is-locked' : '' ?>" for="<?= $inputId ?>">
@@ -335,7 +335,7 @@ require_once __DIR__ . '/includes/header.php';
                       $hasMenu = isset($weekMenus[$date]);
                       $isLocked = $weekAutoLocked || ($lockedDays[$date] ?? false);
                       $canChoose = $hasMenu && !$isLocked;
-                      $mealText = $weekMenus[$date] ?? 'Jídelníček zatím nebyl nastaven.';
+                      $mealText = $weekMenus[$date] ?? 'Jídelníček není nastaven.';
                       $inputId = 'lunch_' . $code . '_' . (int) $child['id'];
                     ?>
                     <label class="lunch-day<?= isset($selections[$code]) ? ' is-saved' : '' ?><?= $canChoose ? ' has-menu' : ' is-disabled' ?><?= $isLocked ? ' is-locked' : '' ?>" for="<?= $inputId ?>">
