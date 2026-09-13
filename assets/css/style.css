@@ -1357,9 +1357,10 @@ img { max-width: 100%; display: block; }
 .overview-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .overview-table th, .overview-table td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--color-border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .overview-table th { font-family: var(--font-heading); color: var(--color-primary-dark); border-bottom: 2px solid var(--color-primary); }
-.overview-table th:nth-child(1), .overview-table td:nth-child(1) { width: 45%; }
-.overview-table th:nth-child(2), .overview-table td:nth-child(2) { width: 30%; }
-.overview-table th:nth-child(3), .overview-table td:nth-child(3) { width: 25%; }
+.overview-table th:nth-child(1), .overview-table td:nth-child(1) { width: 35%; }
+.overview-table th:nth-child(2), .overview-table td:nth-child(2) { width: 25%; }
+.overview-table th:nth-child(3), .overview-table td:nth-child(3) { width: 20%; }
+.overview-table th:nth-child(4), .overview-table td:nth-child(4) { width: 20%; }
 .overview-table-group-start td { border-top: 2px solid var(--color-primary); }
 .overview-table-sum td {
   background: var(--color-primary);

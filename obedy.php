@@ -3,6 +3,7 @@ require_once __DIR__ . '/app/auth.php';
 require_once __DIR__ . '/app/csrf.php';
 require_once __DIR__ . '/app/flash.php';
 require_once __DIR__ . '/app/children.php';
+require_once __DIR__ . '/app/content.php';
 
 $user = require_login();
 $canEditMenu = in_array($user['role'], ['admin', 'teacher'], true);
@@ -177,6 +178,7 @@ if ($canEditMenu && $view === 'prehled') {
     $nextMonth = $monthStartDt->modify('+1 month')->format('Y-m');
     $overviewMonthLabel = CZECH_MONTHS[(int) $monthStartDt->format('n')] . ' ' . $monthStartDt->format('Y');
     $monthlyRoster = monthly_lunch_roster($viewedMonth . '-01');
+    $lunchPrice = (int) get_content('lunch_price', '0');
 }
 
 $pageTitle = 'Obědy | INSPIRA';
@@ -223,8 +225,8 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
               </div>
             </div>
-            <table class="overview-table">
-              <thead><tr><th>Jméno</th><th>Skupina</th><th>Počet obědů</th></tr></thead>
+            <table class="overview-table" data-lunch-price="<?= $lunchPrice ?>">
+              <thead><tr><th>Jméno</th><th>Skupina</th><th>Počet obědů</th><th>Cena</th></tr></thead>
               <tbody>
                 <?php $previousCategory = null; ?>
                 <?php foreach ($monthlyRoster as $entry): ?>
@@ -233,6 +235,7 @@ require_once __DIR__ . '/includes/header.php';
                     <td><?= htmlspecialchars($entry['name'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td><?= htmlspecialchars($entry['category'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td><?= (int) $entry['count'] ?></td>
+                    <td><?= number_format($entry['count'] * $lunchPrice, 0, ',', ' ') ?> Kč</td>
                   </tr>
                 <?php endforeach; ?>
               </tbody>
@@ -240,6 +243,7 @@ require_once __DIR__ . '/includes/header.php';
                 <tr class="overview-table-sum">
                   <td colspan="2">Celkem</td>
                   <td data-overview-sum><?= array_sum(array_column($monthlyRoster, 'count')) ?></td>
+                  <td data-overview-sum-price><?= number_format(array_sum(array_column($monthlyRoster, 'count')) * $lunchPrice, 0, ',', ' ') ?> Kč</td>
                 </tr>
               </tfoot>
             </table>

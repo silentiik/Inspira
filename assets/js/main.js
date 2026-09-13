@@ -456,6 +456,12 @@
     if (!input || !table) return;
     var rows = Array.prototype.slice.call(table.querySelectorAll('[data-overview-row]'));
     var sumEl = table.querySelector('[data-overview-sum]');
+    var sumPriceEl = table.querySelector('[data-overview-sum-price]');
+    var lunchPrice = parseInt(table.getAttribute('data-lunch-price'), 10) || 0;
+
+    function formatKc(amount) {
+      return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' Kč';
+    }
 
     function render() {
       var query = input.value.trim().toLowerCase();
@@ -476,6 +482,7 @@
       });
       if (countEl) countEl.textContent = visibleCount + '/' + rows.length;
       if (sumEl) sumEl.textContent = sum;
+      if (sumPriceEl) sumPriceEl.textContent = formatKc(sum * lunchPrice);
     }
 
     input.addEventListener('input', render);

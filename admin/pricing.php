@@ -3,11 +3,27 @@ require_once __DIR__ . '/../app/auth.php';
 require_once __DIR__ . '/../app/csrf.php';
 require_once __DIR__ . '/../app/flash.php';
 require_once __DIR__ . '/../app/pricing.php';
+require_once __DIR__ . '/../app/content.php';
 
-require_role(['admin']);
+$user = require_role(['admin']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
+
+    // The lunch-price form posts a distinct field name so it doesn't collide
+    // with the per-row id+price pricing forms below.
+    if (isset($_POST['lunch_price'])) {
+        $lunchPrice = (int) $_POST['lunch_price'];
+        if ($lunchPrice > 0) {
+            set_content('lunch_price', (string) $lunchPrice, (int) $user['id']);
+            flash_set('success', 'Cena obědu byla uložena.');
+        } else {
+            flash_set('error', 'Zadejte prosím platnou cenu.');
+        }
+        header('Location: /admin/pricing.php');
+        exit;
+    }
+
     $id = (int) ($_POST['id'] ?? 0);
     $price = (int) ($_POST['price'] ?? 0);
     $note = trim((string) ($_POST['note'] ?? ''));
@@ -24,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $rows = all_pricing();
+$lunchPrice = (int) get_content('lunch_price', '0');
 
 $pageTitle = 'Ceník — správa | INSPIRA';
 require_once __DIR__ . '/../includes/header.php';
@@ -38,6 +55,19 @@ require_once __DIR__ . '/../includes/header.php';
 
   <section class="section">
     <div class="container">
+      <h2>Obědy</h2>
+      <div class="card-grid" style="margin-bottom:32px;">
+        <form method="post" action="/admin/pricing.php" class="card">
+          <?= csrf_field() ?>
+          <h3 class="mt-0">Cena obědu</h3>
+          <div class="field">
+            <label for="lunch_price">Cena (Kč / oběd)</label>
+            <input type="number" id="lunch_price" name="lunch_price" value="<?= $lunchPrice ?>" min="1" required>
+          </div>
+          <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
+        </form>
+      </div>
+
       <?php foreach (['inspirka' => 'INSPIRKA', 'domskolaci' => 'Domškolácká akademie'] as $programKey => $programLabel): ?>
         <h2><?= htmlspecialchars($programLabel, ENT_QUOTES, 'UTF-8') ?></h2>
         <div class="card-grid" style="margin-bottom:32px;">
