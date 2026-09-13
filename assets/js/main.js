@@ -106,6 +106,37 @@
     });
   }
 
+  // Lightbox for news pictures: clicking a thumbnail (or a full-size
+  // post image) opens it enlarged instead of navigating to the raw file.
+  var lightboxModal = document.querySelector('[data-lightbox-modal]');
+  if (lightboxModal) {
+    var lightboxImage = lightboxModal.querySelector('[data-lightbox-image]');
+    var lightboxClose = lightboxModal.querySelector('[data-lightbox-close]');
+
+    function closeLightbox() {
+      lightboxModal.hidden = true;
+      lightboxImage.src = '';
+    }
+
+    document.querySelectorAll('[data-lightbox]').forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        var thumb = link.querySelector('img');
+        lightboxImage.src = link.getAttribute('href');
+        lightboxImage.alt = thumb ? thumb.alt : '';
+        lightboxModal.hidden = false;
+      });
+    });
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightboxModal.addEventListener('click', function (e) {
+      if (e.target === lightboxModal) closeLightbox();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !lightboxModal.hidden) closeLightbox();
+    });
+  }
+
   var toggle = document.querySelector('.nav-toggle');
   var navLinks = document.querySelector('.nav-links');
 

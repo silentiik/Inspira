@@ -50,6 +50,11 @@
   </div>
 </div>
 
+<div class="modal-overlay lightbox-overlay" data-lightbox-modal hidden>
+  <button type="button" class="lightbox-close" data-lightbox-close aria-label="Zavřít">✕</button>
+  <img class="lightbox-image" data-lightbox-image src="" alt="">
+</div>
+
 <script src="<?= htmlspecialchars(asset_url('/assets/js/main.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 <?php foreach ($extraScripts ?? [] as $script): ?>
 <script src="<?= htmlspecialchars(asset_url($script), ENT_QUOTES, 'UTF-8') ?>"></script>
