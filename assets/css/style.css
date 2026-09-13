@@ -612,6 +612,8 @@ img { max-width: 100%; display: block; }
 .richtext-btn svg { fill: currentColor; }
 .richtext-sep { width: 1.5px; align-self: stretch; margin: 2px 4px; background: var(--color-border); }
 .richtext-select {
+  flex: 0 0 auto;
+  width: 110px;
   height: 28px;
   padding: 0 6px;
   border: 1.5px solid var(--color-border);
