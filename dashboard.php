@@ -167,11 +167,13 @@ require_once __DIR__ . '/includes/header.php';
                   </div>
                 </div>
                 <span class="hint-text">Max. <?= NEWS_MAX_ATTACHMENTS ?> souborů celkem, každý do <?= (int) (NEWS_MAX_FILE_SIZE / 1024 / 1024) ?> MB. Obrázky se zobrazí přímo v novince, přílohy jako odkaz ke stažení.</span>
-                <div class="field checkbox-field">
-                  <input type="checkbox" id="pinned" name="pinned">
-                  <label for="pinned" style="margin:0;">Připnout nahoru</label>
+                <div class="news-submit-row">
+                  <button type="submit" class="btn btn--accent">Zveřejnit novinku</button>
+                  <div class="field checkbox-field">
+                    <input type="checkbox" id="pinned" name="pinned">
+                    <label for="pinned" style="margin:0;">Připnout nahoru</label>
+                  </div>
                 </div>
-                <button type="submit" class="btn btn--accent">Zveřejnit novinku</button>
               </form>
             </div>
           <?php endif; ?>

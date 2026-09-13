@@ -575,6 +575,9 @@ img { max-width: 100%; display: block; }
 
 .checkbox-field { display: flex; align-items: flex-start; gap: 10px; }
 .checkbox-field input { width: auto; margin-top: 4px; }
+.news-submit-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.news-submit-row .checkbox-field { align-items: center; }
+.news-submit-row .checkbox-field input { margin-top: 0; }
 .file-picker { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .file-picker .btn--outline { background: var(--color-surface); }
 .file-picker-status { font-size: 0.85rem; color: var(--color-text-muted); }
