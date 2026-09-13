@@ -62,7 +62,7 @@ require_once __DIR__ . '/includes/header.php';
     <div class="container">
       <div class="stack">
         <div class="form-card news-board-header">
-          <h3 class="mt-0 text-center news-board-title">🍽️ Výběr obědů — týden č. <?= $weekNumber ?> (<?= htmlspecialchars($weekStartDt->format('j. n.'), ENT_QUOTES, 'UTF-8') ?> – <?= htmlspecialchars($weekEndDt->format('j. n. Y'), ENT_QUOTES, 'UTF-8') ?>)</h3>
+          <h3 class="mt-0 text-center news-board-title">🍽️ Výběr obědů pro <?= $weekNumber ?>. týden (<?= htmlspecialchars($weekStartDt->format('j. n.'), ENT_QUOTES, 'UTF-8') ?> – <?= htmlspecialchars($weekEndDt->format('j. n. Y'), ENT_QUOTES, 'UTF-8') ?>)</h3>
         </div>
 
         <?php if ($canEditMenu): ?>
@@ -110,7 +110,9 @@ require_once __DIR__ . '/includes/header.php';
                     </label>
                   <?php endforeach; ?>
                 </div>
-                <button type="submit" class="btn btn--primary btn--block" style="margin-top:14px;">Uložit výběr pro <?= htmlspecialchars($child['name'], ENT_QUOTES, 'UTF-8') ?></button>
+                <div style="text-align:center; margin-top:14px;">
+                  <button type="submit" class="btn btn--primary">Uložit výběr</button>
+                </div>
               </form>
             <?php endforeach; ?>
           </div>
