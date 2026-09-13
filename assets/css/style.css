@@ -799,7 +799,7 @@ img { max-width: 100%; display: block; }
   min-width: 200px;
   text-align: center;
 }
-.week-nav-picker input[type="date"] {
+.week-nav-picker input[type="week"] {
   height: 38px;
   padding: 0 10px;
   border-radius: 999px;

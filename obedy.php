@@ -7,9 +7,18 @@ require_once __DIR__ . '/app/children.php';
 $user = require_login();
 $canEditMenu = in_array($user['role'], ['admin', 'teacher'], true);
 
-/** Normalizes a submitted/queried 'Y-m-d' into that week's Monday, falling back to next week if missing or malformed. */
+/**
+ * Normalizes a submitted/queried week into that week's Monday, falling
+ * back to next week if missing or malformed. Accepts either a plain
+ * 'Y-m-d' date (used internally by the prev/next links and the hidden
+ * form field) or an ISO 'Y-Www' week number (what the <input
+ * type="week"> picker submits).
+ */
 function resolve_viewed_week(string $requested): string
 {
+    if (preg_match('/^(\d{4})-W(\d{2})$/', $requested, $m)) {
+        return (new DateTimeImmutable())->setISODate((int) $m[1], (int) $m[2], 1)->format('Y-m-d');
+    }
     return preg_match('/^\d{4}-\d{2}-\d{2}$/', $requested) ? week_start($requested) : week_start('next monday');
 }
 
@@ -76,6 +85,7 @@ $weekMenus = menus_for_week($viewedWeek);
 $weekStartDt = new DateTimeImmutable($viewedWeek);
 $weekEndDt = $weekStartDt->modify('+4 days');
 $weekNumber = (int) $weekStartDt->format('W');
+$weekPickerValue = $weekStartDt->format('o') . '-W' . $weekStartDt->format('W');
 $monthLabel = week_month_label($weekStartDt, $weekEndDt);
 $prevWeek = $weekStartDt->modify('-7 days')->format('Y-m-d');
 $nextWeek = $weekStartDt->modify('+7 days')->format('Y-m-d');
@@ -97,7 +107,7 @@ require_once __DIR__ . '/includes/header.php';
           <a href="/obedy.php?week=<?= htmlspecialchars($prevWeek, ENT_QUOTES, 'UTF-8') ?>" class="page-btn" aria-label="Předchozí týden">‹</a>
           <span class="week-nav-label"><?= htmlspecialchars($monthLabel, ENT_QUOTES, 'UTF-8') ?></span>
           <form method="get" action="/obedy.php" class="week-nav-picker">
-            <input type="date" name="week" value="<?= htmlspecialchars($viewedWeek, ENT_QUOTES, 'UTF-8') ?>" aria-label="Přejít na týden" data-week-picker>
+            <input type="week" name="week" value="<?= htmlspecialchars($weekPickerValue, ENT_QUOTES, 'UTF-8') ?>" aria-label="Přejít na týden" data-week-picker>
           </form>
           <a href="/obedy.php?week=<?= htmlspecialchars($nextWeek, ENT_QUOTES, 'UTF-8') ?>" class="page-btn" aria-label="Další týden">›</a>
         </div>
