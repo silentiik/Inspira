@@ -159,8 +159,6 @@ require_once __DIR__ . '/includes/header.php';
 
         <?php if ($view === 'nastaveni' && $canEditMenu): ?>
           <div class="form-card">
-            <h3 class="mt-0">Jídelníček na tento týden</h3>
-            <p class="hint-text">Sem zadejte, co se bude v jednotlivé dny vařit — rodiče pak jen zaškrtnou, jestli oběd chtějí.</p>
             <form method="post" action="/obedy.php">
               <?= csrf_field() ?>
               <input type="hidden" name="action" value="save_menu">
