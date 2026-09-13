@@ -396,7 +396,7 @@ function monthly_lunch_roster(string $monthDate): array
     }
     foreach (db()->query(
         "SELECT id, trim(first_name || ' ' || last_name) AS name FROM users
-         WHERE role IN ('admin', 'teacher') ORDER BY first_name, last_name"
+         WHERE role = 'teacher' ORDER BY first_name, last_name"
     )->fetchAll() as $staff) {
         $roster['staff:' . $staff['id']] = [
             'name' => $staff['name'],
