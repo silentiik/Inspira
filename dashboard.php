@@ -139,7 +139,7 @@ require_once __DIR__ . '/includes/header.php';
           <?php if ($canPost): ?>
             <div class="form-card">
               <h3 class="mt-0">Přidat novinku</h3>
-              <form method="post" action="/dashboard.php" enctype="multipart/form-data">
+              <form method="post" action="/dashboard.php" enctype="multipart/form-data" class="news-create-form">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="post_news">
                 <div class="field">
