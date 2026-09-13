@@ -31,7 +31,7 @@ function render_guardian_checkboxes(array $allUsers, array $selectedIds, string 
         $inputId = $namePrefix . '-' . $id;
         $roleLabel = match ($u['role']) {
             'admin' => 'administrátor',
-            'teacher' => 'učitel/ka',
+            'teacher' => 'lektor/ka',
             default => 'rodič',
         };
         $html .= '<label class="checkbox-list-item" for="' . htmlspecialchars($inputId, ENT_QUOTES, 'UTF-8') . '">'
@@ -262,7 +262,7 @@ require_once __DIR__ . '/../includes/header.php';
                   <label for="role">Role</label>
                   <select id="role" name="role" required>
                     <option value="parent">Rodič</option>
-                    <option value="teacher">Učitel/ka</option>
+                    <option value="teacher">Lektor/ka</option>
                     <option value="admin">Administrátor</option>
                   </select>
                 </div>
@@ -347,7 +347,7 @@ require_once __DIR__ . '/../includes/header.php';
             <button type="button" class="filter-chip is-active" data-filter-value="">Vše</button>
             <button type="button" class="filter-chip" data-filter-value="parent">Rodič</button>
             <button type="button" class="filter-chip" data-filter-value="admin">Administrátor</button>
-            <button type="button" class="filter-chip" data-filter-value="teacher">Učitel/ka</button>
+            <button type="button" class="filter-chip" data-filter-value="teacher">Lektor/ka</button>
           </div>
         </div>
       </div>
@@ -359,7 +359,7 @@ require_once __DIR__ . '/../includes/header.php';
               <span class="user-summary-name"><?= htmlspecialchars(surname_first($row), ENT_QUOTES, 'UTF-8') ?></span>
               <span class="role-badge"><?= htmlspecialchars(match ($row['role']) {
                 'admin' => 'Administrátor',
-                'teacher' => 'Učitel/ka',
+                'teacher' => 'Lektor/ka',
                 default => 'Rodič',
               }, ENT_QUOTES, 'UTF-8') ?></span>
               <span class="user-summary-meta">
@@ -426,7 +426,7 @@ require_once __DIR__ . '/../includes/header.php';
                       <label for="role-<?= (int) $row['id'] ?>">Role</label>
                       <select id="role-<?= (int) $row['id'] ?>" name="role">
                         <option value="parent"<?= $row['role'] === 'parent' ? ' selected' : '' ?>>Rodič</option>
-                        <option value="teacher"<?= $row['role'] === 'teacher' ? ' selected' : '' ?>>Učitel/ka</option>
+                        <option value="teacher"<?= $row['role'] === 'teacher' ? ' selected' : '' ?>>Lektor/ka</option>
                         <option value="admin"<?= $row['role'] === 'admin' ? ' selected' : '' ?>>Administrátor</option>
                       </select>
                     </div>

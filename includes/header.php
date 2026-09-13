@@ -57,7 +57,7 @@ function asset_url(string $publicPath): string
 <div class="impersonation-banner">
   <div class="container impersonation-banner-inner">
     <span>👁️ Prohlížíte portál jako <strong><?= htmlspecialchars(full_name($user), ENT_QUOTES, 'UTF-8') ?></strong> (<?= htmlspecialchars(match ($user['role']) {
-      'teacher' => 'učitel/ka',
+      'teacher' => 'lektor/ka',
       default => 'rodič',
     }, ENT_QUOTES, 'UTF-8') ?>)</span>
     <form method="post" action="/auth/stop-impersonate.php">

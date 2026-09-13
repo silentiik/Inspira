@@ -177,7 +177,7 @@ require_once __DIR__ . '/includes/header.php';
         </article>
         <article class="card">
           <span class="card-icon">👨‍👩‍👧</span>
-          <h3>Portál pro rodiče a učitele</h3>
+          <h3>Portál pro rodiče a lektory</h3>
           <p>Novinky z centra a výběr obědů na příští týden na jednom místě.</p>
           <a href="/dashboard.php" class="btn btn--outline btn--sm">Přihlásit se do portálu →</a>
         </article>

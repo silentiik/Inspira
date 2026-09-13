@@ -40,7 +40,7 @@ require_once __DIR__ . '/../includes/header.php';
   <section class="page-header">
     <div class="container">
       <h1>Přihlášení</h1>
-      <p class="lead">Přihlaste se do portálu pro rodiče a učitele.</p>
+      <p class="lead">Přihlaste se do portálu pro rodiče a lektory.</p>
     </div>
   </section>
 
@@ -66,7 +66,7 @@ require_once __DIR__ . '/../includes/header.php';
           </form>
 
           <p class="hint-text" style="margin-top:16px;"><a href="/auth/forgot-password.php">Zapomněli jste heslo?</a></p>
-          <p class="hint-text">Nemáte ještě účet? Rodiče a učitelé dostávají pozvánku od centra — ozvěte se nám na <a href="/kontakt.php">kontaktním formuláři</a>.</p>
+          <p class="hint-text">Nemáte ještě účet? Rodiče a lektoři dostávají pozvánku od centra — ozvěte se nám na <a href="/kontakt.php">kontaktním formuláři</a>.</p>
         </div>
       </div>
     </div>

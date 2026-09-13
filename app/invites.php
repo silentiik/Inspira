@@ -69,7 +69,7 @@ function invite_user(string $email, string $firstName, string $lastName, string 
     $link = SITE_BASE_URL . '/auth/reset-password.php?token=' . $token;
     $roleLabel = match ($role) {
         'admin' => 'administrátora',
-        'teacher' => 'učitele',
+        'teacher' => 'lektora',
         default => 'rodiče',
     };
     $body = "Dobrý den {$firstName},\n\n"
