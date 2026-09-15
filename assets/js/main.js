@@ -501,4 +501,64 @@
 
     render();
   });
+
+  // Mesicni prehled: clicking a roster row shows that person's day-by-day
+  // order breakdown (date, meal, price) in the "Detail mesice" card below,
+  // instead of navigating anywhere — the data for every row is already on
+  // the page via data-orders, so this needs no server round-trip.
+  document.querySelectorAll('[data-month-detail-body]').forEach(function (detailBody) {
+    var stack = detailBody.closest('.stack');
+    var table = stack ? stack.querySelector('.overview-table') : null;
+    if (!table) return;
+    var rows = Array.prototype.slice.call(table.querySelectorAll('tbody [data-overview-row]'));
+
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatDate(ymd) {
+      var parts = ymd.split('-');
+      return parseInt(parts[2], 10) + '. ' + parseInt(parts[1], 10) + '. ' + parts[0];
+    }
+
+    function formatKc(amount) {
+      return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' Kč';
+    }
+
+    rows.forEach(function (row) {
+      row.addEventListener('click', function () {
+        rows.forEach(function (r) { r.classList.remove('is-selected'); });
+        row.classList.add('is-selected');
+
+        var displayName = row.getAttribute('data-display-name') || '';
+        var orders = [];
+        try {
+          orders = JSON.parse(row.getAttribute('data-orders') || '[]');
+        } catch (e) {
+          orders = [];
+        }
+
+        if (orders.length === 0) {
+          detailBody.innerHTML = '<h4 class="mt-0">' + escapeHtml(displayName) + '</h4><p class="hint-text">Tento měsíc nemá žádné objednané obědy.</p>';
+          return;
+        }
+
+        var total = 0;
+        var rowsHtml = orders.map(function (o) {
+          total += o.price;
+          return '<tr><td>' + formatDate(o.date) + '</td><td>' + escapeHtml(o.meal) + '</td><td>' + formatKc(o.price) + '</td></tr>';
+        }).join('');
+
+        detailBody.innerHTML =
+          '<h4 class="mt-0">' + escapeHtml(displayName) + '</h4>' +
+          '<table class="price-table">' +
+          '<thead><tr><th>Datum</th><th>Jídlo</th><th>Cena</th></tr></thead>' +
+          '<tbody>' + rowsHtml + '</tbody>' +
+          '<tfoot><tr class="overview-table-sum"><td colspan="2">Celkem</td><td>' + formatKc(total) + '</td></tr></tfoot>' +
+          '</table>';
+      });
+    });
+  });
 })();

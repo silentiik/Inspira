@@ -395,6 +395,7 @@ function monthly_lunch_roster(string $monthDate): array
             'category' => CHILD_PROGRAMS[$child['program']] ?? $child['program'],
             'count' => 0,
             'amount' => 0,
+            'orders' => [],
         ];
     }
     foreach (db()->query(
@@ -407,12 +408,14 @@ function monthly_lunch_roster(string $monthDate): array
             'category' => 'Lektor/ka',
             'count' => 0,
             'amount' => 0,
+            'orders' => [],
         ];
     }
 
     // Each order is priced at whatever was in effect on its own date, not
     // today's price, so a price change never retroactively changes what
-    // earlier orders are billed at.
+    // earlier orders are billed at. The per-order list (date, meal, price)
+    // feeds the "Detail měsíce" breakdown when a roster row is clicked.
     $tally = function (array $rows, string $prefix, string $idColumn) use (&$roster, $monthStart, $monthEnd) {
         foreach ($rows as $row) {
             $date = week_day_dates($row['week_start'])[$row['day']];
@@ -421,22 +424,29 @@ function monthly_lunch_roster(string $monthDate): array
             }
             $key = $prefix . $row[$idColumn];
             if (isset($roster[$key])) {
+                $price = lunch_price_on($date);
                 $roster[$key]['count']++;
-                $roster[$key]['amount'] += lunch_price_on($date);
+                $roster[$key]['amount'] += $price;
+                $roster[$key]['orders'][] = ['date' => $date, 'meal' => $row['meal_option'], 'price' => $price];
             }
         }
     };
 
     $tally(
-        db()->query('SELECT child_id, week_start, day FROM lunch_selections WHERE wants_lunch = 1')->fetchAll(),
+        db()->query('SELECT child_id, week_start, day, meal_option FROM lunch_selections WHERE wants_lunch = 1')->fetchAll(),
         'child:',
         'child_id'
     );
     $tally(
-        db()->query('SELECT user_id, week_start, day FROM staff_lunch_selections WHERE wants_lunch = 1')->fetchAll(),
+        db()->query('SELECT user_id, week_start, day, meal_option FROM staff_lunch_selections WHERE wants_lunch = 1')->fetchAll(),
         'staff:',
         'user_id'
     );
+
+    foreach ($roster as &$entry) {
+        usort($entry['orders'], fn (array $a, array $b) => $a['date'] <=> $b['date']);
+    }
+    unset($entry);
 
     // Grouped by category (each child program, then staff last) rather
     // than one flat alphabetical list, so the table can visually set

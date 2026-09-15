@@ -229,7 +229,7 @@ require_once __DIR__ . '/includes/header.php';
                 <?php $previousCategory = null; ?>
                 <?php foreach ($monthlyRoster as $entry): ?>
                   <?php $isNewGroup = $previousCategory !== null && $entry['category'] !== $previousCategory; $previousCategory = $entry['category']; ?>
-                  <tr<?= $isNewGroup ? ' class="overview-table-group-start"' : '' ?> data-overview-row data-name="<?= htmlspecialchars(mb_strtolower($entry['name']), ENT_QUOTES, 'UTF-8') ?>" data-filter="<?= htmlspecialchars($entry['group_key'], ENT_QUOTES, 'UTF-8') ?>" data-count="<?= (int) $entry['count'] ?>" data-amount="<?= (int) $entry['amount'] ?>">
+                  <tr<?= $isNewGroup ? ' class="overview-table-group-start"' : '' ?> data-overview-row data-name="<?= htmlspecialchars(mb_strtolower($entry['name']), ENT_QUOTES, 'UTF-8') ?>" data-display-name="<?= htmlspecialchars($entry['name'], ENT_QUOTES, 'UTF-8') ?>" data-filter="<?= htmlspecialchars($entry['group_key'], ENT_QUOTES, 'UTF-8') ?>" data-count="<?= (int) $entry['count'] ?>" data-amount="<?= (int) $entry['amount'] ?>" data-orders="<?= htmlspecialchars(json_encode($entry['orders'], JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>">
                     <td><?= htmlspecialchars($entry['name'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td><?= htmlspecialchars($entry['category'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td><?= (int) $entry['count'] ?></td>
@@ -245,6 +245,13 @@ require_once __DIR__ . '/includes/header.php';
                 </tr>
               </tfoot>
             </table>
+          </div>
+
+          <div class="form-card">
+            <h3 class="mt-0">Detail měsíce</h3>
+            <div data-month-detail-body>
+              <p class="hint-text">Není vybrán uživatel</p>
+            </div>
           </div>
         <?php endif; ?>
 

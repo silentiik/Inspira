@@ -1362,6 +1362,9 @@ img { max-width: 100%; display: block; }
 .overview-table th:nth-child(3), .overview-table td:nth-child(3) { width: 20%; }
 .overview-table th:nth-child(4), .overview-table td:nth-child(4) { width: 20%; }
 .overview-table-group-start td { border-top: 2px solid var(--color-primary); }
+.overview-table tbody tr[data-overview-row] { cursor: pointer; }
+.overview-table tbody tr[data-overview-row]:hover td { background: var(--color-bg-alt); }
+.overview-table tbody tr[data-overview-row].is-selected td { background: var(--color-primary-light); }
 .overview-table-sum td {
   background: var(--color-primary);
   color: #fff;
