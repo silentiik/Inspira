@@ -1385,26 +1385,28 @@ img { max-width: 100%; display: block; }
   font-weight: 700;
   font-family: var(--font-heading);
   padding: 12px 16px;
-  border-radius: var(--radius-sm);
   margin-bottom: 16px;
 }
+.month-detail-table { table-layout: fixed; }
+.month-detail-table th:nth-child(1), .month-detail-table td:nth-child(1) { width: 20%; }
+.month-detail-table th:nth-child(2), .month-detail-table td:nth-child(2) { width: 60%; }
+.month-detail-table th:nth-child(3), .month-detail-table td:nth-child(3) { width: 20%; }
 
-/* "Export do PDF" on Detail mesice reuses the browser's print dialog,
-   scoped to just that card's content — everything else on the page is
-   hidden for the duration of the print. */
+/* "Export do PDF" on Detail mesice reuses the browser's print dialog. A
+   dedicated print-only container gets the current detail's content
+   cloned into it and everything else under body is display:none (not
+   just hidden) during the print, so the page's real height shrinks to
+   fit just that content — visibility:hidden alone would keep the whole
+   page's layout height and print several blank pages after it. */
+#month-detail-print-area { display: none; }
 @media print {
-  html.printing-month-detail body * { visibility: hidden; }
-  html.printing-month-detail [data-month-detail-print],
-  html.printing-month-detail [data-month-detail-print] * { visibility: visible; }
-  html.printing-month-detail [data-month-detail-print] {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+  html.printing-month-detail body > *:not(#month-detail-print-area) { display: none !important; }
+  html.printing-month-detail #month-detail-print-area {
+    display: block !important;
     padding: 24px;
   }
-  html.printing-month-detail [data-month-detail-print] .overview-table-sum td,
-  html.printing-month-detail [data-month-detail-print] .month-detail-summary {
+  html.printing-month-detail #month-detail-print-area .overview-table-sum td,
+  html.printing-month-detail #month-detail-print-area .month-detail-summary {
     background: none;
     color: #000;
     border: 2px solid #000;

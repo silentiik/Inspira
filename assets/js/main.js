@@ -520,9 +520,15 @@
       return div.innerHTML;
     }
 
+    var CZECH_DAY_ABBR = ['Ne', 'Po', 'Út', 'St', 'Čt', 'Pá', 'So'];
+
     function formatDate(ymd) {
-      var parts = ymd.split('-');
-      return parseInt(parts[2], 10) + '. ' + parseInt(parts[1], 10) + '. ' + parts[0];
+      var parts = ymd.split('-').map(function (p) { return parseInt(p, 10); });
+      // Built from y/m/d parts (not new Date(ymd)) so this reads as the
+      // calendar date it names regardless of the browser's own timezone.
+      var date = new Date(parts[0], parts[1] - 1, parts[2]);
+      var dayAbbr = CZECH_DAY_ABBR[date.getDay()];
+      return parts[2] + '. ' + parts[1] + '. ' + parts[0] + ' (' + dayAbbr + ')';
     }
 
     function formatKc(amount) {
@@ -574,7 +580,7 @@
 
         detailBody.innerHTML =
           summaryHtml +
-          '<table class="price-table">' +
+          '<table class="price-table month-detail-table">' +
           '<thead><tr><th>Datum</th><th>Jídlo</th><th>Cena</th></tr></thead>' +
           '<tbody>' + rowsHtml + '</tbody>' +
           '</table>';
@@ -582,12 +588,22 @@
     });
 
     // "Export" reuses the browser's own print dialog (which offers "Save
-    // as PDF") rather than pulling in a PDF-generation library, scoped to
-    // just this card's content via the printing-month-detail class below.
+    // as PDF") rather than pulling in a PDF-generation library. The
+    // current detail is cloned into a dedicated print-only element at the
+    // end of body — hiding the rest of the page with display:none (not
+    // visibility) there is what keeps the printed output to a single page
+    // instead of several blank ones, since visibility:hidden alone still
+    // reserves the whole page's normal layout height.
     if (exportBtn) {
       exportBtn.addEventListener('click', function () {
         if (exportBtn.disabled) return;
-        detailBody.setAttribute('data-month-detail-print', '');
+        var printArea = document.getElementById('month-detail-print-area');
+        if (!printArea) {
+          printArea = document.createElement('div');
+          printArea.id = 'month-detail-print-area';
+          document.body.appendChild(printArea);
+        }
+        printArea.innerHTML = detailBody.innerHTML;
         document.documentElement.classList.add('printing-month-detail');
         window.print();
       });
