@@ -248,7 +248,10 @@ require_once __DIR__ . '/includes/header.php';
           </div>
 
           <div class="form-card">
-            <h3 class="mt-0">Detail měsíce</h3>
+            <h3 class="overview-banner">
+              <span>Detail měsíce</span>
+              <button type="button" class="icon-btn" data-month-detail-export aria-label="Exportovat do PDF" title="Exportovat do PDF" disabled>🖨️</button>
+            </h3>
             <div data-month-detail-body>
               <p class="hint-text">Není vybrán uživatel</p>
             </div>

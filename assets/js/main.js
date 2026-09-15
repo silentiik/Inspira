@@ -511,6 +511,8 @@
     var table = stack ? stack.querySelector('.overview-table') : null;
     if (!table) return;
     var rows = Array.prototype.slice.call(table.querySelectorAll('tbody [data-overview-row]'));
+    var card = detailBody.closest('.form-card');
+    var exportBtn = card ? card.querySelector('[data-month-detail-export]') : null;
 
     function escapeHtml(text) {
       var div = document.createElement('div');
@@ -527,10 +529,22 @@
       return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' Kč';
     }
 
+    function clearSelection() {
+      rows.forEach(function (r) { r.classList.remove('is-selected'); });
+      detailBody.innerHTML = '<p class="hint-text">Není vybrán uživatel</p>';
+      if (exportBtn) exportBtn.disabled = true;
+    }
+
     rows.forEach(function (row) {
       row.addEventListener('click', function () {
+        if (row.classList.contains('is-selected')) {
+          clearSelection();
+          return;
+        }
+
         rows.forEach(function (r) { r.classList.remove('is-selected'); });
         row.classList.add('is-selected');
+        if (exportBtn) exportBtn.disabled = false;
 
         var displayName = row.getAttribute('data-display-name') || '';
         var orders = [];
@@ -560,5 +574,21 @@
           '</table>';
       });
     });
+
+    // "Export" reuses the browser's own print dialog (which offers "Save
+    // as PDF") rather than pulling in a PDF-generation library, scoped to
+    // just this card's content via the printing-month-detail class below.
+    if (exportBtn) {
+      exportBtn.addEventListener('click', function () {
+        if (exportBtn.disabled) return;
+        detailBody.setAttribute('data-month-detail-print', '');
+        document.documentElement.classList.add('printing-month-detail');
+        window.print();
+      });
+    }
+  });
+
+  window.addEventListener('afterprint', function () {
+    document.documentElement.classList.remove('printing-month-detail');
   });
 })();
