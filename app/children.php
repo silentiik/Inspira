@@ -157,12 +157,11 @@ function menu_for_date(string $date): ?string
     return ($value !== false && $value !== '') ? $value : null;
 }
 
-/** [date => meal_text] for every date with a non-blank menu within [$weekStart, +4 days]. */
-function menus_for_week(string $weekStart): array
+/** [date => meal_text] for every date with a non-blank menu within [$start, $end]. */
+function menus_for_range(string $start, string $end): array
 {
-    $end = (new DateTimeImmutable($weekStart))->modify('+4 days')->format('Y-m-d');
     $stmt = db()->prepare('SELECT date, meal_text FROM daily_menus WHERE date BETWEEN ? AND ? ORDER BY date');
-    $stmt->execute([$weekStart, $end]);
+    $stmt->execute([$start, $end]);
     $result = [];
     foreach ($stmt->fetchAll() as $row) {
         if ($row['meal_text'] !== '') {
@@ -170,6 +169,13 @@ function menus_for_week(string $weekStart): array
         }
     }
     return $result;
+}
+
+/** [date => meal_text] for every date with a non-blank menu within [$weekStart, +4 days]. */
+function menus_for_week(string $weekStart): array
+{
+    $end = (new DateTimeImmutable($weekStart))->modify('+4 days')->format('Y-m-d');
+    return menus_for_range($weekStart, $end);
 }
 
 function save_menu_for_date(string $date, string $mealText, int $updatedBy): void
@@ -416,7 +422,15 @@ function monthly_lunch_roster(string $monthDate): array
     // today's price, so a price change never retroactively changes what
     // earlier orders are billed at. The per-order list (date, meal, price)
     // feeds the "Detail měsíce" breakdown when a roster row is clicked.
-    $tally = function (array $rows, string $prefix, string $idColumn) use (&$roster, $monthStart, $monthEnd) {
+    //
+    // The meal NAME, unlike the price, has no billing consequence — so it
+    // shows the current daily_menus text for that date rather than the
+    // meal_option snapshot, which only reflects whatever was on offer (or
+    // "not set yet") at the moment the order was placed and can otherwise
+    // go stale once the real menu is typed in afterwards. The snapshot is
+    // used only as a fallback for dates that no longer have a menu row.
+    $monthMenus = menus_for_range($monthStart, $monthEnd);
+    $tally = function (array $rows, string $prefix, string $idColumn) use (&$roster, $monthStart, $monthEnd, $monthMenus) {
         foreach ($rows as $row) {
             $date = week_day_dates($row['week_start'])[$row['day']];
             if ($date < $monthStart || $date > $monthEnd) {
@@ -427,7 +441,8 @@ function monthly_lunch_roster(string $monthDate): array
                 $price = lunch_price_on($date);
                 $roster[$key]['count']++;
                 $roster[$key]['amount'] += $price;
-                $roster[$key]['orders'][] = ['date' => $date, 'meal' => $row['meal_option'], 'price' => $price];
+                $meal = $monthMenus[$date] ?? $row['meal_option'];
+                $roster[$key]['orders'][] = ['date' => $date, 'meal' => $meal, 'price' => $price];
             }
         }
     };
