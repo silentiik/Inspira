@@ -1398,6 +1398,7 @@ img { max-width: 100%; display: block; }
   .month-detail-summary > span:nth-child(3) { text-align: left; }
 }
 .month-detail-table { table-layout: fixed; }
+.month-detail-table th { border-bottom: 2px solid var(--color-primary); }
 .month-detail-table th:nth-child(1), .month-detail-table td:nth-child(1) { width: 20%; }
 .month-detail-table th:nth-child(2), .month-detail-table td:nth-child(2) { width: 60%; }
 .month-detail-table th:nth-child(3), .month-detail-table td:nth-child(3) { width: 20%; }

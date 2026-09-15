@@ -569,7 +569,7 @@
         var summaryHtml =
           '<div class="month-detail-summary">' +
           '<span>' + escapeHtml(displayName) + '</span>' +
-          '<span>Počet jídel: ' + orders.length + '</span>' +
+          '<span>Počet obědů: ' + orders.length + '</span>' +
           '<span>Celková cena: ' + formatKc(total) + '</span>' +
           '</div>';
 
