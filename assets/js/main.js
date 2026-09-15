@@ -554,23 +554,29 @@
           orders = [];
         }
 
-        if (orders.length === 0) {
-          detailBody.innerHTML = '<h4 class="mt-0">' + escapeHtml(displayName) + '</h4><p class="hint-text">Tento měsíc nemá žádné objednané obědy.</p>';
-          return;
-        }
-
         var total = 0;
         var rowsHtml = orders.map(function (o) {
           total += o.price;
           return '<tr><td>' + formatDate(o.date) + '</td><td>' + escapeHtml(o.meal) + '</td><td>' + formatKc(o.price) + '</td></tr>';
         }).join('');
 
+        var summaryHtml =
+          '<div class="month-detail-summary">' +
+          '<span>' + escapeHtml(displayName) + '</span>' +
+          '<span>Počet jídel: ' + orders.length + '</span>' +
+          '<span>Celková cena: ' + formatKc(total) + '</span>' +
+          '</div>';
+
+        if (orders.length === 0) {
+          detailBody.innerHTML = summaryHtml + '<p class="hint-text">Tento měsíc nemá žádné objednané obědy.</p>';
+          return;
+        }
+
         detailBody.innerHTML =
-          '<h4 class="mt-0">' + escapeHtml(displayName) + '</h4>' +
+          summaryHtml +
           '<table class="price-table">' +
           '<thead><tr><th>Datum</th><th>Jídlo</th><th>Cena</th></tr></thead>' +
           '<tbody>' + rowsHtml + '</tbody>' +
-          '<tfoot><tr class="overview-table-sum"><td colspan="2">Celkem</td><td>' + formatKc(total) + '</td></tr></tfoot>' +
           '</table>';
       });
     });

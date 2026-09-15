@@ -1373,6 +1373,22 @@ img { max-width: 100%; display: block; }
   border-bottom: none;
 }
 
+[data-month-detail-body] > .hint-text { text-align: center; }
+.month-detail-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+
 /* "Export do PDF" on Detail mesice reuses the browser's print dialog,
    scoped to just that card's content — everything else on the page is
    hidden for the duration of the print. */
@@ -1387,10 +1403,11 @@ img { max-width: 100%; display: block; }
     width: 100%;
     padding: 24px;
   }
-  html.printing-month-detail [data-month-detail-print] .overview-table-sum td {
+  html.printing-month-detail [data-month-detail-print] .overview-table-sum td,
+  html.printing-month-detail [data-month-detail-print] .month-detail-summary {
     background: none;
     color: #000;
-    border-top: 2px solid #000;
+    border: 2px solid #000;
   }
 }
 
